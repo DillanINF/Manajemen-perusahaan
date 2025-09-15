@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-✅%20Production%20Ready-success?style=flat-square" alt="Status">
-  <img src="https://img.shields.io/badge/Version-2.5.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-2.6.0-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square" alt="Build">
 </p>
@@ -71,6 +71,11 @@ Sistem manajemen operasional **end-to-end** untuk perusahaan distribusi, logisti
 | RESTful API | Alpine.js Reactive | Optimized Queries | Session Management |
 | Clean Code | Mobile Responsive | Lazy Loading | CSRF Protection |
 
+> Update Terbaru (2025-09-15)
+> - Auth/OTP: Alur reset password via OTP aktif dan stabil (kirim OTP, verifikasi OTP, reset password via OTP).
+> - Email: Panduan konfigurasi email untuk OTP ditambahkan dan dirujuk di README (lihat `docs/EMAIL_CONFIGURATION.md`). Default development masih menggunakan driver non-smtp hingga dikonfigurasi.
+> - API: Dokumentasi endpoint OTP ditambahkan pada bagian API Routes.
+>
 > Update Terbaru (2025-09-12)
 > - PO: "No Surat Jalan" kini otomatis terisi dari `code_number` Customer (format CAM-TTG/2025 → Nomor=CAM, PT=TTG, Tahun=2025). Customer di form PO dibuat non-editable saat datang dari Data Invoice.
 > - PO: Input "No Invoice" di form PO dihapus; penomoran invoice dikelola dari halaman Data Invoice dengan logika lanjut nomor terbesar (bukan MEX terkecil). Alignment kolom No Invoice dirapikan agar rata kiri.
@@ -539,6 +544,29 @@ POST  /users                             # Store
 DELETE /users/{user}                     # Delete
 ```
 
+### 🔐 **Auth & OTP**
+```php
+# Login & Forgot Password (guest)
+GET   /login                             # Login form
+POST  /login                             # Login submit
+GET   /forgot-password                   # Forgot password (form)
+
+# OTP Flow (guest)
+POST  /send-otp                          # Kirim OTP ke email (name: otp.send)
+GET   /verify-otp                        # Tampilkan form verifikasi OTP (name: otp.verify.form)
+POST  /verify-otp                        # Verifikasi OTP (name: otp.verify)
+GET   /reset-password-form               # Form reset password via OTP (name: password.reset.form)
+POST  /reset-password-otp                # Reset password via OTP (name: password.reset.otp)
+
+# Password reset bawaan (kompatibilitas)
+POST  /forgot-password                   # Kirim link reset (name: password.email)
+GET   /reset-password/{token}            # Form reset via token (name: password.reset)
+POST  /reset-password                    # Submit reset via token (name: password.store)
+
+# Authenticated
+POST  /logout                            # Logout (auth)
+```
+
 ### 🚚 **Surat Jalan**
 ```php
 GET   /suratjalan                         # Listing
@@ -712,6 +740,14 @@ gantt
 - [ ] 🤖 **API Integration** - RESTful API untuk third-party integration
 
 ## 📝 Changelog
+
+### 2025-09-15 (v2.6.0)
+- Auth/OTP:
+  - Aktifkan dan dokumentasikan alur reset password via OTP (`send-otp`, `verify-otp`, `reset-password-form`, `reset-password-otp`).
+  - Tambah referensi konfigurasi email OTP di README yang menunjuk ke `docs/EMAIL_CONFIGURATION.md`.
+- Dokumentasi:
+  - Tambah bagian "Auth & OTP" pada API Routes.
+  - Tambah bagian "Konfigurasi Email OTP" setelah Quick Start.
 
 ### 2025-09-12 (v2.5.0)
 - Purchase Order:
