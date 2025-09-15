@@ -43,6 +43,12 @@
 
 </div>
 
+#### Kenapa proyek ini berbeda?
+- ✅ Fokus pada alur bisnis nyata: PO → Surat Jalan → Invoice → Jatuh Tempo → Pembayaran
+- ✅ Terkoneksi end-to-end dengan master data (Customer, Produk, Kendaraan, Pengirim)
+- ✅ Siap produksi: performa cepat, aman, dan mudah dipelihara
+- ✅ Dokumentasi rapi + changelog aktif, memudahkan adopsi dan kolaborasi
+
 <table>
 <tr>
 <td width="50%" align="center">
@@ -104,11 +110,15 @@ Sistem manajemen operasional **end-to-end** untuk perusahaan distribusi, logisti
 - [🖼️ Preview](#️-preview)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [⚡ Quick Start](#-quick-start)
+- [🗄️ Konfigurasi Cepat MySQL](#️-konfigurasi-cepat-mysql)
+- [✉️ Email OTP - Quick Setup](#️-email-otp---quick-setup)
 - [🎨 UI/UX Highlights](#-uiux-highlights)
 - [📚 API Routes](#-api-routes)
 - [🔧 Troubleshooting](#-troubleshooting)
+- [🏷️ Standar Kualitas](#️-standar-kualitas)
 - [🗺️ Roadmap](#️-roadmap)
 - [🤝 Contributing](#-contributing)
+- [🆘 Dukungan & Kontak](#-dukungan--kontak)
 
 ## 🎯 Fitur Unggulan
 
@@ -499,6 +509,33 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
+## 🗄️ Konfigurasi Cepat MySQL
+
+Gunakan konfigurasi final MySQL (sesuai migrasi terbaru) agar aplikasi langsung berjalan:
+
+```ini
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=manajemen_perusahaan
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Langkah singkat:
+1. Buat database `manajemen_perusahaan` di phpMyAdmin.
+2. Update file `.env` sesuai blok di atas.
+3. Jalankan: `php artisan config:cache` lalu `php artisan migrate`.
+4. (Opsional) `php artisan db:seed` dan login menggunakan demo akun.
+
+## ✉️ Email OTP - Quick Setup
+
+Fitur OTP reset password sudah aktif. Agar email OTP terkirim:
+- Development: gunakan Mailtrap atau set `MAIL_MAILER=array` untuk testing cepat.
+- Production: gunakan SMTP (Gmail atau provider email lain) dan set `MAIL_MAILER=smtp`.
+
+Panduan lengkap: lihat `docs/EMAIL_CONFIGURATION.md`.
+
 ## 🎨 UI/UX Highlights
 
 <div align="center">
@@ -514,6 +551,15 @@ DB_PASSWORD=
 | 📱 **Responsive Design** | Mobile-first approach dengan hamburger menu |
 | 🎨 **Consistent Icons** | Icon system yang seragam dan scalable |
 | ⚡ **Quick Access** | One-click access ke pengaturan dari sidebar footer |
+
+## 🏷️ Standar Kualitas
+
+**Kaidah yang kami terapkan untuk menjaga kualitas proyek:**
+- **Konvensi Commit**: menggunakan Conventional Commits (lihat bagian Contributing).
+- **Gaya Kode**: mengikuti standar Laravel & PSR-12.
+- **Keamanan**: CSRF, XSS, SQL Injection prevention aktif by default.
+- **Kinerja**: query dioptimalkan, asset dibundel via Vite, lazy-loading gambar/komponen.
+- **Dokumentasi**: README + Changelog diperbarui ketika ada perubahan berarti.
 
 ## 📚 API Routes
 
