@@ -176,11 +176,12 @@
             <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                 <thead class="bg-gray-50 dark:bg-slate-700">
                     <tr>
-                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">No PO</th>
-                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Customer</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Tgl Invoice</th>
-                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Deadline</th>
+                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">No Invoice</th>
+                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Customer</th>
+                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">No PO</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Tagihan</th>
+                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Deadline</th>
                         <th class="py-1 px-1.5 text-center text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Status</th>
                         <th class="py-1 px-1.5 text-center text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -189,9 +190,11 @@
                     @forelse($jatuhTempos as $jt)
                         @php($overdue = ($jt->status_pembayaran !== 'Lunas') && (\Carbon\Carbon::parse($jt->tanggal_jatuh_tempo)->lt(\Carbon\Carbon::today())))
                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 {{ $overdue ? 'bg-red-50 dark:bg-red-900/20' : '' }}">
-                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $jt->no_po ?? $jt->no_invoice }}</td>
-                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ Str::limit($jt->customer, 15) }}</td>
                             <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $jt->tanggal_invoice->format('d/m/Y') }}</td>
+                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $jt->no_invoice ?: '-' }}</td>
+                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ Str::limit($jt->customer, 15) }}</td>
+                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $jt->no_po ?: '-' }}</td>
+                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">Rp {{ number_format($jt->jumlah_tagihan, 0, ',', '.') }}</td>
                             <td class="py-1 px-1.5 text-xs">
                                 @php($deadline = \Carbon\Carbon::parse($jt->tanggal_jatuh_tempo))
                                 @php($today = \Carbon\Carbon::today())
@@ -253,7 +256,6 @@
                                     @endif
                                 </div>
                             </td>
-                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">Rp {{ number_format($jt->jumlah_tagihan, 0, ',', '.') }}</td>
                             <td class="py-2 px-2 text-xs">
                                 <div class="flex items-center justify-center">
                                     <button type="button" 
@@ -284,13 +286,13 @@
                                 <x-table.action-buttons 
                                     onEdit="editJatuhTempo({{ $jt->id }})"
                                     deleteAction="{{ route('jatuh-tempo.destroy', ['jatuhTempo' => $jt->id, 'month' => request('month', $bulan ?? now()->format('n')), 'year' => request('year', $tahun ?? now()->format('Y')), 'status' => request('status')]) }}"
-                                    confirmText="Yakin ingin menghapus invoice {{ $jt->no_invoice }}?"
+                                    confirmText="Yakin ingin menghapus invoice {{ $jt->no_invoice ?: '-' }}?"
                                 />
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-4 px-6 text-center text-gray-500 dark:text-slate-400">Belum ada data jatuh tempo</td>
+                            <td colspan="8" class="py-4 px-6 text-center text-gray-500 dark:text-slate-400">Belum ada data jatuh tempo</td>
                         </tr>
                     @endforelse
                 </tbody>

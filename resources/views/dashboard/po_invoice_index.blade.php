@@ -1,8 +1,20 @@
 @extends('layouts.app')
 @section('title', 'Data Invoice')
+@section('body-classes', 'invoice-page')
 
 @section('content')
-<div class="min-h-screen bg-transparent py-6">
+@push('styles')
+<style>
+  /* Berlaku hanya jika body diberi class invoice-page */
+  body.invoice-page header.sticky {
+    height: 7rem !important; /* 80px: lebih lebar ke bawah */
+    min-height: 4rem !important;
+  }
+  /* Pastikan konten tidak ketutup saat tinggi header bertambah */
+  body.invoice-page .content-after-header { margin-top: 1rem; }
+</style>
+@endpush
+<div class="min-h-screen bg-transparent py-6 content-after-header">
     <div class="w-full px-4 sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl shadow-xl p-6 mb-8">
@@ -92,8 +104,8 @@
         <style>
             /* Lebar kolom default (desktop) */
             .col-date { width: 12%; }
-            .col-order { width: 8%; }
-            .col-customer { width: 16%; }
+            .col-order { width: 9%; min-width: 92px; }
+            .col-customer { width: 16%; min-width: 160px; }
             .col-nopo { width: 12%; }
             .col-product { width: 28%; }
             .col-qty { width: 8%; }
@@ -103,8 +115,8 @@
             /* Tablet */
             @media (max-width: 1024px) {
                 .col-date { width: 14%; }
-                .col-order { width: 8%; }
-                .col-customer { width: 15%; }
+                .col-order { width: 9%; min-width: 88px; }
+                .col-customer { width: 15%; min-width: 150px; }
                 .col-nopo { width: 10%; }
                 .col-product { width: auto; }
                 .col-qty { width: 8%; }
@@ -115,8 +127,8 @@
             /* Mobile landscape/portrait */
             @media (max-width: 768px) {
                 .col-date { width: 18%; }
-                .col-order { width: 10%; }
-                .col-customer { width: 18%; }
+                .col-order { width: 11%; min-width: 84px; }
+                .col-customer { width: 20%; min-width: 140px; }
                 .col-nopo { width: 10%; }
                 .col-product { width: auto; }
                 .col-qty { width: 8%; }
@@ -294,7 +306,7 @@
                                 <tr class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-slate-700 transition-all duration-200 cursor-pointer group" 
                                     data-id="{{ $rowIdForDblClick }}" 
                                     data-po-number="{{ (int)($noUrut ?? 0) }}"
-                                    ondblclick="openEditForm({{ $rowIdForDblClick }})">
+                                    ondblclick="openEditForm({{ $rowIdForDblClick }}, {{ (int)($noUrut ?? 0) }})">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-3">
                                             <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50 transition-colors">
@@ -547,8 +559,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const stateModeEl = document.getElementById('state-pilih-customer-mode');
     let pickedCustomerId = '';
     let pickedCustomerName = '';
-    // Seed nomor berikutnya (diisi saat 'Atur No Invoice')
+    // Seed nomor berikutnya (diisi saat 'Atur No Invoice' atau dihitung dari tabel saat load)
     let nextInvoiceSeed = null;
+    // Hitung seed awal dari data yang sudah ditampilkan (ambil nilai terbesar)
+    try {
+        const rows = tbody?.querySelectorAll('tr[data-po-number]') || [];
+        let maxNum = 0;
+        rows.forEach(r => {
+            const n = parseInt(r.getAttribute('data-po-number') || '0');
+            if (!isNaN(n) && n > maxNum) maxNum = n;
+        });
+        if (maxNum > 0) nextInvoiceSeed = maxNum;
+    } catch (e) { /* ignore */ }
 
     // URL endpoints
     const editUrlTemplate = "{{ route('po.edit', 0) }}"; // tetap dipakai untuk tombol Edit di kolom Aksi
@@ -558,15 +580,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteUrlTemplate = "{{ route('po.destroy', ['po' => 0, 'from' => 'invoice']) }}";
 
     // Function untuk membuka form edit PO
-    function openEditForm(id) {
+    function openEditForm(id, poNumber = null) {
         // Tampilkan notifikasi singkat sebelum pindah halaman
         showNotification('Membuka form input PO untuk melengkapi data invoice...', 'success');
         setTimeout(() => {
             // ARAHKAN KE FORM CREATE, bukan edit
             // Bawa informasi sumber + nomor urut agar ter-prefill dan nomor urut terjaga
-            let poNum = '';
-            const row = document.querySelector(`tr[data-id="${id}"]`);
-            if (row) poNum = row.getAttribute('data-po-number') || '';
+            let poNum = poNumber || '';
+            if (!poNum) {
+                const row = document.querySelector(`tr[data-id="${id}"]`);
+                if (row) poNum = row.getAttribute('data-po-number') || '';
+            }
             const params = new URLSearchParams();
             params.set('from', 'invoice');
             if (poNum) params.set('po_number', poNum);
@@ -716,7 +740,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             const payload = { customer_id: custId, customer: custName };
             if (typeof nextInvoiceSeed === 'number') {
-                payload.next_hint = nextInvoiceSeed + 1; // minta ke server gunakan seed+1 jika didukung
+                // Kirim hint = nomor terbesar saat ini, agar server menghasilkan next = hint+1
+                payload.next_hint = nextInvoiceSeed;
             }
             const res = await fetch(quickCreateUrl, {
                 method: 'POST',

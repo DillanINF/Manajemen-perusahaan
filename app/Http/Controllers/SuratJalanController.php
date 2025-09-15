@@ -25,6 +25,9 @@ class SuratJalanController extends Controller
         // Ambil filter bulan/tahun dari query string
         $month = (int) ($request->get('month') ?: now()->format('n'));
         $year  = (int) ($request->get('year')  ?: now()->format('Y'));
+        
+        // PERBAIKAN: Ambil filter po_number untuk menampilkan data spesifik per invoice
+        $poNumber = $request->get('po_number');
 
         // Daftar tahun dari database
         $dbYears = collect();
@@ -53,10 +56,11 @@ class SuratJalanController extends Controller
         // Daftar semua tahun untuk modal (dari 2020 sampai 2035)
         $allYears = range(2020, 2035);
 
-        // PERBAIKAN: Hilangkan filter yang terlalu ketat, tampilkan semua data PO
+        // PERBAIKAN: Filter data berdasarkan po_number jika ada
         $suratjalan = PO::with(['produkRel', 'kendaraanRel'])
             ->when($year, fn($q) => $q->whereRaw(DatabaseService::year('tanggal_po') . ' = ?', [$year]))
             ->when($month, fn($q) => $q->whereRaw(DatabaseService::month('tanggal_po') . ' = ?', [$month]))
+            ->when($poNumber, fn($q) => $q->where('po_number', (int)$poNumber))
             // Hanya tampilkan data PO yang benar-benar diinput (bukan placeholder dari Data Invoice)
             ->whereNotNull('no_po')
             ->where('no_po', '!=', '-')
@@ -66,10 +70,11 @@ class SuratJalanController extends Controller
         // Ambil semua produk untuk dropdown
         $produk = Produk::all();
 
-        // PERBAIKAN: Tampilkan semua data PO tanpa filter relasi yang ketat
+        // PERBAIKAN: Filter data PO berdasarkan po_number jika ada
         $pos = PO::with(['produkRel', 'kendaraanRel'])
             ->when($year, fn($q) => $q->whereRaw(DatabaseService::year('tanggal_po') . ' = ?', [$year]))
             ->when($month, fn($q) => $q->whereRaw(DatabaseService::month('tanggal_po') . ' = ?', [$month]))
+            ->when($poNumber, fn($q) => $q->where('po_number', (int)$poNumber))
             ->whereNotNull('no_po')
             ->where('no_po', '!=', '-')
             ->orderBy('created_at', 'desc')
@@ -92,6 +97,9 @@ class SuratJalanController extends Controller
         for ($m = 1; $m <= 12; $m++) {
             $monthData = DB::table('pos')
                 ->select(DB::raw('SUM(total) as total_sum, COUNT(*) as total_count'))
+                ->when($poNumber, fn($q) => $q->where('po_number', (int) $poNumber))
+                ->whereNotNull('no_po')
+                ->where('no_po', '!=', '-')
                 ->whereYear('tanggal_po', $year)
                 ->whereMonth('tanggal_po', $m)
                 ->first();
@@ -116,6 +124,7 @@ class SuratJalanController extends Controller
             'bulanNow'        => $month,
             'tahunNow'        => $year,
             'monthlyStats'    => $monthlyStats,
+            'poNumber'        => $poNumber, // PERBAIKAN: Kirim po_number ke view
         ]);
     }
 
@@ -131,7 +140,7 @@ class SuratJalanController extends Controller
             'no_po'         => 'required|string',
             'kendaraan'     => 'nullable|string',
             'no_polisi'     => 'required|string',
-            'qty'           => 'required|integer',
+            'qty'           => 'required|integer|min:1',
             'qty_jenis'     => 'required|string',
             'produk_id'     => 'required|exists:produks,id',
             'total'         => 'required|numeric',
@@ -139,6 +148,26 @@ class SuratJalanController extends Controller
             'alamat_2'      => 'nullable|string|max:500',
             'pengirim'      => 'nullable|string|max:255',
         ]);
+
+        // Validasi stok tidak boleh 0
+        $produk = Produk::with(['barangMasuks', 'barangKeluars'])->find($request->produk_id);
+        if ($produk) {
+            $stokMasuk = $produk->barangMasuks->sum('qty');
+            $stokKeluar = $produk->barangKeluars->sum('qty');
+            $stokTersedia = $stokMasuk - $stokKeluar;
+            
+            if ($stokTersedia <= 0) {
+                return redirect()->back()
+                    ->withErrors(['produk_id' => 'Produk "' . $produk->nama_produk . '" memiliki stok 0. Tidak dapat diinput ke Surat Jalan.'])
+                    ->withInput();
+            }
+            
+            if ($request->qty > $stokTersedia) {
+                return redirect()->back()
+                    ->withErrors(['qty' => 'Qty yang diminta (' . $request->qty . ') melebihi stok tersedia (' . $stokTersedia . ') untuk produk "' . $produk->nama_produk . '".'])
+                    ->withInput();
+            }
+        }
 
         $data = $request->only([
             'tanggal_po', 'customer', 'no_surat_jalan', 'no_po', 'kendaraan',
@@ -215,7 +244,7 @@ class SuratJalanController extends Controller
             'no_po'         => 'required|string',
             'kendaraan'     => 'nullable|string',
             'no_polisi'     => 'required|string',
-            'qty'           => 'required|integer',
+            'qty'           => 'required|integer|min:1',
             'qty_jenis'     => 'required|string',
             'produk_id'     => 'required|exists:produks,id',
             'total'         => 'required|numeric',
@@ -223,6 +252,26 @@ class SuratJalanController extends Controller
             'alamat_2'      => 'nullable|string|max:500',
             'pengirim'      => 'nullable|string|max:255',
         ]);
+
+        // Validasi stok tidak boleh 0
+        $produk = Produk::with(['barangMasuks', 'barangKeluars'])->find($request->produk_id);
+        if ($produk) {
+            $stokMasuk = $produk->barangMasuks->sum('qty');
+            $stokKeluar = $produk->barangKeluars->sum('qty');
+            $stokTersedia = $stokMasuk - $stokKeluar;
+            
+            if ($stokTersedia <= 0) {
+                return redirect()->back()
+                    ->withErrors(['produk_id' => 'Produk "' . $produk->nama_produk . '" memiliki stok 0. Tidak dapat diupdate di Surat Jalan.'])
+                    ->withInput();
+            }
+            
+            if ($request->qty > $stokTersedia) {
+                return redirect()->back()
+                    ->withErrors(['qty' => 'Qty yang diminta (' . $request->qty . ') melebihi stok tersedia (' . $stokTersedia . ') untuk produk "' . $produk->nama_produk . '".'])
+                    ->withInput();
+            }
+        }
 
         $suratJalan = PO::findOrFail($id);
         

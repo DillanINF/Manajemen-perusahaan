@@ -26,7 +26,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    
+    @stack('styles')
 </head>
 <body x-data="{ mobileSidebarOpen: false, desktopSidebarOpen: true }" x-init="
     (() => {
@@ -41,7 +41,7 @@
       };
       if (mq.addEventListener) { mq.addEventListener('change', onChange); } else { mq.addListener(onChange); }
     })();
-  " class="flex font-sans bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden">
+  " class="flex font-sans bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden @yield('body-classes')">
 
       <aside id="sidebar" class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen flex flex-col transform transition-transform duration-300 fixed inset-y-0 left-0 z-40 -translate-x-full md:fixed md:inset-y-0 md:left-0 overflow-hidden"
            x-bind:class="{
@@ -142,6 +142,11 @@
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l2 2 4-4M7 7h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z"/></svg>
                     <span>Data Invoice</span>
                 </a>
+                <a href="{{ route('sisa-data-po.index') }}"
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('sisa-data-po.*') ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Sisa Data PO</span>
+                </a>
                 {{-- Link Input PO di-nonaktifkan: akses form hanya lewat double click Data Invoice --}}
                 {{-- Link Data PO dihapus: akses Surat Jalan hanya dari alur Data Invoice --}}
                 {{-- Data Invoice --}}
@@ -225,11 +230,7 @@
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V7a2 2 0 00-2-2h-3V3H9v2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0H4"/></svg>
                     <span>Data Barang</span>
                 </a>
-                <a href="{{ route('kendaraan.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('kendaraan.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13l2-2 3-3h6l3 3 2 2v6h-2a2 2 0 01-4 0H9a2 2 0 01-4 0H3v-6z"/></svg>
-                    <span>Data Kendaraan</span>
-                </a>
+                <!-- Link Data Kendaraan dihapus sesuai permintaan -->
                 <a href="{{ route('pengirim.index') }}"
                    class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('pengirim.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18v4H3zM3 7l3 13h12l3-13"/></svg>

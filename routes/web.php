@@ -20,7 +20,8 @@ use App\Http\Controllers\{
     FinanceController,
     UserController,
     BarangMasukController,
-    BarangKeluarController
+    BarangKeluarController,
+    SisaDataPOController
 };
 
 /*
@@ -238,6 +239,20 @@ Route::middleware(['auth'])->group(function () {
         
         // Export PO di-nonaktifkan. Gunakan export di menu Surat Jalan.
         // Route::get('/export', [POExportController::class, 'exportToExcel'])->name('export');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sisa Data Purchase Order
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('sisa-data-po')->name('sisa-data-po.')->group(function () {
+        Route::get('/', [SisaDataPOController::class, 'index'])->name('index');
+        Route::get('/export', [SisaDataPOController::class, 'export'])->name('export');
+        Route::get('/detail', [SisaDataPOController::class, 'getDetail'])->name('detail');
+        Route::get('/{id}/edit', [SisaDataPOController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [SisaDataPOController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SisaDataPOController::class, 'destroy'])->name('destroy');
     });
 
     /*

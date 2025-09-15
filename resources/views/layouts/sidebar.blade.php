@@ -36,7 +36,15 @@
                 ]],
                 ['name' => 'Kendaraan', 'icon' => 'truck', 'route' => 'kendaraan.index'],
             ];
+            
+            // Purchase Order dropdown menu
+            $purchaseOrderMenus = [
+                ['name' => 'Data Invoice', 'route' => 'po.invoice.index'],
+                ['name' => 'Sisa Data Purchase Order', 'route' => 'sisa-data-po.index'],
+            ];
+            
             $currentRoute = Route::currentRouteName();
+            $isPOActive = in_array($currentRoute, ['po.invoice.index', 'sisa-data-po.index', 'po.index', 'po.create', 'po.edit']);
         @endphp
 
         @foreach ($menus as $menu)
@@ -75,6 +83,38 @@
                 @endif
             </a>
         @endforeach
+        
+        <!-- Purchase Order Dropdown -->
+        <div x-data="{ open: {{ $isPOActive ? 'true' : 'false' }} }" class="space-y-1">
+            <button @click="open = !open" 
+                    class="group w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 {{ $isPOActive ? 'bg-white/20 text-white shadow-lg' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
+                <div class="w-5 h-5 mr-4 flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <span class="font-medium text-sm flex-1 text-left">Purchase Order</span>
+                <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+                @if($isPOActive)
+                    <div class="w-2 h-2 bg-white rounded-full ml-2"></div>
+                @endif
+            </button>
+            
+            <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="ml-6 space-y-1">
+                @foreach($purchaseOrderMenus as $poMenu)
+                    @php
+                        $isSubActive = $currentRoute === $poMenu['route'];
+                    @endphp
+                    <a href="{{ route($poMenu['route']) }}"
+                       class="group flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ $isSubActive ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+                        <div class="w-2 h-2 rounded-full mr-3 {{ $isSubActive ? 'bg-white' : 'bg-white/30' }}"></div>
+                        <span class="text-sm">{{ $poMenu['name'] }}</span>
+                    </a>
+                @endforeach
+            </div>
+        </div>
     </nav>
 
     <!-- Footer -->

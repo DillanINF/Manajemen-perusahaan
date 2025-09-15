@@ -2,7 +2,6 @@
 @section('title', 'PURCHASE ORDER VENDOR')
 
 @push('styles')
-<!-- Optional modern font -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,22 +17,18 @@
 
 @section('content')
 <div class="min-h-screen bg-transparent py-4 sm:py-8">
-    <div class="max-w-6xl mx-auto px-2 sm:px-4">
-        <!-- Header Section -->
-        <div class="bg-white/95 dark:bg-white/5 backdrop-blur-sm border border-gray-200 dark:border-white/10 rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
-            <!-- Made header responsive with flex-col on mobile -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-6 sm:mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-gray-100">
-                        @if(isset($po) && request('from') !== 'invoice')
-                            <i class="fas fa-edit text-blue-600 mr-2"></i>Edit Purchase Order
-                        @else
-                            <i class="fas fa-plus-circle text-green-600 mr-2"></i>Input Purchase Order
-                        @endif
-                    </h1>
-                    <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">Kelola data purchase order dengan mudah</p>
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-plus text-white text-lg sm:text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Input Purchase Order</h1>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Kelola data purchase order dengan mudah</p>
+                    </div>
                 </div>
-                <!-- Added real-time clock -->
                 <div class="text-left sm:text-right">
                     <div class="text-sm text-gray-500 dark:text-gray-400" id="current-date">{{ date('d M Y') }}</div>
                     <div class="text-xs text-gray-400 dark:text-gray-500" id="current-time">{{ date('H:i') }} WIB</div>
@@ -41,11 +36,69 @@
             </div>
         </div>
 
-        @if(session('success'))
-            <div class="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400 dark:border-green-700 p-4 mb-4 sm:mb-6 rounded-r-lg">
-                <div class="flex">
-                    <i class="fas fa-check-circle text-green-400 dark:text-green-300 mr-3 mt-0.5"></i>
-                    <p class="text-green-800 dark:text-green-300 text-sm sm:text-base">{{ session('success') }}</p>
+        @if(session('success') && !session('split_messages'))
+            <div class="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400 dark:border-green-700 p-4 mb-4 sm:mb-6 rounded-r-lg shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-green-500 dark:text-green-300 text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-green-800 dark:text-green-300 font-semibold">{{ session('success') }}</p>
+                        <p class="text-green-700 dark:text-green-200 text-sm mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Data telah tersimpan dan siap untuk dicetak atau dilihat di Surat Jalan.
+                        </p>
+                    </div>
+                    <button type="button" class="flex-shrink-0 text-green-400 hover:text-green-600 dark:text-green-300 dark:hover:text-green-100 transition-colors" onclick="this.parentElement.parentElement.style.display='none'">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        @endif
+
+        @if(session('split_messages'))
+            <div class="bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-400 dark:border-orange-700 p-4 mb-4 sm:mb-6 rounded-r-lg shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-orange-500 dark:text-orange-300 text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h6 class="text-orange-800 dark:text-orange-300 font-semibold mb-2">⚠️ Stok tidak mencukupi!</h6>
+                        <p class="text-orange-700 dark:text-orange-200 text-sm mb-3">
+                            <strong>Beberapa produk memiliki stok terbatas, sehingga PO dibagi menjadi:</strong>
+                        </p>
+                        <div class="space-y-1 mb-3">
+                            @foreach(session('split_messages') as $message)
+                                <p class="text-orange-700 dark:text-orange-200 text-sm">• {{ $message }}</p>
+                            @endforeach
+                        </div>
+                        <div class="bg-orange-100 dark:bg-orange-800/30 rounded-lg p-3 mt-3">
+                            <p class="text-orange-800 dark:text-orange-200 text-xs">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Produk yang masuk ke Surat Jalan sudah otomatis tercatat sebagai Barang Keluar. Sisa yang belum terpenuhi dapat dilihat di menu 
+                                <a href="{{ route('sisa-data-po.index') }}" class="underline hover:no-underline font-medium">Sisa Data PO</a>.
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" class="flex-shrink-0 text-orange-400 hover:text-orange-600 dark:text-orange-300 dark:hover:text-orange-100 transition-colors" onclick="this.parentElement.parentElement.style.display='none'">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 dark:border-red-700 p-4 mb-4 sm:mb-6 rounded-r-lg shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500 dark:text-red-300 text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-red-800 dark:text-red-300 font-semibold">{{ session('error') }}</p>
+                    </div>
+                    <button type="button" class="flex-shrink-0 text-red-400 hover:text-red-600 dark:text-red-300 dark:hover:text-red-100 transition-colors" onclick="this.parentElement.parentElement.style.display='none'">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
                 </div>
             </div>
         @endif
@@ -66,7 +119,6 @@
             </div>
         @endif
 
-        <!-- Action Bar: Back + Lihat Data PO -->
         <div class="mb-4">
             <div class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-gradient-to-r from-white to-blue-50/60 dark:from-slate-900/60 dark:to-slate-800/60 shadow-sm p-3 sm:p-4">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -80,7 +132,12 @@
                             <i class="fa-solid fa-arrow-left"></i>
                             Kembali ke Data Invoice
                         </a>
-                        <a id="btn-to-sj" href="{{ route('suratjalan.index', ['month' => now()->format('n'), 'year' => now()->format('Y')]) }}"
+                        <a href="{{ route('sisa-data-po.index') }}"
+                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+                            <i class="fa-solid fa-exclamation-triangle text-white"></i>
+                            Sisa Data PO
+                        </a>
+                        <a id="btn-to-sj" href="{{ route('suratjalan.index', ['month' => now()->format('n'), 'year' => now()->format('Y'), 'po_number' => request('po_number')]) }}"
                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400">
                             <i class="fa-solid fa-table-list text-white"></i>
                             Lihat Data PO (Surat Jalan)
@@ -90,19 +147,38 @@
             </div>
         </div>
 
-        <form id="po-form" action="@if(isset($po) && request('from') !== 'invoice') {{ route('po.update', $po->id) }} @else {{ route('po.store') }} @endif" method="POST" class="font-sans font-inter">
-            @csrf
-            @if(isset($po) && request('from') !== 'invoice') @method('PUT') @endif
-            <!-- Nomor Urut Data Invoice (bukan No Invoice). Diisi dari query po_number saat datang dari Data Invoice -->
-            <input type="hidden" name="po_number" value="{{ request('po_number') ?? old('po_number', $po->po_number ?? '') }}">
-            <!-- Sumber navigasi, agar setelah simpan bisa kembali ke Data Invoice -->
-            <input type="hidden" name="from" value="{{ request('from') }}">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 lg:p-8">
+            <!-- Header dengan No Urut Invoice -->
+            @if(request('from') === 'invoice' && (request('po_number') || (isset($po) && $po->po_number)))
+            <div class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
+                        <i class="fas fa-hashtag text-orange-600 dark:text-orange-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Form Input PO</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            No Invoice: <span class="font-bold text-orange-600 dark:text-orange-400">{{ request('po_number') ?? ($po->po_number ?? '-') }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endif
 
-            <!-- Unified form layout without separate sections -->
-            <div class="bg-white/95 dark:bg-white/5 backdrop-blur-sm border border-gray-200 dark:border-white/10 rounded-xl shadow-lg p-4 sm:p-6">
-                <!-- Made grid responsive: 1 col on mobile, 2 on tablet, 3 on desktop -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <!-- Customer (non-editable, auto-filled from Data Invoice) -->
+            <form method="POST" action="{{ isset($po) && request('from') !== 'invoice' ? route('po.update', $po->id) : route('po.store') }}" class="space-y-6">
+                @csrf
+                @if(isset($po) && request('from') !== 'invoice')
+                    @method('PUT')
+                @endif
+                
+                <!-- Hidden field untuk po_number agar tetap konsisten -->
+                @if(request('po_number'))
+                    <input type="hidden" name="po_number" value="{{ request('po_number') }}">
+                @elseif(isset($po) && $po->po_number)
+                    <input type="hidden" name="po_number" value="{{ $po->po_number }}">
+                @endif
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <i class="fas fa-building text-blue-500 mr-1"></i>Customer
@@ -110,28 +186,11 @@
                         <div class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-100 dark:bg-gray-800/70">
                             {{ old('customer_name', $po->customer ?? '-') }}
                         </div>
-                        <!-- Hidden input to keep backend validation and JS compatibility -->
-                        @php
-                            // Hitung prefill SJ parts di sini (blok Customer) karena $noSuratJalanParts belum terdefinisi di bawah
-                            $prefSJParts = [];
-                            if (isset($po) && $po->no_surat_jalan && trim($po->no_surat_jalan) !== '-') {
-                                $prefSJParts = explode('/', $po->no_surat_jalan);
-                            } elseif (request('from') === 'invoice' && isset($sjCodeParts) && is_array($sjCodeParts)) {
-                                $prefSJParts = $sjCodeParts;
-                            }
-                            $sjNomor = isset($prefSJParts[0]) && trim((string)$prefSJParts[0]) !== '-' ? $prefSJParts[0] : '';
-                            $sjPt    = isset($prefSJParts[1]) && trim((string)$prefSJParts[1]) !== '-' ? $prefSJParts[1] : '';
-                            $sjTahun = isset($prefSJParts[2]) && trim((string)$prefSJParts[2]) !== '-' ? $prefSJParts[2] : '';
-                        @endphp
                         <input type="hidden" name="customer_id" id="customer"
                                value="{{ old('customer_id', $po->customer_id ?? '') }}"
-                               data-sj-nomor="{{ $sjNomor }}"
-                               data-sj-pt="{{ $sjPt }}"
-                               data-sj-tahun="{{ $sjTahun }}"
                                required>
                     </div>
 
-                    <!-- No PO -->
                     <div class="space-y-2">
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <i class="fas fa-file-invoice text-green-500 mr-1"></i>No PO
@@ -158,7 +217,6 @@
                         </div>
                     </div>
 
-                    <!-- No Invoice section removed: nomor diatur dari Data Invoice -->
 
                     <!-- No Surat Jalan -->
                     <!-- Made no surat jalan responsive with better mobile layout -->
@@ -181,11 +239,11 @@
                                 }
                             @endphp
                             <div class="flex gap-2 items-center w-full">
-                                <input type="text" name="no_surat_jalan_nomor" id="delivery_nomor" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" placeholder="Nomor" value="{{ old('no_surat_jalan_nomor', $noSuratJalanParts[0] ?? '') }}" required>
+                                <input type="text" name="no_surat_jalan_nomor" id="delivery_nomor" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="Nomor" value="{{ old('no_surat_jalan_nomor', $noSuratJalanParts[0] ?? '') }}" required readonly>
                                 <span class="text-gray-400 font-bold text-sm sm:text-base">/</span>
-                                <input type="text" name="no_surat_jalan_pt" id="delivery_pt" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[2] basis-1/2 min-w-0 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" placeholder="PT" value="{{ old('no_surat_jalan_pt', $noSuratJalanParts[1] ?? '') }}" required>
+                                <input type="text" name="no_surat_jalan_pt" id="delivery_pt" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[2] basis-1/2 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="PT" value="{{ old('no_surat_jalan_pt', $noSuratJalanParts[1] ?? '') }}" required readonly>
                                 <span class="text-gray-400 font-bold text-sm sm:text-base">/</span>
-                                <input type="number" name="no_surat_jalan_tahun" id="delivery_tahun" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" placeholder="Tahun" value="{{ old('no_surat_jalan_tahun', $noSuratJalanParts[2] ?? '') }}" required>
+                                <input type="number" name="no_surat_jalan_tahun" id="delivery_tahun" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="Tahun" value="{{ old('no_surat_jalan_tahun', $noSuratJalanParts[2] ?? '') }}" required readonly>
                             </div>
                         </div>
                     </div>
@@ -198,7 +256,7 @@
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>Alamat 1 <span class="text-red-500"></span>
                         </label>
-                        <input type="text" name="address_1" id="address_1" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" value="{{ old('address_1', $po->alamat_1 ?? '') }}" required placeholder="Masukkan alamat lengkap">
+                        <input type="text" name="address_1" id="address_1" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800" value="{{ old('address_1', $po->alamat_1 ?? '') }}" required placeholder="Masukkan alamat lengkap" readonly>
                     </div>
 
                     <!-- Made alamat_2 editable, not readonly -->
@@ -207,7 +265,7 @@
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>Alamat 2
                         </label>
-                        <input type="text" name="address_2" id="address_2" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" value="{{ old('address_2', $po->alamat_2 ?? '') }}" placeholder="Alamat tambahan (opsional)">
+                        <input type="text" name="address_2" id="address_2" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800" value="{{ old('address_2', $po->alamat_2 ?? '') }}" placeholder="Alamat tambahan (opsional)" readonly>
                     </div>
 
                     <!-- Pengiriman: Pengirim + Kendaraan + No Polisi (digabung dalam satu baris) -->
@@ -221,22 +279,15 @@
                                 <select name="pengirim" id="pengirim" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-500/30 transition-all duration-200">
                                     <option value="">-- Pilih Pengirim --</option>
                                     @foreach($pengirims as $p)
-                                        <option value="{{ $p->nama }}" @selected(old('pengirim', $po->pengirim ?? '') == $p->nama)>
+                                        <option value="{{ $p->nama }}" data-kendaraan="{{ $p->kendaraan ?? '' }}" data-nopol="{{ $p->no_polisi ?? '' }}" @selected(old('pengirim', $po->pengirim ?? '') == $p->nama)>
                                             {{ $p->nama }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                            <!-- Kendaraan -->
+                            <!-- Kendaraan (readonly seperti No Polisi) -->
                             <div>
-                                <select name="kendaraan" id="kendaraan" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-500/30 transition-all duration-200">
-                                    <option value="">-- Pilih Kendaraan --</option>
-                                    @foreach($kendaraans as $k)
-                                        <option value="{{ $k->nama }}" data-nopol="{{ $k->no_polisi }}" @selected(old('kendaraan', $po->kendaraan ?? '') == $k->nama)>
-                                            {{ $k->nama }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" name="kendaraan" id="kendaraan" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-100" value="{{ old('kendaraan', $po->kendaraan ?? '') }}" readonly>
                             </div>
                             <!-- No Polisi (readonly) -->
                             <div>
@@ -268,7 +319,19 @@
                                 <select name="items[0][produk_id]" class="produk-select w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-500/30" required>
                                     <option value="">-- Pilih Produk --</option>
                                     @foreach($produks as $p)
-                                        <option value="{{ $p->id }}" data-harga-pcs="{{ $p->harga_pcs ?? 0 }}" data-harga-set="{{ $p->harga_set ?? 0 }}">{{ $p->nama_produk }}</option>
+                                        @php
+                                            $stokMasuk = \DB::table('barang_masuks')->where('produk_id', $p->id)->sum('qty') ?? 0;
+                                            $stokKeluar = \DB::table('barang_keluars')->where('produk_id', $p->id)->sum('qty') ?? 0;
+                                            $stokTersedia = $stokMasuk - $stokKeluar;
+                                        @endphp
+                                        <option value="{{ $p->id }}" 
+                                                data-harga-pcs="{{ $p->harga_pcs ?? 0 }}" 
+                                                data-harga-set="{{ $p->harga_set ?? 0 }}" 
+                                                data-harga="{{ $p->harga ?? 0 }}" 
+                                                data-satuan="{{ strtoupper($p->satuan ?? 'PCS') }}"
+                                                data-stok="{{ $stokTersedia }}">
+                                            {{ $p->nama_produk }} (Stok: {{ $stokTersedia }})
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -277,26 +340,24 @@
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Quantity</label>
                                 <div class="flex w-full min-w-0">
                                     <input type="number" name="items[0][qty]" class="item-qty border-2 border-gray-200 dark:border-gray-700 rounded-l-lg px-3 py-2 text-sm flex-auto min-w-0 bg-white dark:bg-gray-800/80 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-500/30" min="1" required>
-                                    <select name="items[0][qty_jenis]" class="item-qty-jenis border-2 border-l-0 border-gray-200 dark:border-gray-700 rounded-r-lg px-2 pr-8 py-2 text-[10px] w-[68px] shrink-0 bg-white dark:bg-gray-800/80 text-gray-800 dark:text-gray-100 focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-500/30" required>
-                                        <option value="PCS">PCS</option>
-                                        <option value="SET">SET</option>
-                                    </select>
+                                    <input type="text" class="item-qty-jenis-display border-2 border-l-0 border-gray-200 dark:border-gray-700 rounded-r-lg px-2 py-2 text-[10px] w-[68px] shrink-0 bg-gray-50 dark:bg-gray-800/80 text-gray-800 dark:text-gray-100" value="PCS" readonly>
+                                    <input type="hidden" name="items[0][qty_jenis]" class="item-qty-jenis-hidden" value="PCS">
                                 </div>
                             </div>
                             <!-- Harga -->
                             <div class="space-y-2 md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Harga</label>
-                                <input type="number" name="items[0][harga]" class="item-harga w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800/80 text-gray-800 dark:text-gray-100" readonly>
+                                <input type="number" name="items[0][harga]" class="item-harga w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-500/30" min="0" step="0.01" required>
                             </div>
                             <!-- Total -->
-                            <div class="space-y-2 md:col-span-3">
+                            <div class="space-y-2 md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Total</label>
-                                <input type="number" name="items[0][total]" class="item-total w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800/80 text-gray-800 dark:text-gray-100 font-bold" readonly>
+                                <input type="number" name="items[0][total]" class="item-total w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100" readonly>
                             </div>
                             <!-- Remove Button -->
-                            <div class="md:col-span-1 flex items-end justify-end">
-                                <button type="button" title="Hapus item" class="remove-item-btn inline-flex items-center justify-center bg-red-500/90 hover:bg-red-500 text-white w-9 h-9 rounded-full shadow-sm transition -mr-2 sm:-mr-1">
-                                    <i class="fa-solid fa-trash text-white text-lg leading-none"></i>
+                            <div class="md:col-span-1">
+                                <button type="button" class="remove-item-btn w-full px-3 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
@@ -321,18 +382,10 @@
                         <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch">
                             <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg transition-all duration-200 flex items-center justify-center shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-200">
                                 <i class="fas fa-save mr-2"></i>
-                                @isset($po) Update PO @else Simpan PO @endisset
+                                Simpan
                             </button>
 
-                            @isset($po)
-                                <!-- Gunakan komponen aksi seragam untuk Hapus -->
-                                <div class="w-full sm:w-auto">
-                                    <x-table.action-buttons 
-                                        :onEdit="null"
-                                        deleteAction="{{ route('po.destroy', $po->id) }}"
-                                        confirmText="Yakin ingin menghapus PO ini?" />
-                                </div>
-                            @endisset
+                            <!-- Tombol hapus dihilangkan sesuai permintaan -->
                         </div>
                     </div>
                 </div>
@@ -359,7 +412,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClock();
     setInterval(updateClock, 1000);
 
-    const kendaraanSelect = document.getElementById('kendaraan');
+    // Fungsi untuk cek stok (tanpa notifikasi)
+    function checkStokAndShowNotification(row) {
+        // Fungsi ini sudah tidak menampilkan notifikasi lagi
+        // Hanya untuk kompatibilitas dengan kode yang sudah ada
+        return;
+    }
+
+    const kendaraanInput = document.getElementById('kendaraan');
     const noPolisiInput = document.getElementById('no_polisi');
 
     const customerSelect = document.getElementById('customer');
@@ -378,7 +438,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const invoiceBulanInput = document.getElementById('invoice_tanggal');
     const tanggalPOInput = document.querySelector('input[name="tanggal_po"]');
 
-    // Batasi input hanya angka untuk field Nomor (invoice & surat jalan)
+    // Prefill No Surat Jalan dari data customer (code_number) jika kosong
+    function prefillSJFromCustomer() {
+        try {
+            const custEl = customerSelect; // hidden input with data-sj-*
+            if (!custEl) return;
+            const sjNomor = custEl.dataset.sjNomor || '';
+            const sjPt    = custEl.dataset.sjPt || '';
+            const sjTahun = custEl.dataset.sjTahun || '';
+            if (deliveryNomorInput && !deliveryNomorInput.value && sjNomor) deliveryNomorInput.value = sjNomor;
+            if (deliveryPtInput && !deliveryPtInput.value && sjPt) deliveryPtInput.value = sjPt;
+            if (deliveryTahunInput && !deliveryTahunInput.value && sjTahun) deliveryTahunInput.value = sjTahun;
+        } catch (e) { /* ignore */ }
+    }
+    // Jalankan segera setelah load, sebelum fallback dari tanggal PO
+    prefillSJFromCustomer();
+
+    // Batasi input hanya angka untuk field yang memang numerik
     function enforceDigitOnly(el) {
         if (!el) return;
         el.addEventListener('input', () => {
@@ -387,8 +463,28 @@ document.addEventListener('DOMContentLoaded', () => {
         el.setAttribute('inputmode', 'numeric');
         el.setAttribute('pattern', '[0-9]*');
     }
-    enforceDigitOnly(deliveryNomorInput);
-    enforceDigitOnly(invoiceNomorInput);
+    // Surat Jalan: Nomor dan PT boleh huruf/angka, JANGAN dibatasi angka
+    if (deliveryNomorInput) { deliveryNomorInput.removeAttribute('pattern'); deliveryNomorInput.removeAttribute('inputmode'); }
+    if (deliveryPtInput)    { deliveryPtInput.removeAttribute('pattern'); deliveryPtInput.removeAttribute('inputmode'); }
+    // Tahun wajib angka
+    enforceDigitOnly(deliveryTahunInput);
+    // Invoice: jika ada field numerik spesifik, batasi sesuai kebutuhan (biarkan nomor invoice bebas bila bukan numeric saja)
+    if (invoiceTahunInput) enforceDigitOnly(invoiceTahunInput);
+
+    // Autofill Kendaraan & No Polisi berdasarkan pilihan Pengirim (field kendaraan sekarang readonly input)
+    function fillFromPengirim() {
+        if (!pengirimSelect) return;
+        const opt = pengirimSelect.options[pengirimSelect.selectedIndex];
+        const kendaraan = opt?.dataset?.kendaraan || '';
+        const nopol = opt?.dataset?.nopol || '';
+        if (kendaraanInput) kendaraanInput.value = kendaraan;
+        if (noPolisiInput) noPolisiInput.value = nopol;
+    }
+    if (pengirimSelect) {
+        pengirimSelect.addEventListener('change', fillFromPengirim);
+        // Trigger sekali saat load jika sudah ada pilihan
+        setTimeout(fillFromPengirim, 0);
+    }
 
     function addAutoFillEffect(element) {
         if (element && element.value) {
@@ -426,21 +522,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const addItemBtn = document.getElementById('add-item-btn');
     let itemIndex = itemsContainer ? itemsContainer.querySelectorAll('.item-row').length : 0;
 
-    // Per-row calculation
+    // Per-row calculation menyesuaikan qty_jenis dari produk (tanpa dropdown)
     function calculateRowTotal(row) {
         const produkSelect = row.querySelector('.produk-select');
         const qtyInput = row.querySelector('.item-qty');
-        const qtyJenisSelect = row.querySelector('.item-qty-jenis');
+        const qtyJenisHidden = row.querySelector('.item-qty-jenis-hidden');
+        const qtyJenisDisplay = row.querySelector('.item-qty-jenis-display');
         const hargaInput = row.querySelector('.item-harga');
         const totalInput = row.querySelector('.item-total');
 
-        if (!produkSelect || !qtyInput || !qtyJenisSelect || !hargaInput || !totalInput) return;
+        if (!produkSelect || !qtyInput || !qtyJenisHidden || !hargaInput || !totalInput) return;
 
         const selected = produkSelect.options[produkSelect.selectedIndex];
-        const qtyJenis = qtyJenisSelect.value;
+        // Set qty_jenis berdasarkan satuan produk (default PCS)
+        let qtyJenis = 'PCS';
+        // Aturan sederhana & tegas: jika harga_set > 0 maka SET, selain itu PCS
+        const hSet = parseInt(selected?.dataset?.hargaSet || '0');
+        qtyJenis = hSet > 0 ? 'SET' : 'PCS';
+        qtyJenisHidden.value = qtyJenis;
+        if (qtyJenisDisplay) qtyJenisDisplay.value = qtyJenis;
+
         let harga = 0;
         if (selected && selected.value) {
-            harga = qtyJenis === 'PCS' ? parseInt(selected.dataset.hargaPcs || 0) : parseInt(selected.dataset.hargaSet || 0);
+            const hargaAny = parseInt(selected.dataset.harga || 0);
+            if (qtyJenis === 'PCS') {
+                const hPcs = parseInt(selected.dataset.hargaPcs || 0);
+                harga = hPcs > 0 ? hPcs : hargaAny;
+            } else {
+                const hSet = parseInt(selected.dataset.hargaSet || 0);
+                harga = hSet > 0 ? hSet : hargaAny;
+            }
         }
         const qty = parseInt(qtyInput.value || 0);
         const total = (harga || 0) * (qty || 0);
@@ -473,12 +584,12 @@ document.addEventListener('DOMContentLoaded', () => {
         rows.forEach((row, idx) => {
             const sel = row.querySelector('.produk-select');
             const qty = row.querySelector('.item-qty');
-            const jenis = row.querySelector('.item-qty-jenis');
+            const jenisHidden = row.querySelector('.item-qty-jenis-hidden');
             const harga = row.querySelector('.item-harga');
             const total = row.querySelector('.item-total');
             if (sel) sel.name = `items[${idx}][produk_id]`;
             if (qty) qty.name = `items[${idx}][qty]`;
-            if (jenis) jenis.name = `items[${idx}][qty_jenis]`;
+            if (jenisHidden) jenisHidden.name = `items[${idx}][qty_jenis]`;
             if (harga) harga.name = `items[${idx}][harga]`;
             if (total) total.name = `items[${idx}][total]`;
         });
@@ -491,11 +602,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function attachRowEvents(row) {
         const produkSelect = row.querySelector('.produk-select');
         const qtyInput = row.querySelector('.item-qty');
-        const qtyJenisSelect = row.querySelector('.item-qty-jenis');
         const removeBtn = row.querySelector('.remove-item-btn');
         if (produkSelect) produkSelect.addEventListener('change', () => { calculateRowTotal(row); updateGrandTotal(); });
         if (qtyInput) qtyInput.addEventListener('input', () => { calculateRowTotal(row); updateGrandTotal(); });
-        if (qtyJenisSelect) qtyJenisSelect.addEventListener('change', () => { calculateRowTotal(row); updateGrandTotal(); });
         if (removeBtn) removeBtn.addEventListener('click', () => {
             row.remove();
             renumberRows();
@@ -623,16 +732,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Attach to initial row
-    document.querySelectorAll('.item-row').forEach(row => attachRowEvents(row));
-    renumberRows();
-    kendaraanSelect.addEventListener('change', updateNoPolisi);
-    if (customerSelect && customerSelect.tagName === 'SELECT') {
-        customerSelect.addEventListener('change', updateCustomerAddresses);
+    // Fungsi untuk attach event ke row item
+    function attachRowEvents(row) {
+        const produkSelect = row.querySelector('.produk-select');
+        const qtyInput = row.querySelector('.item-qty');
+        const hargaInput = row.querySelector('.item-harga');
+        const removeBtn = row.querySelector('.remove-item-btn');
+
+        if (produkSelect) {
+            produkSelect.addEventListener('change', () => {
+                calculateRowTotal(row);
+                updateGrandTotal();
+                checkStokAndShowNotification(row);
+            });
+        }
+        
+        if (qtyInput) {
+            qtyInput.addEventListener('input', () => {
+                calculateRowTotal(row);
+                updateGrandTotal();
+                checkStokAndShowNotification(row);
+            });
+        }
+        
+        if (hargaInput) {
+            hargaInput.addEventListener('input', () => {
+                calculateRowTotal(row);
+                updateGrandTotal();
+            });
+        }
+        
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                row.remove();
+                renumberRows();
+                updateGrandTotal();
+            });
+        }
     }
 
-    // Initialize on page load
-    document.querySelectorAll('.item-row').forEach(row => calculateRowTotal(row));
+    // Attach to initial row dan hitung awal
+    document.querySelectorAll('.item-row').forEach(row => { 
+        attachRowEvents(row); 
+        calculateRowTotal(row);
+        checkStokAndShowNotification(row);
+    });
+    renumberRows();
     updateGrandTotal();
     updateNoPolisi();
     // Prefill No Surat Jalan jika #customer bukan SELECT
@@ -672,7 +817,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const month = (d.getMonth() + 1);
         const year = d.getFullYear();
         const base = "{{ route('suratjalan.index') }}";
-        btnSJ.href = base + `?month=${month}&year=${year}`;
+        const poNumber = "{{ request('po_number') }}";
+        btnSJ.href = base + `?month=${month}&year=${year}${poNumber ? '&po_number=' + poNumber : ''}`;
     }
     updateSuratJalanLink();
     tanggalInput?.addEventListener('change', updateSuratJalanLink);

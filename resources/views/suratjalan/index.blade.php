@@ -17,6 +17,8 @@
                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-200">Kelola Data PO dengan mudah</p>
                 </div>
             </div>
+            <!-- Tombol Back ke Form Input PO -->
+           
             </div>
             
             <!-- Export Controls -->
@@ -25,6 +27,7 @@
                     <span id="selectedCount" class="font-medium text-xs">0 dipilih</span>
                 </div>
                 <!-- Export Surat Jalan -->
+                
                 <button id="exportBtn" onclick="exportSelected('surat_jalan')"
                         class="w-full sm:w-auto h-9 px-4 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors text-sm inline-flex items-center justify-center leading-none shadow-sm">
                     <span class="mr-2 inline-flex items-center px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-bold tracking-wide">SJ</span>
@@ -70,7 +73,14 @@
 
             <!-- Header ringkasan + filter tahun + kembali -->
             <div class="flex items-center justify-between mb-2">
-                <h2 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-slate-100">Ringkasan Total PO per Bulan</h2>
+                <h2 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-slate-100">
+                    Ringkasan Total PO per Bulan
+                    @if($poNumber)
+                        <span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full dark:bg-blue-900 dark:text-blue-200">
+                            No Invoice: {{ $poNumber }}
+                        </span>
+                    @endif
+                </h2>
                 <div class="flex items-center gap-2">
                     <!-- Link Pilih Tahun -->
                     <button type="button" onclick="openYearModal()" 
@@ -80,12 +90,19 @@
                         </svg>
                         Pilih Tahun ({{ $tahunTerpilihLocal }})
                     </button>
-                    <!-- Back to Data Invoice (di samping tombol tahun) -->
-                    <a href="{{ route('po.invoice.index') }}" 
-                       class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-600 dark:hover:bg-slate-700">
-                        <i class="fa-solid fa-arrow-left mr-1.5"></i>
-                        Kembali ke Data Invoice
-                    </a>
+                    <!-- Navigation buttons (di samping tombol tahun) -->
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('po.invoice.index') }}" 
+                           class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-600 dark:hover:bg-slate-700">
+                            <i class="fa-solid fa-arrow-left mr-1.5"></i>
+                            Kembali ke Data Invoice
+                        </a>
+                        <a href="{{ route('po.create', ['from' => 'invoice', 'po_number' => request('po_number') ?? ($poNumber ?? null)]) }}" 
+                           class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-purple-700 bg-white border border-purple-300 rounded-full hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:bg-slate-800 dark:text-purple-200 dark:border-purple-600 dark:hover:bg-slate-700">
+                            <i class="fa-solid fa-plus mr-1.5"></i>
+                            Kembali ke Form Input PO
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -94,7 +111,7 @@
                 @for($m=1;$m<=12;$m++)
                     @php($stat = isset($monthlyStats) ? ($monthlyStats[$m] ?? null) : null)
                     @php($isActive = ((int)($bulanNow ?? now()->format('n'))) === $m)
-                    <a href="{{ route('suratjalan.index', ['month' => $m, 'year' => $tahunTerpilihLocal]) }}" class="block focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
+                    <a href="{{ route('suratjalan.index', ['month' => $m, 'year' => $tahunTerpilihLocal, 'po_number' => $poNumber]) }}" class="block focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
                         <div class="p-2 rounded-lg border text-xs sm:text-sm transition-colors hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700/40
                                     {{ $isActive ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-600' : 'bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700' }}">
                             <div class="flex items-center justify-between">
@@ -156,15 +173,6 @@
                                 <span class="sm:hidden">No SJ</span>
                             </div>
                         </th>
-                        <th class="py-1.5 px-1.5 text-left text-xs font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700 hidden sm:table-cell">
-                            <div class="flex items-center space-x-1">
-                                <svg class="w-3 h-3 text-gray-500 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                <span class="hidden sm:inline">Invoice</span>
-                                <span class="sm:hidden">Inv</span>
-                            </div>
-                        </th>
                         <th class="py-1.5 px-1.5 text-center text-xs font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight w-12">
                             <span>Aksi</span>
                         </th>
@@ -197,11 +205,6 @@
                                 {{ $pos->no_surat_jalan }}
                             </span>
                         </td>
-                        <td class="py-1 px-1.5 whitespace-normal text-xs text-gray-900 dark:text-slate-200 border-r border-gray-200 dark:border-slate-700 hidden sm:table-cell">
-                            <span class="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-slate-600 dark:text-slate-200">
-                                {{ $pos->no_invoice ?? '-' }}
-                            </span>
-                        </td>
                         <td class="py-1 px-1.5 text-xs font-medium text-center">
                             <x-table.action-buttons 
                                 onEdit="window.editSuratJalan({{ $pos->id }}, {!! json_encode($pos->tanggal_po) !!}, {!! json_encode($pos->customer) !!}, {!! json_encode($pos->alamat_1) !!}, {!! json_encode($pos->alamat_2) !!}, {!! json_encode($pos->no_surat_jalan) !!}, {!! json_encode($pos->no_po) !!}, {!! json_encode($pos->kendaraan) !!}, {!! json_encode($pos->no_polisi) !!}, {{ $pos->qty ?? 'null' }}, {!! json_encode($pos->qty_jenis) !!}, {!! json_encode($pos->produk_id) !!}, {{ $pos->total ?? 'null' }}, {!! json_encode($pos->pengirim) !!})"
@@ -213,7 +216,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="py-6 text-center">
+                        <td colspan="6" class="py-6 text-center">
                             <div class="flex flex-col items-center justify-center space-y-2">
                                 <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -255,11 +258,17 @@
         <div class="mt-3">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-gray-900">Edit Data PO</h3>
-                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('po.create', ['from' => 'invoice', 'po_number' => request('po_number') ?? ($poNumber ?? null)]) }}" class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                        <i class="fa-solid fa-arrow-left mr-1"></i>
+                        Form Input PO
+                    </a>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
             
             <form id="editForm" method="POST">

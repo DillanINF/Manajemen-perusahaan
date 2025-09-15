@@ -18,14 +18,20 @@ class JatuhTempoController extends Controller
         $tahun = (int) request()->get('year', (int) Carbon::now()->format('Y'));
         $statusPembayaran = request()->get('status'); // null|Belum Bayar|Lunas
 
-        $query = JatuhTempo::query();
-        $query->whereYear('tanggal_invoice', $tahun)
-              ->whereMonth('tanggal_invoice', $bulan);
+        $query = JatuhTempo::query()
+            ->leftJoin('invoices', function($join) {
+                // Kaitan utama via No PO agar mengambil No Invoice dari Data Invoice
+                $join->on('invoices.no_po', '=', 'jatuh_tempos.no_po');
+            })
+            // Ambil semua kolom JT + override no_invoice dengan yang dari Data Invoice bila tersedia
+            ->select('jatuh_tempos.*', \DB::raw("COALESCE(NULLIF(invoices.no_invoice, ''), jatuh_tempos.no_invoice) as no_invoice"));
+        $query->whereYear('jatuh_tempos.tanggal_invoice', $tahun)
+              ->whereMonth('jatuh_tempos.tanggal_invoice', $bulan);
         if ($statusPembayaran) {
             $query->where('status_pembayaran', $statusPembayaran);
         }
 
-        $jatuhTempos = $query->orderBy('tanggal_jatuh_tempo', 'asc')->get();
+        $jatuhTempos = $query->orderBy('jatuh_tempos.tanggal_jatuh_tempo', 'asc')->get();
 
         // Monthly stats like Surat Jalan (for the selected year)
         $statsBuilder = JatuhTempo::query()->whereYear('tanggal_invoice', $tahun);
