@@ -29,6 +29,7 @@ class PO extends Model
         'total',
         'alamat_1',
         'alamat_2',
+        'status_approval',
     ];
 
     protected $casts = [
@@ -38,6 +39,7 @@ class PO extends Model
         'qty_jenis'  => 'string',   // satuan (PCS, KG, DLL)
         'harga'      => 'decimal:2',
         'total'      => 'decimal:2',
+        'status_approval' => 'string',
     ];
 
     /**

@@ -145,10 +145,19 @@
                     </div>
                     <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                         @php
-                            // Hitung jumlah invoice unik berdasarkan nomor urut (atau po_number)
-                            $groupedCount = collect($invoices ?? [])->groupBy(function($r){
-                                return $r->no_urut ?? ($r->po_number ?? null);
-                            })->count();
+                            // Normalisasi koleksi dan singkirkan entri kosong/null
+                            $invoiceCollection = collect($invoices ?? [])->filter(function ($r) {
+                                return !empty($r) && (is_object($r) || is_array($r));
+                            });
+                            // Kelompokkan berdasarkan no_urut atau po_number, singkirkan key null/""
+                            $grouped = $invoiceCollection
+                                ->groupBy(function($r){
+                                    return $r->no_urut ?? ($r->po_number ?? null);
+                                })
+                                ->filter(function($rows, $key){
+                                    return $key !== null && $key !== '' && $rows->count() > 0;
+                                });
+                            $groupedCount = $grouped->count();
                         @endphp
                         <span class="flex items-center gap-1">
                             <i class="fas fa-database text-xs"></i>
@@ -170,17 +179,6 @@
                         <i class="fas fa-plus-circle"></i>
                         <span>Tambah No Invoice</span>
                     </button>
-                    <div class="flex items-center gap-2">
-                        <input id="chk-delete-all-invoice" type="checkbox" class="peer sr-only">
-                        <label for="chk-delete-all-invoice" class="relative w-14 h-7 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition peer-checked:bg-red-600">
-                            <span class="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-7"></span>
-                        </label>
-                        <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200">Hapus Semua</span>
-                        <form id="form-delete-all-invoice" method="POST" action="{{ route('invoice.destroy-all') }}" class="hidden">
-                            @csrf
-                            @method('DELETE')
-                        </form>
-                    </div>
                     <div class="relative">
                         <input id="search-number" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Cari no invoice..." class="w-48 md:w-60 h-10 leading-none px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                         <span class="absolute right-3 top-2.5 text-gray-400"><i class="fas fa-search"></i></span>
@@ -234,9 +232,8 @@
             </div>
 
             <!-- Table -->
-            <div class="overflow-x-hidden">
-                <div class="table-scroll hide-scrollbar max-h-[600px] overflow-y-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 invoice-table">
+            <div class="overflow-x-auto responsive-scroll">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 invoice-table" style="min-width: 1400px;">
                         <colgroup>
                             <col class="col-date" />
                             <col class="col-order" />
@@ -245,7 +242,8 @@
                             <col class="col-product" />
                             <col class="col-qty" />
                             <col class="col-total" />
-                            <col class="col-action" />
+                            <col class="col-status" style="width: 120px;" />
+                            <col class="col-action" style="width: 100px;" />
                         </colgroup>
                         <thead class="bg-gradient-to-r from-gray-100 to-blue-100 dark:from-gray-700 dark:to-slate-700 sticky top-0 z-30">
                             <tr>
@@ -279,19 +277,25 @@
                                         Product
                                     </div>
                                 </th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-cubes text-purple-500"></i>
                                         Qty
                                     </div>
                                 </th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-4 pr-40 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-money-bill-wave text-emerald-500"></i>
                                         Harga Total
                                     </div>
                                 </th>
-                                <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider action-col">
+                                <th class="px-6 py-4 pl-16 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider" style="width: 120px;">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <i class="fas fa-toggle-on text-blue-500"></i>
+                                        Status
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 pl-8 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider" style="width: 100px;">
                                     <div class="flex items-center justify-center gap-2">
                                         <i class="fas fa-cogs text-red-500"></i>
                                         Aksi
@@ -301,10 +305,7 @@
                         </thead>
                         <tbody id="invoice-tbody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             @php
-                                // Kelompokkan berdasarkan No Urut agar tidak duplikat baris
-                                $grouped = collect($invoices)->groupBy(function($r){
-                                    return $r->no_urut ?? ($r->po_number ?? null);
-                                });
+                                // Gunakan $grouped yang sudah dihitung pada header agar konsisten
                             @endphp
                             @forelse($grouped as $noUrut => $rows)
                                 @php
@@ -353,7 +354,6 @@
                                                             @foreach($rows as $r)
                                                                 <div class="inline-flex items-center gap-2 mr-4">
                                                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $r->barang ?? 'N/A' }}</span>
-                                                                    <span class="text-xs text-gray-500 dark:text-gray-400">Produk ID: {{ $r->produk_id ?? '-' }}</span>
                                                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 border border-blue-200 dark:border-blue-800">
                                                                         No PO: {{ $r->no_po ?? '-' }}
                                                                     </span>
@@ -361,19 +361,18 @@
                                                             @endforeach
                                                         @else
                                                             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $first->barang ?? 'N/A' }}</span>
-                                                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">Produk ID: {{ $first->produk_id ?? '-' }}</span>
                                                         @endif
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-4 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">
                                             {{ $sumQty }} pcs
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-4 py-4 pr-40 whitespace-nowrap">
                                         <div class="flex items-center gap-2">
                                             <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900/50 rounded">
                                                 <i class="fas fa-rupiah-sign text-emerald-600 dark:text-emerald-400 text-xs"></i>
@@ -390,7 +389,77 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center action-col">
+                                    <td class="px-4 py-4 pl-16 whitespace-nowrap text-center" style="width: 120px;">
+                                        @php
+                                            $currentStatus = $first->status_approval ?? 'Pending';
+                                        @endphp
+                                        <div class="flex items-center justify-center" x-data="{
+                                                status: '{{ trim($currentStatus) }}',
+                                                loading: false,
+                                                isAccept() { return (this.status ?? '').toString().trim().toLowerCase() === 'accept'; },
+                                                async toggle() {
+                                                    if (this.loading) return;
+                                                    this.loading = true;
+                                                    try {
+                                                        const res = await fetch('{{ route('po.toggle-status', $rowIdForDblClick) }}', {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                                'X-Requested-With': 'XMLHttpRequest',
+                                                                'Accept': 'application/json',
+                                                                'Content-Type': 'application/json'
+                                                            },
+                                                            credentials: 'same-origin',
+                                                            body: JSON.stringify({_token: '{{ csrf_token() }}'})
+                                                        });
+                                                        if (!res.ok) {
+                                                            const txt = await res.text();
+                                                            console.error('Toggle status HTTP error', res.status, txt);
+                                                            throw new Error('HTTP ' + res.status);
+                                                        }
+                                                        let data;
+                                                        try { data = await res.json(); } catch (e) {
+                                                            const txt = await res.text();
+                                                            console.error('Toggle status non-JSON response:', txt);
+                                                            throw new Error('Response bukan JSON');
+                                                        }
+                                                        console.log('Toggle status response:', data, 'status=', data?.status);
+                                                        if (!data?.success || !(data?.status || data?.status_approval)) {
+                                                            console.error('Toggle status invalid payload:', data);
+                                                            throw new Error('Toggle gagal');
+                                                        }
+                                                        this.status = (data.status ?? data.status_approval ?? '').toString().trim();
+                                                    } catch (e) {
+                                                        alert('Gagal mengubah status. Silakan coba lagi.');
+                                                    } finally {
+                                                        this.loading = false;
+                                                    }
+                                                }
+                                            }">
+                                            <button type="button"
+                                                    @click="toggle()"
+                                                    :class="isAccept()
+                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 focus:ring-emerald-500 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-700 dark:hover:bg-emerald-900/30'
+                                                        : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 hover:border-amber-300 focus:ring-amber-500 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-700 dark:hover:bg-amber-900/30'"
+                                                    class="relative inline-flex items-center justify-center w-[90px] px-3 py-2 mt-0 text-xs font-medium rounded-md border transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    :disabled="loading">
+                                                <div class="flex items-center justify-center space-x-1.5">
+                                                    <template x-if="isAccept()">
+                                                        <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    </template>
+                                                    <template x-if="!isAccept()">
+                                                        <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    </template>
+                                                    <span class="font-medium text-xs" x-text="isAccept() ? 'Accept' : 'Panding'"></span>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 pl-8 whitespace-nowrap text-center" style="width: 100px;">
                                         <div class="action-cell">
                                             <x-table.action-buttons 
                                                 onEdit="window.openEditForm({{ $rowIdForDblClick }})"
@@ -442,21 +511,6 @@ window.openEditForm = function(id, noUrut) {
         console.error('Gagal membuka Form Input PO:', e);
     }
 }
-// Checkbox delete-all untuk Invoice
-document.addEventListener('DOMContentLoaded', function(){
-  const chk = document.getElementById('chk-delete-all-invoice');
-  if (!chk) return;
-  chk.addEventListener('change', function(){
-    if (this.checked) {
-      const ok = confirm('Yakin hapus SEMUA data Invoice? Semua entri Jatuh Tempo terkait juga akan dihapus. Lanjutkan?');
-      if (ok) {
-        document.getElementById('form-delete-all-invoice')?.submit();
-      } else {
-        this.checked = false;
-      }
-    }
-  });
-});
 </script>
 @endpush
 
@@ -621,8 +675,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // URL endpoints
     const editUrlTemplate = "{{ route('po.edit', 0) }}"; // tetap dipakai untuk tombol Edit di kolom Aksi
     const createUrl = "{{ route('po.create') }}";
-    const quickCreateUrl = "{{ route('po.invoice.quick-create') }}";
-    const setNextNumberUrl = "{{ route('po.invoice.set-next-number') }}";
+    const quickCreateUrl = "{{ route('invoice.quick-create') }}";
+    const setNextNumberUrl = "{{ route('invoice.set-next-number') }}";
     const deleteUrlTemplate = "{{ route('po.destroy', ['po' => 0, 'from' => 'invoice']) }}";
 
     // Function untuk membuka form edit PO
@@ -890,7 +944,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div>
                         <div class="text-sm font-medium text-gray-900 dark:text-white">N/A</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Produk ID: -</div>
                     </div>
                 </div>
             </td>
