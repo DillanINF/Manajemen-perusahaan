@@ -507,4 +507,117 @@ class SuratJalanController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat generate invoice: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Update status approval Data PO
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'status_approval' => 'required|in:Pending,Accept',
+            ]);
+
+            $pos = SuratJalan::findOrFail($id);
+            $oldStatus = $pos->status_approval ?? 'Pending';
+            
+            $pos->update([
+                'status_approval' => $validated['status_approval'],
+            ]);
+
+            // Jika status berubah dari Pending ke Accept, buat Jatuh Tempo
+            if ($oldStatus === 'Pending' && $validated['status_approval'] === 'Accept') {
+                $this->createJatuhTempo($pos);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui',
+                'new_status' => $validated['status_approval'],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $ve->errors(),
+            ], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $mnf) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan',
+            ], 404);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate status: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Buat atau update Jatuh Tempo dari Data PO yang di-Accept
+     * Hanya 1 Jatuh Tempo per Data PO meskipun status diubah berkali-kali
+     */
+    private function createJatuhTempo($pos)
+    {
+        try {
+            // Cari customer untuk mendapatkan payment terms
+            $customer = Customer::where('name', $pos->customer)->first();
+            
+            $tanggalInvoice = Carbon::parse($pos->tanggal_po);
+            $termsDays = (int) ($customer->payment_terms_days ?? 0);
+            
+            if ($termsDays > 0) {
+                $tanggalJatuhTempo = (clone $tanggalInvoice)->addDays($termsDays);
+            } else {
+                $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
+            }
+
+            // Gunakan po_number sebagai no_invoice (no urut invoice dari Data Invoice)
+            // Jika tidak ada po_number, gunakan no_invoice dari database
+            $invoiceKey = $pos->po_number ?? $pos->no_invoice;
+
+            // CEK APAKAH SUDAH ADA JATUH TEMPO UNTUK DATA PO INI
+            $existingJT = JatuhTempo::where('no_po', $pos->no_po)
+                ->where('customer', $pos->customer)
+                ->first();
+
+            $jtPayload = [
+                'no_invoice' => $invoiceKey,
+                'no_po' => $pos->no_po,
+                'customer' => $pos->customer,
+                'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
+                'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
+                'jumlah_tagihan' => (int) ($pos->total ?? 0),
+                'jumlah_terbayar' => 0,
+                'sisa_tagihan' => (int) ($pos->total ?? 0),
+                'status_pembayaran' => 'Belum Bayar',
+                'status_approval' => 'Pending',
+            ];
+
+            if ($existingJT) {
+                // UPDATE JATUH TEMPO YANG SUDAH ADA
+                $existingJT->update($jtPayload);
+                \Log::info('[JT] Updated existing JatuhTempo from Data PO Accept', [
+                    'jt_id' => $existingJT->id,
+                    'pos_id' => $pos->id,
+                    'payload' => $jtPayload
+                ]);
+            } else {
+                // BUAT JATUH TEMPO BARU
+                $newJT = JatuhTempo::create($jtPayload);
+                \Log::info('[JT] Created new JatuhTempo from Data PO Accept', [
+                    'jt_id' => $newJT->id,
+                    'pos_id' => $pos->id,
+                    'payload' => $jtPayload
+                ]);
+            }
+            
+        } catch (\Throwable $e) {
+            \Log::warning('[JT] Failed to create/update JatuhTempo from Data PO', [
+                'error' => $e->getMessage(),
+                'pos_id' => $pos->id ?? null,
+            ]);
+        }
+    }
 }

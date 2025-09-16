@@ -197,8 +197,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/send-reminder', [JatuhTempoController::class, 'sendReminder'])->name('send-reminder');
         Route::post('/{id}/update-status', [JatuhTempoController::class, 'updateStatus'])->name('update-status');
         Route::put('/{id}/update-deadline', [JatuhTempoController::class, 'updateDeadline'])->name('update-deadline');
-        // Hapus semua data Jatuh Tempo
-        Route::delete('/all', [JatuhTempoController::class, 'destroyAll'])->name('destroy-all');
+        // Route hapus semua Jatuh Tempo dihapus sesuai permintaan (demi keamanan data)
     });
 
     /*
@@ -206,7 +205,8 @@ Route::middleware(['auth'])->group(function () {
     | Surat Jalan (CRUD + Export + Invoice)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('suratjalan')->name('suratjalan.')->group(function () {
+    // Ubah path URL dari /suratjalan menjadi /data-po, penamaan route tetap 'suratjalan.*'
+    Route::prefix('data-po')->name('suratjalan.')->group(function () {
         Route::get('/', [SuratJalanController::class, 'index'])->name('index');
         Route::post('/', [SuratJalanController::class, 'store'])->name('store');
         Route::get('/{suratJalan}/edit-form', [SuratJalanController::class, 'editForm'])->name('edit-form');
@@ -218,6 +218,7 @@ Route::middleware(['auth'])->group(function () {
         
         Route::post('/invoice-data', [SuratJalanController::class, 'getInvoiceData'])->name('invoice.data');
         Route::post('/invoice-pdf', [SuratJalanController::class, 'generateInvoicePDF'])->name('invoice.pdf');
+        Route::post('/{id}/update-status', [SuratJalanController::class, 'updateStatus'])->name('update-status');
         // Hapus semua data Surat Jalan (+ Jatuh Tempo terkait)
         Route::delete('/all', [SuratJalanController::class, 'destroyAll'])->name('destroy-all');
     });
@@ -229,23 +230,25 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::prefix('po')->name('po.')->group(function () {
         Route::get('/', [POController::class, 'index'])->name('index');
-        Route::get('/invoice', [POController::class, 'invoiceIndex'])->name('invoice.index');
         Route::get('/create', [POController::class, 'create'])->name('create');
         Route::post('/', [POController::class, 'store'])->name('store');
         Route::get('/{po}/edit', [POController::class, 'edit'])->name('edit');
         Route::put('/{po}', [POController::class, 'update'])->name('update');
         Route::delete('/{po}', [POController::class, 'destroy'])->name('destroy');
         
-        // Route untuk invoice
-        Route::post('/invoice/quick-create', [POController::class, 'invoiceQuickCreate'])->name('invoice.quick-create');
-        Route::post('/invoice/set-next-number', [POController::class, 'setNextInvoiceNumber'])->name('invoice.set-next-number');
-        
-        // Route untuk halaman daftar invoice
-        Route::get('/invoice', [POController::class, 'invoiceIndex'])->name('invoice.index');
-        
         // Export PO di-nonaktifkan. Gunakan export di menu Surat Jalan.
         // Route::get('/export', [POExportController::class, 'exportToExcel'])->name('export');
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Invoice Routes (Independent from PO)
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/po/{po}/toggle-status', [POController::class, 'toggleStatus'])->name('po.toggle-status');
+    Route::post('/invoice/quick-create', [POController::class, 'invoiceQuickCreate'])->name('invoice.quick-create');
+    Route::post('/invoice/set-next-number', [POController::class, 'setNextInvoiceNumber'])->name('invoice.set-next-number');
+    Route::get('/invoice', [POController::class, 'invoiceIndex'])->name('invoice.index');
 
     /*
     |--------------------------------------------------------------------------

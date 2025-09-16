@@ -127,7 +127,7 @@
                         <span>Gunakan tombol berikut untuk navigasi cepat.</span>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <a href="{{ route('po.invoice.index') }}"
+                        <a href="{{ route('invoice.index') }}"
                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition bg-white text-blue-700 border-blue-200 hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300 dark:border-blue-900 dark:hover:bg-slate-800">
                             <i class="fa-solid fa-arrow-left"></i>
                             Kembali ke Data Invoice

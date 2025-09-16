@@ -26,40 +26,52 @@
                 <div id="exportControls" class="hidden bg-gray-100 text-gray-700 dark:bg-white/20 dark:text-white backdrop-blur-sm rounded-lg px-2 py-1 text-center sm:text-left">
                     <span id="selectedCount" class="font-medium text-xs">0 dipilih</span>
                 </div>
-                <!-- Export Surat Jalan -->
-                
-                <button id="exportBtn" onclick="exportSelected('surat_jalan')"
-                        class="w-full sm:w-auto h-9 px-4 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors text-sm inline-flex items-center justify-center leading-none shadow-sm">
-                    <span class="mr-2 inline-flex items-center px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-bold tracking-wide">SJ</span>
-                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Export Surat Jalan
-                </button>
-                <!-- Export Tanda Terima -->
-                <button id="exportBtnTT" onclick="exportSelected('tanda_terima')"
-                        class="w-full sm:w-auto h-9 px-4 rounded-lg font-semibold text-emerald-700 dark:text-emerald-300 bg-transparent border border-emerald-600 hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors text-sm inline-flex items-center justify-center leading-none shadow-sm">
-                    <span class="mr-2 inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold tracking-wide">TT</span>
-                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Export Tanda Terima
-                </button>
-                <button type="button" onclick="generateInvoice()" class="w-full sm:w-auto h-9 px-4 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors text-sm inline-flex items-center justify-center leading-none ml-0 sm:ml-0">
-                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Invoice
-                </button>
-                <button type="button" onclick="downloadInvoicePDF()" class="w-full sm:w-auto h-9 px-4 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transition-colors text-sm inline-flex items-center justify-center leading-none">
-                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M16 6l-4-4-4 4M4 8v10a2 2 0 002 2h12a2 2 0 002-2V8" />
-                    </svg>
-                    Download PDF
-                </button>
+                <!-- Professional icon buttons with tooltips -->
+                <div class="flex items-center space-x-3">
+                    <div class="relative group">
+                        <button id="exportBtn" onclick="exportSelected('surat_jalan')"
+                                class="p-3 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 rounded-lg">
+                            <i class="fas fa-file-excel text-3xl"></i>
+                        </button>
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                            Export Data PO
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative group">
+                        <button id="exportBtnTT" onclick="exportSelected('tanda_terima')"
+                                class="p-3 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200 rounded-lg">
+                            <i class="fas fa-receipt text-3xl"></i>
+                        </button>
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                            Export Tanda Terima
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative group">
+                        <button type="button" onclick="generateInvoice()"
+                                class="p-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 rounded-lg">
+                            <i class="fas fa-file-invoice text-3xl"></i>
+                        </button>
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                            Invoice
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative group">
+                        <button type="button" onclick="downloadInvoicePDF()"
+                                class="p-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 rounded-lg">
+                            <i class="fas fa-file-pdf text-3xl"></i>
+                        </button>
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                            Download PDF
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -92,7 +104,7 @@
                     </button>
                     <!-- Navigation buttons (di samping tombol tahun) -->
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('po.invoice.index') }}" 
+                        <a href="{{ route('invoice.index') }}" 
                            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-600 dark:hover:bg-slate-700">
                             <i class="fa-solid fa-arrow-left mr-1.5"></i>
                             Kembali ke Data Invoice
@@ -137,10 +149,10 @@
         
         <div class="w-full">
             <div class="overflow-x-auto responsive-scroll">
-            <table class="w-full table-auto text-[11px] sm:text-xs break-words min-w-[720px]">
+            <table class="w-full table-auto text-[11px] sm:text-xs break-words min-w-[720px] border border-gray-200 dark:border-slate-700">
                 <thead class="bg-gray-100 dark:bg-slate-700">
                     <tr>
-                        <th class="py-1.5 px-1.5 text-left text-xs font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700 w-8">
+                        <th class="py-3 px-4 text-center text-sm font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700 w-20">
                             <span class="sr-only">Pilih</span>
                         </th>
                         <th class="py-1.5 px-1.5 text-left text-xs font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700">
@@ -152,7 +164,7 @@
                                 <span class="sm:hidden">Tgl</span>
                             </div>
                         </th>
-                        <th class="py-1.5 px-1.5 text-left text-xs font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700 hidden sm:table-cell">
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700 hidden sm:table-cell">
                             <div class="flex items-center space-x-1">
                                 <svg class="w-3 h-3 text-gray-500 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -173,7 +185,7 @@
                                 <span class="sm:hidden">No SJ</span>
                             </div>
                         </th>
-                        <th class="py-1.5 px-1.5 text-center text-xs font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight w-12">
+                        <th class="py-3 px-4 text-center text-sm font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-l border-gray-200 dark:border-slate-700 w-16">
                             <span>Aksi</span>
                         </th>
                     </tr>
@@ -182,41 +194,41 @@
                     @forelse($suratjalan as $index => $pos)
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
                         <!-- Made all table cells much more compact with minimal padding -->
-                        <td class="py-1 px-1.5 whitespace-nowrap text-xs border-r border-gray-200 dark:border-slate-700">
-                            <input type="checkbox" name="selected_ids[]" value="{{ $pos->id }}" class="row-radio border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-200 focus:ring-gray-500 dark:focus:ring-slate-500 w-3 h-3 bg-white dark:bg-slate-800">
+                        <td class="py-3 px-4 whitespace-nowrap text-sm border-r border-b border-gray-200 dark:border-slate-700">
+                            <input type="checkbox" name="selected_ids[]" value="{{ $pos->id }}" class="row-radio border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-200 focus:ring-gray-500 dark:focus:ring-slate-500 w-4 h-4 bg-white dark:bg-slate-800">
                         </td>
-                        <td class="py-1 px-1.5 whitespace-nowrap text-xs text-gray-900 dark:text-slate-200 border-r border-gray-200 dark:border-slate-700">
+                        <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-200 border-r border-b border-gray-200 dark:border-slate-700">
                             <span class="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-slate-600 dark:text-slate-200">
                                 {{ \Carbon\Carbon::parse($pos->tanggal_po)->format('d/m/y') }}
                             </span>
                         </td>
-                        <td class="py-1 px-1.5 whitespace-normal text-xs text-gray-900 dark:text-slate-200 border-r border-gray-200 dark:border-slate-700 hidden sm:table-cell">
+                        <td class="py-3 px-4 whitespace-normal text-sm text-gray-900 dark:text-slate-200 border-r border-b border-gray-200 dark:border-slate-700 hidden sm:table-cell">
                             <span class="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-slate-600 dark:text-slate-200">
                                 {{ $pos->no_po }}
                             </span>
                         </td>
-                        <td class="py-1 px-1.5 whitespace-normal text-xs text-gray-900 dark:text-slate-200 border-r border-gray-200 dark:border-slate-700">
+                        <td class="py-3 px-4 whitespace-normal text-sm text-gray-900 dark:text-slate-200 border-r border-b border-gray-200 dark:border-slate-700">
                             <span class="font-medium block">
                                 {{ $pos->customer }}
                             </span>
                         </td>
-                        <td class="py-1 px-1.5 whitespace-normal text-xs text-gray-900 dark:text-slate-200 border-r border-gray-200 dark:border-slate-700">
+                        <td class="py-3 px-4 whitespace-normal text-sm text-gray-900 dark:text-slate-200 border-r border-b border-gray-200 dark:border-slate-700">
                             <span class="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-slate-600 dark:text-slate-200">
                                 {{ $pos->no_surat_jalan }}
                             </span>
                         </td>
-                        <td class="py-1 px-1.5 text-xs font-medium text-center">
+                        <td class="py-3 px-4 text-sm font-medium text-center border-b border-gray-200 dark:border-slate-700">
                             <x-table.action-buttons 
                                 onEdit="window.editSuratJalan({{ $pos->id }}, {!! json_encode($pos->tanggal_po) !!}, {!! json_encode($pos->customer) !!}, {!! json_encode($pos->alamat_1) !!}, {!! json_encode($pos->alamat_2) !!}, {!! json_encode($pos->no_surat_jalan) !!}, {!! json_encode($pos->no_po) !!}, {!! json_encode($pos->kendaraan) !!}, {!! json_encode($pos->no_polisi) !!}, {{ $pos->qty ?? 'null' }}, {!! json_encode($pos->qty_jenis) !!}, {!! json_encode($pos->produk_id) !!}, {{ $pos->total ?? 'null' }}, {!! json_encode($pos->pengirim) !!})"
-                                deleteAction="{{ url('/suratjalan/' . $pos->id) }}"
-                                confirmText="Apakah Anda yakin ingin menghapus data surat jalan ini?"
+                                deleteAction="{{ route('suratjalan.destroy', $pos->id) }}"
+                                confirmText="Apakah Anda yakin ingin menghapus Data PO ini?"
                                 :useMenu="true"
                             />
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-6 text-center">
+                        <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center space-y-2">
                                 <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -784,6 +796,29 @@ function generateInvoice() {
             alert('Data tidak ditemukan!');
         }
     });
+}
+
+saat mengubah status', 'error');
+    });
+}
+
+// Show notification (Global function)
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 transition-opacity duration-300 ${
+        type === 'success' ? 'bg-green-600' : 
+        type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
 }
 
 function populateInvoice(data) {

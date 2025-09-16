@@ -29,20 +29,7 @@
                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-200">Kelola data Jatuh Tempo dengan mudah</p>
                 </div>
             </div>
-            <!-- Right controls: Hapus Semua (Checkbox Switch) -->
-            <div class="flex items-center gap-2">
-                <input id="chk-delete-all-jt" type="checkbox" class="peer sr-only">
-                <label for="chk-delete-all-jt" class="relative w-14 h-7 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition peer-checked:bg-red-600">
-                    <span class="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-7"></span>
-                </label>
-                <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200">Hapus Semua</span>
-
-                <!-- Hidden form -->
-                <form id="form-delete-all-jt" method="POST" action="{{ route('jatuh-tempo.destroy-all') }}" class="hidden">
-                    @csrf
-                    @method('DELETE')
-                </form>
-            </div>
+            <!-- Right controls: (hapus semua dihilangkan) -->
         </div>
     </div>
 
@@ -54,22 +41,7 @@
     @endif
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  const chk = document.getElementById('chk-delete-all-jt');
-  if (!chk) return;
-  chk.addEventListener('change', function(){
-    if (this.checked) {
-      const ok = confirm('Yakin hapus SEMUA data Jatuh Tempo? Tindakan ini tidak bisa dibatalkan.');
-      if (ok) {
-        document.getElementById('form-delete-all-jt')?.submit();
-      } else {
-        this.checked = false;
-      }
-    }
-  });
-});
-</script>
+<!-- Script hapus semua dihilangkan -->
 @endpush
 
     <!-- Tips/Peringatan: Pilih Bulan -->
@@ -367,12 +339,12 @@ document.addEventListener('DOMContentLoaded', function(){
 </div>
 
 <!-- Create/Edit Modal -->
-<div id="jatuhTempoModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="jatuhTempoModal" class="fixed inset-0 hidden z-50 bg-slate-900/60 dark:bg-black/70">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-screen overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 dark:text-slate-100 rounded-lg shadow-xl max-w-3xl w-full max-h-screen overflow-y-auto">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 id="modalTitle" class="text-lg font-medium">Tambah Jatuh Tempo</h3>
+                    <h3 id="modalTitle" class="text-lg font-medium dark:text-slate-100">Tambah Jatuh Tempo</h3>
                     <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -394,13 +366,13 @@ document.addEventListener('DOMContentLoaded', function(){
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Tanggal (Surat Jalan)</label>
-                            <input type="date" name="no_po" id="no_po" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500" placeholder="Pilih tanggal">
+                            <input type="date" name="no_po" id="no_po" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100 date-input" placeholder="Pilih tanggal">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Customer</label>
-                        <select name="customer" id="customer" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                        <select name="customer" id="customer" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
                             <option value="">-- Pilih Customer --</option>
                             @foreach($customers as $c)
                                 <option value="{{ $c->name }}" data-payment-terms="{{ $c->payment_terms_days ?? 30 }}">
@@ -417,11 +389,11 @@ document.addEventListener('DOMContentLoaded', function(){
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Tanggal Invoice</label>
-                            <input type="date" name="tanggal_invoice" id="tanggal_invoice" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                            <input type="date" name="tanggal_invoice" id="tanggal_invoice" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100 date-input">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Tanggal Jatuh Tempo</label>
-                            <input type="date" name="tanggal_jatuh_tempo" id="tanggal_jatuh_tempo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                            <input type="date" name="tanggal_jatuh_tempo" id="tanggal_jatuh_tempo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100 date-input">
                             <div class="mt-2 space-y-2">
                                 <label class="inline-flex items-center text-sm">
                                     <input type="checkbox" id="auto_plus_month" class="mr-2">
@@ -442,21 +414,21 @@ document.addEventListener('DOMContentLoaded', function(){
                     <div class="grid grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Jumlah Tagihan</label>
-                            <input type="number" name="jumlah_tagihan" id="jumlah_tagihan" required min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                            <input type="number" name="jumlah_tagihan" id="jumlah_tagihan" required min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Jumlah Terbayar</label>
-                            <input type="number" name="jumlah_terbayar" id="jumlah_terbayar" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                            <input type="number" name="jumlah_terbayar" id="jumlah_terbayar" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Denda</label>
-                            <input type="number" name="denda" id="denda" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                            <input type="number" name="denda" id="denda" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Status Pembayaran</label>
-                        <select name="status_pembayaran" id="status_pembayaran" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                        <select name="status_pembayaran" id="status_pembayaran" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
                             <option value="Pending" selected>Pending</option>
                             <option value="Accept">Accept</option>
                         </select>
@@ -464,7 +436,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Status Approval</label>
-                        <select name="status_approval" id="status_approval" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                        <select name="status_approval" id="status_approval" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
                             <option value="Pending" selected>Pending</option>
                             <option value="ACC">ACC</option>
                             <option value="Reject">Reject</option>
@@ -473,14 +445,14 @@ document.addEventListener('DOMContentLoaded', function(){
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Catatan</label>
-                        <textarea name="catatan" id="catatan" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"></textarea>
+                        <textarea name="catatan" id="catatan" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100"></textarea>
                     </div>
 
                     <div class="flex justify-end space-x-3 pt-4">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700/50">
                             Batal
                         </button>
-                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700">
+                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-400">
                             Simpan
                         </button>
                     </div>
@@ -526,50 +498,50 @@ document.addEventListener('DOMContentLoaded', function(){
                     <input type="hidden" name="year" value="{{ request('year', $tahun ?? now()->format('Y')) }}">
                     <input type="hidden" name="status" value="{{ request('status') }}">
                     
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h4 class="text-sm font-medium text-gray-700 mb-3">Informasi Invoice</h4>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 dark:bg-slate-800/60 dark:border-slate-700">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-slate-200 mb-3">Informasi Invoice</h4>
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                                <span class="text-gray-500">No Invoice:</span>
-                                <span id="edit_display_no_invoice" class="font-medium"></span>
+                                <span class="text-gray-500 dark:text-slate-300">No Invoice:</span>
+                                <span id="edit_display_no_invoice" class="font-medium dark:text-slate-100"></span>
                             </div>
                             <div>
-                                <span class="text-gray-500">Customer:</span>
-                                <span id="edit_display_customer" class="font-medium"></span>
+                                <span class="text-gray-500 dark:text-slate-300">Customer:</span>
+                                <span id="edit_display_customer" class="font-medium dark:text-slate-100"></span>
                             </div>
                             <div>
-                                <span class="text-gray-500">Tanggal Invoice:</span>
-                                <span id="edit_display_tanggal_invoice" class="font-medium"></span>
+                                <span class="text-gray-500 dark:text-slate-300">Tanggal Invoice:</span>
+                                <span id="edit_display_tanggal_invoice" class="font-medium dark:text-slate-100"></span>
                             </div>
                             <div>
-                                <span class="text-gray-500">Deadline Saat Ini:</span>
-                                <span id="edit_display_current_deadline" class="font-medium text-red-600"></span>
+                                <span class="text-gray-500 dark:text-slate-300">Deadline Saat Ini:</span>
+                                <span id="edit_display_current_deadline" class="font-medium text-red-600 dark:text-red-400"></span>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ubah Deadline</label>
-                        <input type="date" name="tanggal_jatuh_tempo" id="edit_tanggal_jatuh_tempo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">Ubah Deadline</label>
+                        <input type="date" name="tanggal_jatuh_tempo" id="edit_tanggal_jatuh_tempo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100 date-input">
                         
                         <div class="mt-3">
-                            <p class="text-sm text-gray-600 mb-2"><strong>Quick Terms dari Tanggal Invoice:</strong></p>
+                            <p class="text-sm text-gray-600 dark:text-slate-300 mb-2"><strong>Quick Terms dari Tanggal Invoice:</strong></p>
                             <div id="edit_terms_buttons" class="flex flex-wrap gap-2">
-                                <button type="button" data-days="7" onclick="setEditCustomDays(7)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200">7 hari</button>
-                                <button type="button" data-days="14" onclick="setEditCustomDays(14)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200">14 hari</button>
-                                <button type="button" data-days="21" onclick="setEditCustomDays(21)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200">21 hari</button>
-                                <button type="button" data-days="30" onclick="setEditCustomDays(30)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200">30 hari</button>
-                                <button type="button" data-days="45" onclick="setEditCustomDays(45)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200">45 hari</button>
-                                <button type="button" data-days="60" onclick="setEditCustomDays(60)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200">60 hari</button>
+                                <button type="button" data-days="7" onclick="setEditCustomDays(7)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">7 hari</button>
+                                <button type="button" data-days="14" onclick="setEditCustomDays(14)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">14 hari</button>
+                                <button type="button" data-days="21" onclick="setEditCustomDays(21)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">21 hari</button>
+                                <button type="button" data-days="30" onclick="setEditCustomDays(30)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">30 hari</button>
+                                <button type="button" data-days="45" onclick="setEditCustomDays(45)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">45 hari</button>
+                                <button type="button" data-days="60" onclick="setEditCustomDays(60)" class="px-3 py-2 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">60 hari</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="flex justify-end space-x-3 pt-4">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700/50">
                             Batal
                         </button>
-                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700">
+                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-400">
                             Update Deadline
                         </button>
                     </div>

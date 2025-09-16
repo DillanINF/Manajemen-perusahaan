@@ -366,14 +366,5 @@ class JatuhTempoController extends Controller
         }
     }
 
-    // HAPUS SEMUA DATA JATUH TEMPO
-    public function destroyAll()
-    {
-        try {
-            JatuhTempo::query()->delete();
-            return redirect()->route('jatuh-tempo.index')->with('success', 'Semua data Jatuh Tempo berhasil dihapus.');
-        } catch (\Throwable $e) {
-            return redirect()->route('jatuh-tempo.index')->with('error', 'Gagal menghapus semua data Jatuh Tempo: ' . $e->getMessage());
-        }
-    }
+    // Method destroyAll() dihapus sesuai permintaan untuk mencegah penghapusan massal
 }

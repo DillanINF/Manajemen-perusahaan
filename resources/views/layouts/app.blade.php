@@ -137,15 +137,15 @@
     
       
             <div x-show="open" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
-                <a href="{{ route('po.invoice.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('po.invoice.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                <a href="{{ route('invoice.index') }}"
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('invoice.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l2 2 4-4M7 7h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z"/></svg>
                     <span>Data Invoice</span>
                 </a>
                 <a href="{{ route('sisa-data-po.index') }}"
                    class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('sisa-data-po.*') ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>Sisa Data PO</span>
+                    <span>Tagihan Data PO</span>
                 </a>
                 {{-- Link Input PO di-nonaktifkan: akses form hanya lewat double click Data Invoice --}}
                 {{-- Link Data PO dihapus: akses Surat Jalan hanya dari alur Data Invoice --}}

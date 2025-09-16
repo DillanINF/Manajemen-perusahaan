@@ -39,12 +39,12 @@
             
             // Purchase Order dropdown menu
             $purchaseOrderMenus = [
-                ['name' => 'Data Invoice', 'route' => 'po.invoice.index'],
+                ['name' => 'Data Invoice', 'route' => 'invoice.index'],
                 ['name' => 'Sisa Data Purchase Order', 'route' => 'sisa-data-po.index'],
             ];
             
             $currentRoute = Route::currentRouteName();
-            $isPOActive = in_array($currentRoute, ['po.invoice.index', 'sisa-data-po.index', 'po.index', 'po.create', 'po.edit']);
+            $isPOActive = in_array($currentRoute, ['invoice.index', 'sisa-data-po.index', 'po.index', 'po.create', 'po.edit']);
         @endphp
 
         @foreach ($menus as $menu)

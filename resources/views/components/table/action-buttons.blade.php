@@ -18,7 +18,7 @@
         @if($onEdit)
             <!-- Edit button -->
             <button type="button" onclick='{!! $onEdit !!}'
-                    class="js-edit-btn group relative z-10 pointer-events-auto cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#2563EB] text-white shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    class="js-edit-btn group relative z-10 pointer-events-auto cursor-pointer inline-flex items-center justify-center w-9 h-9 aspect-square min-w-[36px] min-h-[36px] rounded-full bg-[#2563EB] text-white shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-blue-300"
                     aria-label="Edit">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
                     <path d="M12 20h9"/>
@@ -34,7 +34,7 @@
                 @csrf
                 @method('DELETE')
                 <button type="submit"
-                        class="group relative inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#DC2626] text-white shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#B91C1C] focus:outline-none focus:ring-2 focus:ring-red-300">
+                        class="group relative inline-flex items-center justify-center w-9 h-9 aspect-square min-w-[36px] min-h-[36px] rounded-full bg-[#DC2626] text-white shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#B91C1C] focus:outline-none focus:ring-2 focus:ring-red-300">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>

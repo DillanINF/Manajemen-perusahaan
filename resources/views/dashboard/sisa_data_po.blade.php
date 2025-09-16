@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'SISA DATA PURCHASE ORDER')
+@section('title', 'TAGIHAN DATA PURCHASE ORDER')
 
 @push('styles')
 <!-- Optional modern font -->
@@ -28,7 +28,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-gray-100">
-                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>Sisa Data Purchase Order
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>Tagihan Data Purchase Order
                     </h1>
                     <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
                         Monitoring barang yang belum terinput lengkap ke data PO
@@ -49,18 +49,6 @@
                     <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                         <i class="fa-solid fa-circle-info text-blue-600"></i>
                         <span>Data menampilkan barang yang permintaan PO melebihi stok tersedia.</span>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <a href="{{ route('po.index') }}"
-                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition bg-white text-blue-700 border-blue-200 hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300 dark:border-blue-900 dark:hover:bg-slate-800">
-                            <i class="fa-solid fa-arrow-left"></i>
-                            Kembali ke PO
-                        </a>
-                        <a href="{{ route('sisa-data-po.export', request()->query()) }}"
-                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-md focus:outline-none focus:ring-2 focus:ring-green-400">
-                            <i class="fa-solid fa-download text-white"></i>
-                            Export Excel
-                        </a>
                     </div>
                 </div>
             </div>
@@ -313,9 +301,9 @@
                     <p class="text-gray-600 dark:text-gray-400 mb-4">
                         Semua barang dalam PO sudah terinput dengan lengkap atau stok mencukupi.
                     </p>
-                    <a href="{{ route('po.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <a href="{{ route('invoice.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                         <i class="fas fa-arrow-left"></i>
-                        Kembali ke Purchase Order
+                        Kembali ke Data Invoice
                     </a>
                 </div>
             @endif
