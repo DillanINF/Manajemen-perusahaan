@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\PO;
 use App\Models\Produk;
 use App\Models\Customer;
+use App\Models\JatuhTempo;
 use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
@@ -94,7 +95,37 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice)
     {
+        // Hapus semua entri Jatuh Tempo yang terkait berdasarkan no_invoice maupun no_po
+        try {
+            if (!empty($invoice->no_invoice)) {
+                JatuhTempo::where('no_invoice', $invoice->no_invoice)->delete();
+            }
+            if (!empty($invoice->no_po)) {
+                JatuhTempo::where('no_po', $invoice->no_po)->delete();
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('[JT] Gagal menghapus entri Jatuh Tempo terkait invoice', [
+                'error' => $e->getMessage(),
+                'no_invoice' => $invoice->no_invoice,
+                'no_po' => $invoice->no_po,
+            ]);
+        }
+
         $invoice->delete();
-        return redirect()->route('invoice.index')->with('success', 'Invoice berhasil dihapus.');
+        return redirect()->route('invoice.index')->with('success', 'Invoice dan data Jatuh Tempo terkait berhasil dihapus.');
+    }
+
+    // HAPUS SEMUA DATA INVOICE (+ JATUH TEMPO TERKAIT)
+    public function destroyAll()
+    {
+        try {
+            // Hapus semua Jatuh Tempo terlebih dahulu agar tidak ada sisa relasi
+            JatuhTempo::query()->delete();
+            // Hapus semua invoice
+            Invoice::query()->delete();
+            return redirect()->route('invoice.index')->with('success', 'Semua data Invoice dan Jatuh Tempo terkait berhasil dihapus.');
+        } catch (\Throwable $e) {
+            return redirect()->route('invoice.index')->with('error', 'Gagal menghapus semua data Invoice: ' . $e->getMessage());
+        }
     }
 }

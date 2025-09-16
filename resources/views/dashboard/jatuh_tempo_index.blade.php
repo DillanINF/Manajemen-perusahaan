@@ -29,8 +29,20 @@
                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-200">Kelola data Jatuh Tempo dengan mudah</p>
                 </div>
             </div>
-            <!-- Right controls removed (moved to above month grid) -->
-            <div></div>
+            <!-- Right controls: Hapus Semua (Checkbox Switch) -->
+            <div class="flex items-center gap-2">
+                <input id="chk-delete-all-jt" type="checkbox" class="peer sr-only">
+                <label for="chk-delete-all-jt" class="relative w-14 h-7 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition peer-checked:bg-red-600">
+                    <span class="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-7"></span>
+                </label>
+                <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200">Hapus Semua</span>
+
+                <!-- Hidden form -->
+                <form id="form-delete-all-jt" method="POST" action="{{ route('jatuh-tempo.destroy-all') }}" class="hidden">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            </div>
         </div>
     </div>
 
@@ -40,6 +52,25 @@
             {{ session('success') }}
         </div>
     @endif
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const chk = document.getElementById('chk-delete-all-jt');
+  if (!chk) return;
+  chk.addEventListener('change', function(){
+    if (this.checked) {
+      const ok = confirm('Yakin hapus SEMUA data Jatuh Tempo? Tindakan ini tidak bisa dibatalkan.');
+      if (ok) {
+        document.getElementById('form-delete-all-jt')?.submit();
+      } else {
+        this.checked = false;
+      }
+    }
+  });
+});
+</script>
+@endpush
 
     <!-- Tips/Peringatan: Pilih Bulan -->
     

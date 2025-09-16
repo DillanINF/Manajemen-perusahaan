@@ -170,6 +170,17 @@
                         <i class="fas fa-plus-circle"></i>
                         <span>Tambah No Invoice</span>
                     </button>
+                    <div class="flex items-center gap-2">
+                        <input id="chk-delete-all-invoice" type="checkbox" class="peer sr-only">
+                        <label for="chk-delete-all-invoice" class="relative w-14 h-7 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition peer-checked:bg-red-600">
+                            <span class="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-7"></span>
+                        </label>
+                        <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200">Hapus Semua</span>
+                        <form id="form-delete-all-invoice" method="POST" action="{{ route('invoice.destroy-all') }}" class="hidden">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    </div>
                     <div class="relative">
                         <input id="search-number" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Cari no invoice..." class="w-48 md:w-60 h-10 leading-none px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                         <span class="absolute right-3 top-2.5 text-gray-400"><i class="fas fa-search"></i></span>
@@ -413,6 +424,41 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+// Fungsi untuk membuka Form Input PO dari Data Invoice (double click baris)
+window.openEditForm = function(id, noUrut) {
+    try {
+        const base = "{{ route('po.create') }}";
+        const params = new URLSearchParams();
+        params.set('from', 'invoice');
+        if (Number.isFinite(Number(noUrut)) && Number(noUrut) > 0) {
+            params.set('po_number', String(noUrut));
+        }
+        // Arahkan ke form PO
+        window.location.href = base + '?' + params.toString();
+    } catch (e) {
+        console.error('Gagal membuka Form Input PO:', e);
+    }
+}
+// Checkbox delete-all untuk Invoice
+document.addEventListener('DOMContentLoaded', function(){
+  const chk = document.getElementById('chk-delete-all-invoice');
+  if (!chk) return;
+  chk.addEventListener('change', function(){
+    if (this.checked) {
+      const ok = confirm('Yakin hapus SEMUA data Invoice? Semua entri Jatuh Tempo terkait juga akan dihapus. Lanjutkan?');
+      if (ok) {
+        document.getElementById('form-delete-all-invoice')?.submit();
+      } else {
+        this.checked = false;
+      }
+    }
+  });
+});
+</script>
+@endpush
 
 <!-- Modal Atur Nomor Urut -->
 <div id="modal-set-nomor" class="fixed inset-0 z-50 hidden">

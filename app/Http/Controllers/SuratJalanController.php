@@ -50,7 +50,7 @@ class SuratJalanController extends Controller
             $defaultYears[] = $currentYear;
             sort($defaultYears);
         }
-        
+
         $availableYears = collect($defaultYears);
         
         // Daftar semua tahun untuk modal (dari 2020 sampai 2035)
@@ -348,6 +348,22 @@ class SuratJalanController extends Controller
             // Simpan bulan dan tahun dari data yang akan dihapus
             $month = $suratJalan->tanggal_po ? date('n', strtotime($suratJalan->tanggal_po)) : null;
             $year = $suratJalan->tanggal_po ? date('Y', strtotime($suratJalan->tanggal_po)) : null;
+
+            // Hapus entri Jatuh Tempo terkait (berdasarkan no_invoice dan/atau no_po)
+            try {
+                if (!empty($suratJalan->no_invoice)) {
+                    JatuhTempo::where('no_invoice', $suratJalan->no_invoice)->delete();
+                }
+                if (!empty($suratJalan->no_po)) {
+                    JatuhTempo::where('no_po', $suratJalan->no_po)->delete();
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('[JT] Gagal menghapus entri Jatuh Tempo terkait Surat Jalan', [
+                    'error' => $e->getMessage(),
+                    'no_invoice' => $suratJalan->no_invoice,
+                    'no_po' => $suratJalan->no_po,
+                ]);
+            }
             
             $suratJalan->delete();
 
@@ -358,7 +374,7 @@ class SuratJalanController extends Controller
             }
 
             return redirect($redirectUrl)
-                ->with('success', 'Surat jalan berhasil dihapus');
+                ->with('success', 'Surat jalan dan data Jatuh Tempo terkait berhasil dihapus');
         } catch (\Exception $e) {
             return redirect()->route('suratjalan.index')
                 ->with('error', 'Gagal menghapus surat jalan: ' . $e->getMessage());

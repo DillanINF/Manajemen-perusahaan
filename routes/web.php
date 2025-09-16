@@ -175,6 +175,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{invoice}', [InvoiceController::class, 'update'])->name('update');
         Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->name('destroy');
         Route::patch('/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('update-status');
+        // Hapus semua data Invoice (+ Jatuh Tempo terkait)
+        Route::delete('/all', [InvoiceController::class, 'destroyAll'])->name('destroy-all');
     });
 
     // Seluruh route CRUD Tanda Terima dinonaktifkan (dipusatkan ke Surat Jalan)
@@ -195,6 +197,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/send-reminder', [JatuhTempoController::class, 'sendReminder'])->name('send-reminder');
         Route::post('/{id}/update-status', [JatuhTempoController::class, 'updateStatus'])->name('update-status');
         Route::put('/{id}/update-deadline', [JatuhTempoController::class, 'updateDeadline'])->name('update-deadline');
+        // Hapus semua data Jatuh Tempo
+        Route::delete('/all', [JatuhTempoController::class, 'destroyAll'])->name('destroy-all');
     });
 
     /*
@@ -214,6 +218,8 @@ Route::middleware(['auth'])->group(function () {
         
         Route::post('/invoice-data', [SuratJalanController::class, 'getInvoiceData'])->name('invoice.data');
         Route::post('/invoice-pdf', [SuratJalanController::class, 'generateInvoicePDF'])->name('invoice.pdf');
+        // Hapus semua data Surat Jalan (+ Jatuh Tempo terkait)
+        Route::delete('/all', [SuratJalanController::class, 'destroyAll'])->name('destroy-all');
     });
 
     /*

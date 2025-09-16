@@ -520,7 +520,9 @@ class POController extends Controller
 
         // === Sinkronisasi ke Jatuh Tempo ===
         try {
-            $invoiceKey = $noInvoice ?: $noSuratJalan; // gunakan invoice jika ada, fallback ke no_surat_jalan (unik)
+            // Gunakan No Invoice asli jika ada; jika kosong, fallback ke No Urut Invoice (po_number) dari Form Data Invoice
+            // JANGAN fallback ke No Surat Jalan
+            $invoiceKey = $noInvoice ?: (isset($data['po_number']) && $data['po_number'] !== null ? (string) $data['po_number'] : '');
             $tanggalInvoice = \Carbon\Carbon::parse($po->tanggal_po);
             // Gunakan payment_terms_days dari customer jika tersedia, fallback +1 bulan
             $termsDays = (int) (($customer->payment_terms_days ?? 0));
@@ -530,22 +532,27 @@ class POController extends Controller
                 $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
             }
 
-            JatuhTempo::updateOrCreate(
-                ['no_invoice' => $invoiceKey],
-                [
-                    'no_po' => $po->no_po,
-                    'customer' => $po->customer,
-                    'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
-                    'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
-                    'jumlah_tagihan' => (int) ($po->total ?? 0),
-                    'jumlah_terbayar' => 0,
-                    'sisa_tagihan' => (int) ($po->total ?? 0),
-                    'status_pembayaran' => 'Belum Bayar',
-                    'status_approval' => 'Pending',
-                ]
-            );
+            // SELALU BUAT BARIS BARU: izinkan duplikasi untuk no_invoice & no_po yang sama
+            $jtPayload = [
+                'no_invoice' => $invoiceKey,
+                'no_po' => $po->no_po,
+                'customer' => $po->customer,
+                'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
+                'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
+                'jumlah_tagihan' => (int) ($po->total ?? 0),
+                'jumlah_terbayar' => 0,
+                'sisa_tagihan' => (int) ($po->total ?? 0),
+                'status_pembayaran' => 'Belum Bayar',
+                'status_approval' => 'Pending',
+            ];
+            \Log::info('[JT] Creating JatuhTempo', $jtPayload);
+            $jt = JatuhTempo::create($jtPayload);
+            \Log::info('[JT] Created JatuhTempo', ['id' => $jt->id ?? null]);
         } catch (\Throwable $e) {
-            \Log::warning('Sync JatuhTempo gagal: ' . $e->getMessage());
+            \Log::warning('[JT] Sync JatuhTempo gagal', [
+                'error' => $e->getMessage(),
+                'code' => method_exists($e, 'getCode') ? $e->getCode() : null,
+            ]);
         }
 
         // Redirect: tetap berada di Form Input PO

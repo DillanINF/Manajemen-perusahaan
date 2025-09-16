@@ -836,8 +836,8 @@ function populateInvoice(data) {
     
     // No PO dari database column no_po
     document.getElementById('invoiceNoPO').textContent = first.no_po || '-';
-    // No Invoice pilih yang terbaru (lihat latestPO)
-    document.getElementById('invoiceNo').textContent = (latestPO && latestPO.no_invoice) ? latestPO.no_invoice : (first.no_invoice || '-');
+    // No Invoice dikosongkan secara default (tidak diambil dari No Surat Jalan atau data lain)
+    document.getElementById('invoiceNo').textContent = '';
     document.getElementById('invoiceDate').textContent = invoiceDate;
     document.getElementById('invoiceDateLocation').textContent = invoiceDate;
 
