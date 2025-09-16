@@ -303,7 +303,7 @@ graph TB
 
 ### 🎨 **Interface Showcase**
 
-<img src="docs/screenshot/dashboard.png" alt="Dashboard Preview" width="900" style="border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #e2e8f0;">
+<img src="docs/screenshot/Dashboard.png" alt="Dashboard Preview" width="900" style="border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #e2e8f0;">
 
 #### 📊 **Dashboard Analytics**
 *Real-time business intelligence dengan visualisasi data yang interaktif*
