@@ -77,6 +77,13 @@ Sistem manajemen operasional **end-to-end** untuk perusahaan distribusi, logisti
 | RESTful API | Alpine.js Reactive | Optimized Queries | Session Management |
 | Clean Code | Mobile Responsive | Lazy Loading | CSRF Protection |
 
+> Update Terbaru (2025-09-16)
+> - Jatuh Tempo: Insert SELALU baris baru untuk PO yang sama; tidak digabung/ditimpa. Unique index pada `jatuh_tempos` dihapus via migrasi agar duplikasi valid. Tambah logging untuk debug insert.
+> - Cascade Delete: Hapus Invoice atau Surat Jalan otomatis menghapus entri terkait di Jatuh Tempo (berdasarkan `no_invoice`/`no_po`).
+> - Bulk Delete: Tambah aksi Hapus Semua (destroyAll) untuk Jatuh Tempo, Invoice, dan Surat Jalan. UI memakai checkbox switch dengan konfirmasi.
+> - No Invoice Source: Kolom No Invoice di Jatuh Tempo tidak lagi mengambil dari No Surat Jalan. Jika No Invoice kosong, fallback ke `po_number` (No Urut dari Data Invoice).
+> - Navigasi: Double click pada No Invoice di Data Invoice membuka Form Input PO dengan parameter `from=invoice&po_number=<noUrut>`.
+
 > Update Terbaru (2025-09-15)
 > - Auth/OTP: Alur reset password via OTP aktif dan stabil (kirim OTP, verifikasi OTP, reset password via OTP).
 > - Email: Panduan konfigurasi email untuk OTP ditambahkan dan dirujuk di README (lihat `docs/EMAIL_CONFIGURATION.md`). Default development masih menggunakan driver non-smtp hingga dikonfigurasi.
@@ -621,6 +628,7 @@ GET   /suratjalan/{id}/edit-form          # Edit form (custom)
 GET   /suratjalan/{id}/edit               # Edit
 PUT   /suratjalan/{id}                    # Update
 DELETE /suratjalan/{id}                   # Destroy
+DELETE /suratjalan/all                    # Destroy ALL (bulk delete)
 POST  /suratjalan/export                  # Export (Excel via POExportController)
 POST  /suratjalan/invoice-data            # Ambil data invoice
 POST  /suratjalan/invoice-pdf             # Generate invoice PDF
@@ -668,6 +676,7 @@ GET   /invoice/{id}/edit                  # Edit
 PUT   /invoice/{id}                       # Update
 DELETE /invoice/{id}                      # Destroy
 PATCH /invoice/{id}/status                # Update status
+DELETE /invoice/all                       # Destroy ALL (bulk delete)
 ```
 
 ### 📑 **Tanda Terima (Dinonaktifkan)**
@@ -685,6 +694,7 @@ PATCH /jatuh-tempo/{id}/payment           # Mark as paid
 GET   /jatuh-tempo/{id}/send-reminder     # Kirim pengingat
 POST  /jatuh-tempo/{id}/update-status     # Update status
 PUT   /jatuh-tempo/{id}/update-deadline   # Update deadline
+DELETE /jatuh-tempo/all                   # Destroy ALL (bulk delete)
 ```
 
 ### 📦➡️ **Barang Masuk & Keluar**
@@ -786,6 +796,18 @@ gantt
 - [ ] 🤖 **API Integration** - RESTful API untuk third-party integration
 
 ## 📝 Changelog
+
+### 2025-09-16 (v2.7.0)
+- Jatuh Tempo:
+  - Insert selalu baris baru; hapus seluruh unique index yang menghambat duplikasi melalui migrasi baru.
+  - Tambah logging proses create untuk memudahkan debugging.
+- Cascade Delete:
+  - Menghapus Invoice atau satu entri Surat Jalan akan otomatis menghapus data Jatuh Tempo yang terkait (`no_invoice`/`no_po`).
+- Bulk Delete:
+  - Tambah endpoint dan UI switch “Hapus Semua” untuk Jatuh Tempo, Invoice, dan Surat Jalan.
+- No Invoice:
+  - Tidak lagi fallback ke No Surat Jalan; fallback ke `po_number` jika No Invoice kosong agar kolom tidak “-”.
+  - Input No Invoice di Form PO dihapus; dikelola dari Data Invoice.
 
 ### 2025-09-15 (v2.6.0)
 - Auth/OTP:
