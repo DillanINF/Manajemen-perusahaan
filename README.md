@@ -77,8 +77,14 @@ Sistem manajemen operasional **end-to-end** untuk perusahaan distribusi, logisti
 | RESTful API | Alpine.js Reactive | Optimized Queries | Session Management |
 | Clean Code | Mobile Responsive | Lazy Loading | CSRF Protection |
 
+> Highlight Fitur Operasional (Invoice ↔ Jatuh Tempo)
+> - Tombol toggle status di Data Invoice (Accept/Panding) dengan animasi halus (Alpine.js) dan AJAX.
+> - Persistensi status `status_approval` sehingga nilai `Accept` tetap setelah reload halaman.
+> - Sinkronisasi Jatuh Tempo per-PO: satu invoice dengan banyak PO akan menghasilkan beberapa baris di tabel Jatuh Tempo (satu baris per No PO) namun berbagi No Invoice yang sama.
+
 > Update Terbaru (2025-09-16)
-> - Jatuh Tempo: Insert SELALU baris baru untuk PO yang sama; tidak digabung/ditimpa. Unique index pada `jatuh_tempos` dihapus via migrasi agar duplikasi valid. Tambah logging untuk debug insert.
+> - Toggle Status Invoice: Status `Accept`/`Panding` sekarang persist di database (kolom `status_approval`) dan ditampilkan konsisten saat halaman direload (Data Invoice).
+> - Jatuh Tempo (Per-PO Rows): Saat status di-set ke `Accept`, sistem melakukan sinkronisasi ke modul Jatuh Tempo per-PO (satu baris per PO) dengan kunci `no_invoice + no_po` menggunakan upsert. Saat dikembalikan ke `Panding`, seluruh baris untuk `no_invoice` tersebut akan dihapus.
 > - Cascade Delete: Hapus Invoice atau Surat Jalan otomatis menghapus entri terkait di Jatuh Tempo (berdasarkan `no_invoice`/`no_po`).
 > - Bulk Delete: Tambah aksi Hapus Semua (destroyAll) untuk Jatuh Tempo, Invoice, dan Surat Jalan. UI memakai checkbox switch dengan konfirmasi.
 > - No Invoice Source: Kolom No Invoice di Jatuh Tempo tidak lagi mengambil dari No Surat Jalan. Jika No Invoice kosong, fallback ke `po_number` (No Urut dari Data Invoice).
@@ -303,7 +309,7 @@ graph TB
 
 ### 🎨 **Interface Showcase**
 
-<img src="docs/screenshot/Dashboard.png" alt="Dashboard Preview" width="900" style="border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #e2e8f0;">
+<img src="docs/screenshot/dashboard.png" alt="Dashboard Preview" width="900" style="border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #e2e8f0;">
 
 #### 📊 **Dashboard Analytics**
 *Real-time business intelligence dengan visualisasi data yang interaktif*
