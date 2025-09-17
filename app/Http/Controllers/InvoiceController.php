@@ -8,6 +8,8 @@ use App\Models\Produk;
 use App\Models\Customer;
 use App\Models\JatuhTempo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\BarangKeluar;
 
 class InvoiceController extends Controller
 {
@@ -97,21 +99,65 @@ class InvoiceController extends Controller
     {
         // Hapus semua entri Jatuh Tempo yang terkait berdasarkan no_invoice maupun no_po
         try {
-            if (!empty($invoice->no_invoice)) {
-                JatuhTempo::where('no_invoice', $invoice->no_invoice)->delete();
+            $noInv = trim((string)($invoice->no_invoice ?? ''));
+            $noPo  = trim((string)($invoice->no_po ?? ''));
+
+            if ($noInv !== '') {
+                // Hapus yang match persis
+                JatuhTempo::where('no_invoice', $noInv)->delete();
+                // Hapus yang sama namun ada spasi atau format berbeda (TRIM)
+                JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$noInv])->delete();
+                // Jika berupa angka, coba hapus juga berdasarkan cast integer -> string
+                if (is_numeric($noInv)) {
+                    $noInvInt = (string) ((int) $noInv);
+                    JatuhTempo::where('no_invoice', $noInvInt)->delete();
+                    JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$noInvInt])->delete();
+                }
             }
-            if (!empty($invoice->no_po)) {
-                JatuhTempo::where('no_po', $invoice->no_po)->delete();
+
+            if ($noPo !== '' && $noPo !== '-') {
+                JatuhTempo::where('no_po', $noPo)->delete();
+                JatuhTempo::whereRaw('TRIM(no_po) = ?', [$noPo])->delete();
             }
         } catch (\Throwable $e) {
-            \Log::warning('[JT] Gagal menghapus entri Jatuh Tempo terkait invoice', [
+            Log::warning('[JT] Gagal menghapus entri Jatuh Tempo terkait invoice', [
                 'error' => $e->getMessage(),
                 'no_invoice' => $invoice->no_invoice,
                 'no_po' => $invoice->no_po,
             ]);
         }
 
+        // Rollback stok bersyarat untuk seluruh PO dalam grup invoice (berdasarkan po_number = no_invoice)
+        try {
+            $invKey = trim((string)($invoice->no_invoice ?? ''));
+            if ($invKey !== '') {
+                $groupPos = PO::where('po_number', (int) $invKey)->get();
+                foreach ($groupPos as $p) {
+                    $isAccept = (string)($p->status_approval ?? 'Pending') === 'Accept';
+                    if (!$isAccept && !empty($p->no_po)) {
+                        BarangKeluar::where('keterangan', 'Auto Keluar dari PO ' . (string) $p->no_po)->delete();
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[Stock] Rollback stok saat hapus invoice gagal', [
+                'error' => $e->getMessage(),
+                'no_invoice' => $invoice->no_invoice,
+            ]);
+        }
+
         $invoice->delete();
+
+        // Cleanup: hapus semua Jatuh Tempo yang no_invoice-nya sudah tidak ada di tabel invoices (orphan)
+        try {
+            JatuhTempo::whereNotExists(function($q){
+                $q->select(DB::raw(1))
+                  ->from('invoices')
+                  ->whereRaw('TRIM(invoices.no_invoice) = TRIM(jatuh_tempos.no_invoice)');
+            })->delete();
+        } catch (\Throwable $e) {
+            \Log::warning('[JT] Orphan cleanup failed', ['error' => $e->getMessage()]);
+        }
         return redirect()->route('invoice.index')->with('success', 'Invoice dan data Jatuh Tempo terkait berhasil dihapus.');
     }
 

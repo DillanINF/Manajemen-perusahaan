@@ -349,23 +349,83 @@ class SuratJalanController extends Controller
             $month = $suratJalan->tanggal_po ? date('n', strtotime($suratJalan->tanggal_po)) : null;
             $year = $suratJalan->tanggal_po ? date('Y', strtotime($suratJalan->tanggal_po)) : null;
 
-            // Hapus entri Jatuh Tempo terkait (berdasarkan no_invoice dan/atau no_po)
+            // JANGAN hapus Jatuh Tempo berdasarkan no_invoice saat menghapus Data PO
+            // Agar invoice tidak ikut hilang dari daftar invoice.
+            // Hanya bersihkan JatuhTempo yang terikat spesifik ke no_po ini jika ada.
             try {
-                if (!empty($suratJalan->no_invoice)) {
-                    JatuhTempo::where('no_invoice', $suratJalan->no_invoice)->delete();
-                }
                 if (!empty($suratJalan->no_po)) {
                     JatuhTempo::where('no_po', $suratJalan->no_po)->delete();
                 }
             } catch (\Throwable $e) {
-                \Log::warning('[JT] Gagal menghapus entri Jatuh Tempo terkait Surat Jalan', [
+                \Log::warning('[JT] Gagal membersihkan JatuhTempo by no_po saat hapus Surat Jalan', [
                     'error' => $e->getMessage(),
-                    'no_invoice' => $suratJalan->no_invoice,
                     'no_po' => $suratJalan->no_po,
                 ]);
             }
             
+            // Rollback stok: hapus catatan BarangKeluar yang dibuat otomatis oleh PO ini
+            try {
+                $noPoTrim = trim((string) $suratJalan->no_po);
+                if ($noPoTrim !== '') {
+                    $items = $suratJalan->items()->get(['produk_id']);
+                    foreach ($items as $it) {
+                        \App\Models\BarangKeluar::where('produk_id', $it->produk_id)
+                            ->where(function($q) use ($suratJalan, $noPoTrim) {
+                                $exact = 'Auto Keluar dari PO ' . (string) $suratJalan->no_po;
+                                $exactTrim = 'Auto Keluar dari PO ' . $noPoTrim;
+                                $q->where('keterangan', $exact)
+                                  ->orWhere('keterangan', $exactTrim)
+                                  ->orWhere('keterangan', 'like', '%' . $noPoTrim . '%');
+                            })
+                            ->delete();
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('[Stock] Rollback BarangKeluar saat hapus Data PO gagal', [
+                    'error' => $e->getMessage(),
+                    'no_po' => $suratJalan->no_po,
+                    'po_id' => $suratJalan->id,
+                ]);
+            }
+
+            // Simpan konteks untuk placeholder invoice jika grup kosong
+            $poNumber = (int) ($suratJalan->po_number ?? 0);
+            $placeholderTanggal = $suratJalan->tanggal_po ?: now()->format('Y-m-d');
+            $placeholderCustomerId = $suratJalan->customer_id ?? null;
+            $placeholderCustomer = $suratJalan->customer ?? '-';
+
             $suratJalan->delete();
+
+            // Jika setelah hapus tidak ada lagi PO untuk po_number ini, buat draft placeholder
+            if ($poNumber > 0 && !\App\Models\PO::where('po_number', $poNumber)->exists()) {
+                try {
+                    \App\Models\PO::create([
+                        'po_number'      => $poNumber,
+                        'tanggal_po'     => $placeholderTanggal,
+                        'customer_id'    => $placeholderCustomerId,
+                        'customer'       => $placeholderCustomer,
+                        'no_surat_jalan' => null,
+                        'no_po'          => '-',
+                        'no_invoice'     => null,
+                        'produk_id'      => null,
+                        'qty'            => 0,
+                        'qty_jenis'      => 'PCS',
+                        'harga'          => 0,
+                        'total'          => 0,
+                        'kendaraan'      => null,
+                        'no_polisi'      => null,
+                        'alamat_1'       => null,
+                        'alamat_2'       => null,
+                        'pengirim'       => null,
+                        'status_approval'=> 'Pending',
+                    ]);
+                } catch (\Throwable $e) {
+                    \Log::warning('[Invoice Placeholder] Gagal membuat draft placeholder setelah hapus PO', [
+                        'error' => $e->getMessage(),
+                        'po_number' => $poNumber,
+                    ]);
+                }
+            }
 
             // Redirect dengan parameter bulan dan tahun yang sama
             $redirectUrl = route('suratjalan.index');

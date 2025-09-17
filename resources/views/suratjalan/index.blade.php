@@ -29,7 +29,7 @@
                 <!-- Professional icon buttons with tooltips -->
                 <div class="flex items-center space-x-3">
                     <div class="relative group">
-                        <button id="exportBtn" onclick="exportSelected('surat_jalan')"
+                        <button id="exportBtn" type="button"
                                 class="p-3 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 rounded-lg">
                             <i class="fas fa-file-excel text-3xl"></i>
                         </button>
@@ -40,7 +40,7 @@
                     </div>
                     
                     <div class="relative group">
-                        <button id="exportBtnTT" onclick="exportSelected('tanda_terima')"
+                        <button id="exportBtnTT" type="button"
                                 class="p-3 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200 rounded-lg">
                             <i class="fas fa-receipt text-3xl"></i>
                         </button>
@@ -51,7 +51,7 @@
                     </div>
                     
                     <div class="relative group">
-                        <button type="button" onclick="generateInvoice()"
+                        <button id="invoiceBtn" type="button"
                                 class="p-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 rounded-lg">
                             <i class="fas fa-file-invoice text-3xl"></i>
                         </button>
@@ -62,7 +62,7 @@
                     </div>
                     
                     <div class="relative group">
-                        <button type="button" onclick="downloadInvoicePDF()"
+                        <button id="pdfBtn" type="button" onclick="downloadInvoicePDF()"
                                 class="p-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 rounded-lg">
                             <i class="fas fa-file-pdf text-3xl"></i>
                         </button>
@@ -690,15 +690,9 @@ function exportSelected(type = 'surat_jalan') {
     // Tentukan tombol yang digunakan untuk loading state
     const btn = type === 'tanda_terima' ? document.getElementById('exportBtnTT') : document.getElementById('exportBtn');
 
-    // Show loading state pada tombol terkait
+    // Show loading state pada tombol terkait (tanpa mengubah ikon)
     if (btn) {
-        btn.innerHTML = `
-            <svg class="animate-spin -ml-1 mr-1 h-3 w-3 text-yellow-100" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Mengekspor...
-        `;
+        btn.classList.add('opacity-60', 'cursor-not-allowed');
         btn.disabled = true;
     }
 
@@ -710,21 +704,7 @@ function exportSelected(type = 'surat_jalan') {
     // Reset tombol setelah beberapa detik (fallback bila browser tidak auto reset)
     setTimeout(() => {
         if (!btn) return;
-        if (type === 'tanda_terima') {
-            btn.innerHTML = `
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Export Tanda Terima
-            `;
-        } else {
-            btn.innerHTML = `
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Export Surat Jalan
-            `;
-        }
+        btn.classList.remove('opacity-60', 'cursor-not-allowed');
         btn.disabled = false;
     }, 3000);
 }
@@ -770,11 +750,11 @@ document.getElementById('editModal').addEventListener('click', function(e) {
     }
 });
 
-// Generate Invoice dengan format PT. CAM JAYA ABADI
+// Generate Invoice dari data yang dipilih
 function generateInvoice() {
     const selectedChecks = Array.from(document.querySelectorAll('.row-radio:checked'));
     if (selectedChecks.length === 0) {
-        alert('Pilih minimal 1 data untuk membuat invoice');
+        alert('Pilih minimal 1 data untuk Invoice');
         return;
     }
     const selectedIds = selectedChecks.map(el => el.value);
@@ -795,11 +775,8 @@ function generateInvoice() {
         } else {
             alert('Data tidak ditemukan!');
         }
-    });
-}
-
-saat mengubah status', 'error');
-    });
+    })
+    .catch(() => alert('Terjadi kesalahan saat mengambil data invoice'));
 }
 
 // Show notification (Global function)
@@ -1080,6 +1057,34 @@ window.addEventListener('keydown', function(e) {
             printInvoice();
         }
     }
+});
+
+// Expose functions to global scope for inline onclick buttons
+window.exportSelected = typeof exportSelected === 'function' ? exportSelected : window.exportSelected;
+window.generateInvoice = typeof generateInvoice === 'function' ? generateInvoice : window.generateInvoice;
+window.downloadInvoicePDF = typeof downloadInvoicePDF === 'function' ? downloadInvoicePDF : window.downloadInvoicePDF;
+window.printInvoice = typeof printInvoice === 'function' ? printInvoice : window.printInvoice;
+
+// Defensive: also bind click handlers so buttons work even if inline events are blocked
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const invBtn = document.getElementById('invoiceBtn');
+    if (invBtn) {
+      invBtn.addEventListener('click', (e) => { e.preventDefault(); if (typeof window.generateInvoice === 'function') window.generateInvoice(); });
+    }
+    const pdfBtn = document.getElementById('pdfBtn');
+    if (pdfBtn) {
+      pdfBtn.addEventListener('click', (e) => { e.preventDefault(); if (typeof window.downloadInvoicePDF === 'function') window.downloadInvoicePDF(); });
+    }
+    const excelBtn = document.getElementById('exportBtn');
+    if (excelBtn) {
+      excelBtn.addEventListener('click', (e) => { e.preventDefault(); if (typeof window.exportSelected === 'function') window.exportSelected('surat_jalan'); });
+    }
+    const ttBtn = document.getElementById('exportBtnTT');
+    if (ttBtn) {
+      ttBtn.addEventListener('click', (e) => { e.preventDefault(); if (typeof window.exportSelected === 'function') window.exportSelected('tanda_terima'); });
+    }
+  } catch (_) {}
 });
 
 </script>

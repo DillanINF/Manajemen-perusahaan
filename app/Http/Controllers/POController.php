@@ -11,6 +11,7 @@ use App\Models\BarangKeluar;
 use App\Models\Customer;
 use App\Models\Pengirim; // Tambahkan model Pengirim
 use App\Models\JatuhTempo; // Sinkronisasi Jatuh Tempo dari PO
+use App\Models\Invoice; // Hapus entri invoice saat group delete
 use App\Models\Setting;
 use App\Models\SisaPOItem;
 use Illuminate\Support\Facades\Log;
@@ -578,16 +579,16 @@ class POController extends Controller
             }
         }
 
-        // Redirect: tetap berada di Form Input PO
+        // Selalu tetap berada di Form Input PO setelah simpan
         $from = $request->input('from', 'invoice');
         $poNumber = $request->input('po_number') ?? $po->po_number;
         return redirect()
             ->route('po.create', [
-                'from' => $from,
+                'from' => $from ?: 'invoice',
                 'po_number' => $poNumber,
                 'tanggal_po' => \Carbon\Carbon::parse($po->tanggal_po)->format('Y-m-d'),
             ])
-            ->with('success', 'Data PO berhasil disimpan! 🎉');
+            ->with('success', 'Data PO berhasil disimpan! Tetap di Form Input PO untuk melanjutkan.');
     }
 
     /**
@@ -905,12 +906,154 @@ class POController extends Controller
     {
         // Lepas nomor dari reserved cache & epoch agar bisa digunakan lagi
         $num = (int) ($po->po_number ?? 0);
-        // Hapus catatan Barang Keluar yang terasosiasi dengan PO ini (berdasarkan keterangan standar)
+
+        // HAPUS SELURUH GRUP (Data Invoice) SEKALI KLIK dari halaman Data Invoice
+        $from = request('from');
+        $referer = request()->headers->get('referer');
+        $isInvoiceContext = ($from === 'invoice') || ($referer && str_contains($referer, '/po/invoices'));
+        $isGroup = request()->boolean('group');
+        if ($isInvoiceContext && !empty($po->po_number)) {
+            DB::transaction(function() use ($po, $num) {
+                $group = PO::where('po_number', $po->po_number)->get();
+
+                // Kumpulkan semua no_po valid untuk penghapusan JatuhTempo berdasarkan no_po
+                $noPoList = $group->pluck('no_po')->filter(function($v){
+                    $t = trim((string)$v);
+                    return $t !== '' && $t !== '-';
+                })->values();
+
+                foreach ($group as $gp) {
+                    // Rollback stok HANYA jika belum Accept
+                    try {
+                        $isAccept = (string)($gp->status_approval ?? 'Pending') === 'Accept';
+                        if (!$isAccept && !empty($gp->no_po)) {
+                            $noPoTrim = trim((string)$gp->no_po);
+                            $items = $gp->items()->get(['produk_id']);
+                            foreach ($items as $it) {
+                                \App\Models\BarangKeluar::where('produk_id', $it->produk_id)
+                                    ->where(function($q) use ($noPoTrim, $gp) {
+                                        $exact = 'Auto Keluar dari PO ' . (string) $gp->no_po;
+                                        $exactTrim = 'Auto Keluar dari PO ' . $noPoTrim;
+                                        $q->where('keterangan', $exact)
+                                          ->orWhere('keterangan', $exactTrim)
+                                          ->orWhereRaw('TRIM(keterangan) = ?', [trim($exact)])
+                                          ->orWhereRaw('TRIM(keterangan) = ?', [trim($exactTrim)])
+                                          ->orWhere('keterangan', 'LIKE', '%PO ' . $noPoTrim . '%');
+                                    })
+                                    ->delete();
+                            }
+                        }
+                    } catch (\Throwable $e) { /* ignore */ }
+
+                    // Hapus entitas PO
+                    $gp->delete();
+                }
+
+                // Hapus JatuhTempo berdasarkan no_invoice (po_number) dan daftar no_po dalam grup
+                try {
+                    $noInvKey = trim((string)$po->po_number);
+                    if ($noInvKey !== '') {
+                        // Hapus baris pada tabel invoices yang memiliki no_invoice sama
+                        Invoice::where('no_invoice', $noInvKey)->delete();
+                        Invoice::whereRaw('TRIM(no_invoice) = ?', [$noInvKey])->delete();
+                        JatuhTempo::where('no_invoice', $noInvKey)->delete();
+                        JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$noInvKey])->delete();
+                    }
+                    if ($noPoList->isNotEmpty()) {
+                        JatuhTempo::whereIn('no_po', $noPoList->all())->delete();
+                        foreach ($noPoList as $np) {
+                            JatuhTempo::whereRaw('TRIM(no_po) = ?', [trim((string)$np)])->delete();
+                        }
+                    }
+                } catch (\Throwable $e) { /* ignore */ }
+
+                // Bersihkan nomor reserved/epoch sekali saja untuk nomor ini
+                if ($num > 0) {
+                    $reserved = (array) (session('invoice_reserved_numbers', []));
+                    $reserved = array_values(array_filter($reserved, fn($v) => (int)$v !== $num));
+                    session(['invoice_reserved_numbers' => $reserved]);
+                    if ((bool) session('invoice_epoch_active', false)) {
+                        $epochSaved = (array) (session('invoice_epoch_saved_numbers', []));
+                        $epochSaved = array_values(array_filter($epochSaved, fn($v) => (int)$v !== $num));
+                        session(['invoice_epoch_saved_numbers' => $epochSaved]);
+                    }
+                }
+            });
+
+            return redirect()->route('invoice.index')->with('success', 'Seluruh baris untuk No Invoice ' . $num . ' berhasil dihapus.');
+        }
+        // Rollback stok (hapus BarangKeluar) HANYA jika status belum Accept
         try {
-            if (!empty($po->no_po)) {
-                \App\Models\BarangKeluar::where('keterangan', 'Auto Keluar dari PO ' . (string) $po->no_po)->delete();
+            $isAccept = (string)($po->status_approval ?? 'Pending') === 'Accept';
+            if (!$isAccept && !empty($po->no_po)) {
+                DB::transaction(function() use ($po) {
+                    $noPoTrim = trim((string)$po->no_po);
+                    $items = $po->items()->get(['produk_id']);
+                    foreach ($items as $it) {
+                        // Hapus per-produk untuk memastikan rollback akurat
+                        \App\Models\BarangKeluar::where('produk_id', $it->produk_id)
+                            ->where(function($q) use ($noPoTrim, $po) {
+                                $exact = 'Auto Keluar dari PO ' . (string) $po->no_po;
+                                $exactTrim = 'Auto Keluar dari PO ' . $noPoTrim;
+                                $q->where('keterangan', $exact)
+                                  ->orWhere('keterangan', $exactTrim)
+                                  ->orWhereRaw('TRIM(keterangan) = ?', [trim($exact)])
+                                  ->orWhereRaw('TRIM(keterangan) = ?', [trim($exactTrim)])
+                                  ->orWhere('keterangan', 'LIKE', '%PO ' . $noPoTrim . '%');
+                            })
+                            ->delete();
+                    }
+                });
+                \Log::info('[Stock] Rollback BK by items', ['no_po' => $po->no_po, 'po_id' => $po->id, 'items' => $po->items()->count()]);
             }
         } catch (\Throwable $e) { /* ignore */ }
+        // Cascade delete: hapus JatuhTempo terkait no_invoice dan no_po
+        try {
+            $noInvKey = trim((string)($po->po_number ?? $po->no_invoice ?? ''));
+            $noInvAlt = trim((string)($po->no_invoice ?? ''));
+
+            if ($noInvKey !== '') {
+                JatuhTempo::where('no_invoice', $noInvKey)->delete();
+                JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$noInvKey])->delete();
+                if (is_numeric($noInvKey)) {
+                    $asInt = (string) ((int) $noInvKey);
+                    JatuhTempo::where('no_invoice', $asInt)->delete();
+                    JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$asInt])->delete();
+                }
+            }
+            if ($noInvAlt !== '' && $noInvAlt !== $noInvKey) {
+                JatuhTempo::where('no_invoice', $noInvAlt)->delete();
+                JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$noInvAlt])->delete();
+            }
+
+            // Hapus juga berdasarkan semua no_po dalam grup nomor urut yang sama
+            if (!empty($po->po_number)) {
+                $groupNoPos = PO::where('po_number', $po->po_number)
+                    ->whereNotNull('no_po')
+                    ->pluck('no_po')
+                    ->filter(fn($v) => trim((string)$v) !== '' && trim((string)$v) !== '-')
+                    ->values();
+                if ($groupNoPos->isNotEmpty()) {
+                    JatuhTempo::whereIn('no_po', $groupNoPos->all())->delete();
+                    foreach ($groupNoPos as $np) {
+                        $npTrim = trim((string)$np);
+                        JatuhTempo::whereRaw('TRIM(no_po) = ?', [$npTrim])->delete();
+                    }
+                }
+            } elseif (!empty($po->no_po) && trim((string)$po->no_po) !== '-') {
+                $npTrim = trim((string)$po->no_po);
+                JatuhTempo::where('no_po', $npTrim)->delete();
+                JatuhTempo::whereRaw('TRIM(no_po) = ?', [$npTrim])->delete();
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('[JT] Gagal menghapus JatuhTempo via POController::destroy', [
+                'error' => $e->getMessage(),
+                'po_id' => $po->id,
+                'po_number' => $po->po_number,
+                'no_po' => $po->no_po,
+            ]);
+        }
+
         $po->delete();
         if ($num > 0) {
             $reserved = (array) (session('invoice_reserved_numbers', []));
@@ -923,10 +1066,8 @@ class POController extends Controller
             }
         }
         // Tetap berada di halaman Data Invoice jika penghapusan dilakukan dari sana
-        $from = request('from');
-        $referer = request()->headers->get('referer');
-        if ($from === 'invoice' || ($referer && str_contains($referer, '/po/invoices'))) {
-            return redirect()->route('invoice.index')->with('success', 'Data PO berhasil dihapus.');
+        if ($isInvoiceContext) {
+            return redirect()->route('invoice.index')->with('success', 'Data Invoice berhasil dihapus.');
         }
         return redirect()->route('po.index')->with('success', 'Data PO berhasil dihapus.');
     }

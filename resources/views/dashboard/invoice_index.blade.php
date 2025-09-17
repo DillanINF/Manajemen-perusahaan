@@ -45,12 +45,17 @@
                             <td class="py-1 px-1.5 text-xs">{{ $inv->tanggal_jatuh_tempo->format('d/m/Y') }}</td>
                             <td class="py-1 px-1.5 text-xs">Rp {{ number_format($inv->grand_total, 0, ',', '.') }}</td>
                             <td class="py-1 px-1.5 text-xs">
+                                @php
+                                    // Map Draft => Pending untuk tampilan UI
+                                    $uiStatus = $inv->status === 'Draft' ? 'Pending' : $inv->status;
+                                @endphp
                                 <span class="px-1 py-0.5 text-xs rounded-full
-                                    @if($inv->status == 'Paid') bg-green-100 text-green-800
-                                    @elseif($inv->status == 'Sent') bg-blue-100 text-blue-800
-                                    @elseif($inv->status == 'Overdue') bg-red-100 text-red-800
+                                    @if($uiStatus === 'Paid') bg-green-100 text-green-800
+                                    @elseif($uiStatus === 'Sent') bg-blue-100 text-blue-800
+                                    @elseif($uiStatus === 'Overdue') bg-red-100 text-red-800
+                                    @elseif($uiStatus === 'Pending') bg-yellow-100 text-yellow-800
                                     @else bg-gray-100 text-gray-800 @endif">
-                                    {{ $inv->status }}
+                                    {{ $uiStatus }}
                                 </span>
                             </td>
                             <td class="py-1 px-1.5 text-xs text-center">
@@ -87,7 +92,7 @@
                     </button>
                 </div>
 
-                <form id="invoiceForm" method="POST" action="{{ route('invoice.store') }}" class="space-y-4">
+                <form id="invoiceForm" method="POST" action="{{ route('invoice.store') }}" class="space-y-4" onsubmit="return handleInvoiceSubmit(event)">
                     @csrf
                     <div id="methodField"></div>
 
@@ -222,6 +227,38 @@ function editInvoice(id) {
 
 function closeModal() {
     document.getElementById('invoiceModal').classList.add('hidden');
+}
+
+async function handleInvoiceSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Menyimpan...';
+    }
+
+    try {
+        const resp = await fetch(form.action, {
+            method: form.method || 'POST',
+            body: new FormData(form),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            redirect: 'follow'
+        });
+
+        // Apapun hasilnya, navigasi ulang ke halaman index agar tabel ter-update
+        window.location.href = "{{ route('invoice.index') }}";
+        return false;
+    } catch (err) {
+        // Fallback jika error jaringan
+        window.location.reload();
+        return false;
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Simpan';
+        }
+    }
 }
 </script>
 @endsection
