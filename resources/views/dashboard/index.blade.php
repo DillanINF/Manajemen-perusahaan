@@ -18,6 +18,21 @@
             <div class="min-w-0 flex-1">
                 <div class="text-gray-600 dark:text-gray-300 text-sm md:text-base">Pendapatan (Net) - Bulan Ini</div>
                 <div class="text-lg md:text-xl font-bold truncate">Rp {{ number_format(($monthlySubtotal ?? 0), 0, ',', '.') }}</div>
+                <div class="mt-0.5 text-[11px] md:text-xs inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 dark:bg-green-800/40 dark:text-green-200 dark:border-green-700">Tanpa PPN</div>
+            </div>
+        </div>
+
+        <!-- Pendapatan (Kotor/Bruto) -->
+        <div class="bg-emerald-100 border border-emerald-300 rounded-xl p-4 md:p-5 flex items-center space-x-3 md:space-x-4 shadow dark:bg-emerald-900/30 dark:border-emerald-700">
+            <div class="bg-emerald-500 text-white p-2 md:p-3 rounded-full flex-shrink-0">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M6 6h12m-9 12h6"/>
+                </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+                <div class="text-gray-600 dark:text-gray-300 text-sm md:text-base">Pendapatan (Kotor) - Bulan Ini</div>
+                <div class="text-lg md:text-xl font-bold truncate">Rp {{ number_format(($monthlyRevenue ?? 0), 0, ',', '.') }}</div>
+                <div class="mt-0.5 text-[11px] md:text-xs inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-800/40 dark:text-emerald-200 dark:border-emerald-700">Net + PPN 11%</div>
             </div>
         </div>
 
@@ -137,6 +152,12 @@
                         <td class="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100">Rp {{ number_format(($monthlySubtotal ?? 0), 0, ',', '.') }}</td>
                         <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $namaBulan[$bulanNow ?? now()->format('n')] ?? '' }} {{ $tahunNow ?? now()->format('Y') }}</td>
                         <td class="px-4 py-3"><a href="{{ route('finance.income') }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300">Detail</a></td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="px-4 py-3 text-gray-700 dark:text-gray-200">Pendapatan (Kotor)</td>
+                        <td class="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100">Rp {{ number_format(($monthlyRevenue ?? 0), 0, ',', '.') }} <span class="ml-2 text-xs text-emerald-700 dark:text-emerald-300">(Net + PPN)</span></td>
+                        <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $namaBulan[$incMonth ?? ($bulanNow ?? now()->format('n'))] ?? '' }} {{ $incYear ?? ($tahunNow ?? now()->format('Y')) }}</td>
+                        <td class="px-4 py-3"><a href="{{ route('finance.income') }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300">Detail</a></td>
                     </tr>
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-200">Pengeluaran</td>

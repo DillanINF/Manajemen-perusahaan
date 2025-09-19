@@ -11,6 +11,11 @@ class Salary extends Model
 
     protected $fillable = [
         'employee_id',
+        'jenis_gaji',
+        'jumlah_hari',
+        'tarif_harian',
+        'jumlah_unit',
+        'tarif_per_unit',
         'bulan',
         'tahun',
         'gaji_pokok',
@@ -29,6 +34,10 @@ class Salary extends Model
     protected $casts = [
         'tanggal_bayar' => 'date',
         'gaji_pokok' => 'integer',
+        'jumlah_hari' => 'integer',
+        'tarif_harian' => 'integer',
+        'jumlah_unit' => 'integer',
+        'tarif_per_unit' => 'integer',
         'tunjangan' => 'integer',
         'bonus' => 'integer',
         'lembur' => 'integer',

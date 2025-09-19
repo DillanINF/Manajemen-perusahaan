@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-✅%20Production%20Ready-success?style=flat-square" alt="Status">
-  <img src="https://img.shields.io/badge/Version-2.6.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-2.8.0-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square" alt="Build">
 </p>
@@ -81,6 +81,15 @@ Sistem manajemen operasional **end-to-end** untuk perusahaan distribusi, logisti
 > - Tombol toggle status di Data Invoice (Accept/Panding) dengan animasi halus (Alpine.js) dan AJAX.
 > - Persistensi status `status_approval` sehingga nilai `Accept` tetap setelah reload halaman.
 > - Sinkronisasi Jatuh Tempo per-PO: satu invoice dengan banyak PO akan menghasilkan beberapa baris di tabel Jatuh Tempo (satu baris per No PO) namun berbagi No Invoice yang sama.
+
+> Update Terbaru (2025-09-17)
+> - Export & Invoice: tombol Excel, Tanda Terima, Invoice, dan PDF kini stabil dengan binding event defensif (tanpa inline `onclick`) dan fungsi diekspos ke global scope agar kompatibel dengan berbagai skenario pemanggilan.
+> - UX Tombol: state loading tidak lagi mengubah label menjadi teks; ikon tetap konsisten agar UI tetap rapi.
+> - Keamanan Data Invoice: menghapus Data PO dari halaman Data PO tidak lagi menghapus data invoice. Sistem hanya membersihkan Jatuh Tempo yang terkait `no_po` saja.
+> - Placeholder Invoice: jika seluruh PO pada satu nomor invoice terhapus, sistem membuat placeholder agar baris tetap muncul di Data Invoice (menampilkan Tanggal, No Invoice, Customer, Status, Aksi).
+> - Rollback Stok: saat hapus Data PO, catatan `BarangKeluar` otomatis yang terkait PO tersebut dihapus sehingga stok kembali seperti semula.
+> - Alur Input PO: setelah simpan di Form Input PO, aplikasi tetap berada di Form Input PO (bukan kembali ke Data Invoice) agar pengguna bisa lanjut input berikutnya.
+> - PDF/Print Invoice: perbaikan styling A4, header/footer table-group, dan shortcut `Ctrl+P` yang memprioritaskan konten invoice.
 
 > Update Terbaru (2025-09-16)
 > - Toggle Status Invoice: Status `Accept`/`Panding` sekarang persist di database (kolom `status_approval`) dan ditampilkan konsisten saat halaman direload (Data Invoice).

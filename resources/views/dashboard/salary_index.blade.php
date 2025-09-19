@@ -2,6 +2,515 @@
 
 @section('title', 'Manajemen Gaji Karyawan')
 
+@push('styles')
+<style>
+/* Animasi Custom untuk UI Modern */
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.6); }
+}
+
+.animate-slide-in { animation: slideInRight 0.3s ease-out; }
+.animate-slide-out { animation: slideOutRight 0.3s ease-in; }
+.animate-pulse-glow { animation: pulse-glow 2s infinite; }
+
+/* Hover effects untuk tabel */
+.table-row-hover:hover {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Button hover effects */
+.btn-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-modern:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-modern:hover:before {
+    left: 100%;
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+.btn-modern:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.loading-spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hide scrollbar for date columns */
+.overflow-x-auto::-webkit-scrollbar {
+    display: none;
+}
+
+.overflow-x-auto {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Scroll horizontal khusus untuk bagian tanggal */
+.date-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.date-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+.date-columns {
+    display: flex;
+    min-width: max-content;
+}
+
+.date-column {
+    flex: 0 0 auto;
+    width: 35px;
+    min-width: 35px;
+}
+
+/* === HAPUS SEMUA CSS LAMA YANG BERTENTANGAN === */
+
+/* === SOLUSI FINAL: GARIS VERTIKAL UTUH === */
+
+/* 1. HAPUS SEMUA BORDER PADA DATE-COLUMN */
+.salary-table .date-column,
+.salary-table .date-column.border,
+.salary-table .date-column.border-black,
+.salary-table thead .date-column,
+.salary-table tbody .date-column,
+.salary-table tfoot .date-column {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-width: 0 !important;
+  box-shadow: none !important;
+  position: relative;
+}
+
+/* 2. BUAT GARIS VERTIKAL YANG MENEMBUS SELURUH TABEL */
+.salary-table .date-columns {
+  position: relative;
+}
+
+/* Buat garis vertikal dengan pseudo-element yang menembus dari atas ke bawah */
+.salary-table .date-columns::before {
+  content: '';
+  position: absolute;
+  top: -1000px;
+  bottom: -1000px;
+  left: 0;
+  width: 100%;
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0px,
+    transparent 34px,
+    #000 34px,
+    #000 35px
+  );
+  background-size: 35px 100%;
+  background-repeat: repeat-x;
+  background-attachment: local;
+  /* Bantu browser merender garis tetap tajam saat zoom */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: background-position;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 3. PASTIKAN CONTAINER TIDAK MEMOTONG GARIS */
+.salary-table .date-columns {
+  overflow: visible !important;
+  position: relative;
+  z-index: 10;
+  /* Override box-shadow dari date-column individual */
+}
+
+/* FORCE RESET: Hilangkan SEMUA border pada date-column dengan prioritas tertinggi */
+.salary-table .date-column.border.border-black,
+.salary-table thead .date-column.border.border-black,
+.salary-table tbody .date-column.border.border-black,
+.salary-table tfoot .date-column.border.border-black,
+.salary-table .date-column.border,
+.salary-table .date-column {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.salary-table td.date-grid {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  padding: 0;
+  overflow: visible !important;
+  position: relative;
+  box-shadow: none !important;
+}
+
+/* 4. SAMAKAN GARIS HORIZONTAL: gunakan border-collapse agar tidak dobel */
+.salary-table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+}
+
+/* Semua sel default 1px tipis (seperti KODE/ITEM) */
+.salary-table th,
+.salary-table td {
+  border: 1px solid rgba(0,0,0,0.6) !important;
+  position: relative;
+}
+
+/* KHUSUS: Hilangkan SEMUA border pada kolom tanggal agar garis vertikal menyatu */
+.salary-table tbody td.date-grid,
+.salary-table thead td.date-grid,
+.salary-table tfoot td.date-grid {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  background: transparent !important;
+}
+
+/* Hilangkan border horizontal pada SEMUA baris yang mengandung kolom tanggal */
+.salary-table tbody tr,
+.salary-table thead tr,
+.salary-table tfoot tr {
+  background: transparent !important;
+}
+
+/* Khusus untuk sel yang berisi date-grid: hilangkan border yang memotong garis vertikal */
+.salary-table tr td.date-grid,
+.salary-table tr th.date-grid {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+/* Pastikan overflow visible pada semua container */
+.salary-table,
+.salary-table tbody,
+.salary-table thead,
+.salary-table tfoot {
+  overflow: visible !important;
+}
+
+/* Pastikan garis horizontal tabel tidak memotong garis vertikal */
+.salary-table tr {
+  position: relative;
+  z-index: 1;
+}
+
+.salary-table .date-column {
+  position: relative;
+  z-index: 10;
+}
+
+/* 5. INPUT TRANSPARAN DAN TIDAK MENGHALANGI GARIS */
+.salary-table .date-column input {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Pastikan garis vertikal selalu di atas elemen lain */
+.salary-table .date-columns::before {
+  z-index: 15 !important;
+}
+
+/* 6. PERBAIKI SEMUA GARIS AGAR TIPIS DAN SERAGAM */
+/* FORCE: Hilangkan semua border tebal dan ganti dengan tipis */
+.salary-table .border-b-2,
+.salary-table .border-b-black,
+.salary-table th.border-b-2,
+.salary-table td.border-b-2,
+.salary-table th.border-b-2.border-b-black,
+.salary-table td.border-b-2.border-b-black {
+  border-bottom-width: 1px !important;
+  border-bottom-style: solid !important;
+  border-bottom-color: rgba(0,0,0,0.6) !important;
+}
+
+/* Reset semua border pada tabel agar seragam */
+.salary-table th,
+.salary-table td {
+  border-width: 1px !important;
+  border-color: rgba(0,0,0,0.6) !important;
+}
+
+/* Khusus untuk header tanggal: hilangkan border bawah */
+.salary-table thead .date-column.border-b-2,
+.salary-table thead .date-column.border-b-black,
+.salary-table thead .date-column {
+  border-bottom: 0 !important;
+}
+
+/* Garis horizontal header yang tipis seperti KODE dan ITEM */
+.salary-table thead th,
+.salary-table thead td:not(.date-grid) {
+  border-bottom: 1px solid rgba(0,0,0,0.6) !important;
+}
+
+/* Khusus kolom tanggal di header: tidak ada border bawah */
+.salary-table thead td.date-grid {
+  border-bottom: 0 !important;
+}
+
+/* HINDARI DOUBLE BORDER antar baris header */
+.salary-table thead tr:not(:first-child) th,
+.salary-table thead tr:not(:first-child) td {
+  border-top: 0 !important;
+}
+
+.salary-table thead tr:first-child th,
+.salary-table thead tr:first-child td {
+  border-top: 1px solid rgba(0,0,0,0.6) !important;
+}
+
+.salary-table thead tr:not(:last-child) th,
+.salary-table thead tr:not(:last-child) td {
+  border-bottom: 1px solid rgba(0,0,0,0.6) !important;
+}
+
+.salary-table thead tr:last-child th,
+.salary-table thead tr:last-child td {
+  border-bottom: 1px solid rgba(0,0,0,0.6) !important;
+}
+
+/* Override inline style yang mungkin ada */
+.salary-table th[style*="border-bottom: 2px"],
+.salary-table td[style*="border-bottom: 2px"] {
+  border-bottom: 1px solid rgba(0,0,0,0.6) !important;
+}
+
+/* 7. KONTROL TINGGI BARIS BODY AGAR TIDAK TERLALU PANJANG */
+.salary-table {
+  --row-h: 10px; /* ubah angka ini jika ingin lebih tinggi/rendah */
+}
+
+/* Terapkan tinggi baris ke semua sel tbody */
+.salary-table tbody td,
+.salary-table tbody th {
+  height: var(--row-h) !important;
+  line-height: var(--row-h) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Khusus kolom tanggal */
+.salary-table .date-column { 
+  height: var(--row-h) !important; 
+}
+
+.salary-table .date-column input {
+  height: var(--row-h) !important;
+  line-height: var(--row-h) !important;
+  padding: 0 !important;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+function calculateRow(rowIndex) {
+    let total = 0;
+    
+    // Hitung total dari kolom tanggal 1-31
+    for (let day = 1; day <= 31; day++) {
+        const input = document.getElementById(`day_${rowIndex}_${day}`);
+        if (input && input.value) {
+            total += parseFloat(input.value) || 0;
+        }
+    }
+    
+    // Update total pieces
+    const totalElement = document.getElementById(`total_${rowIndex}`);
+    if (totalElement) {
+        totalElement.textContent = total;
+    }
+    
+    // Hitung grand total (total * harga)
+    const priceInput = document.getElementById(`price_${rowIndex}`);
+    const price = priceInput ? (parseInt(priceInput.value) || 10120) : 10120;
+    const grandTotal = total * price;
+    
+    const grandTotalElement = document.getElementById(`grand_total_${rowIndex}`);
+    if (grandTotalElement) {
+        grandTotalElement.textContent = grandTotal.toLocaleString('id-ID');
+    }
+    
+    // Update total kolom per hari
+    updateDayTotals();
+    
+    // Update grand total keseluruhan
+    updateGrandTotal();
+}
+
+function updateDayTotals() {
+    for (let day = 1; day <= 31; day++) {
+        let dayTotal = 0;
+        
+        // Hitung total per hari dari semua baris
+        for (let row = 1; row <= 20; row++) {
+            const input = document.getElementById(`day_${row}_${day}`);
+            if (input && input.value) {
+                dayTotal += parseFloat(input.value) || 0;
+            }
+        }
+        
+        const dayTotalElement = document.getElementById(`day_total_${day}`);
+        if (dayTotalElement) {
+            dayTotalElement.textContent = dayTotal;
+        }
+    }
+}
+
+function updateGrandTotal() {
+    let grandTotal = 0;
+    let totalPieces = 0;
+    
+    // Hitung total dari semua baris
+    for (let row = 1; row <= 20; row++) {
+        const totalElement = document.getElementById(`total_${row}`);
+        if (totalElement) {
+            const pieces = parseInt(totalElement.textContent) || 0;
+            totalPieces += pieces;
+            
+            const priceInput = document.getElementById(`price_${row}`);
+            const price = priceInput ? (parseInt(priceInput.value) || 10120) : 10120;
+            grandTotal += pieces * price;
+        }
+    }
+    
+    // Update total pieces
+    const grandPiecesElement = document.getElementById('grand_pieces');
+    if (grandPiecesElement) {
+        grandPiecesElement.textContent = totalPieces + ' pcs';
+    }
+    
+    // Update final total
+    const finalTotalElement = document.getElementById('final_total');
+    if (finalTotalElement) {
+        finalTotalElement.textContent = grandTotal.toLocaleString('id-ID');
+    }
+}
+
+// Event listener untuk input harga
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners untuk semua input harga
+    for (let i = 1; i <= 20; i++) {
+        const priceInput = document.getElementById(`price_${i}`);
+        if (priceInput) {
+            priceInput.addEventListener('input', function() {
+                calculateRow(i);
+            });
+        }
+    }
+});
+
+// Fungsi untuk menyimpan data (opsional)
+function saveData() {
+    const data = [];
+    
+    for (let row = 1; row <= 20; row++) {
+        const rowData = {
+            name: document.querySelector(`#row_${row} input[placeholder="Nama Karyawan"]`)?.value || '',
+            description: document.querySelector(`#row_${row} input[placeholder="Deskripsi Pekerjaan"]`)?.value || '',
+            days: {},
+            total: document.getElementById(`total_${row}`)?.textContent || '0',
+            price: document.getElementById(`price_${row}`)?.value || '10120',
+            grandTotal: document.getElementById(`grand_total_${row}`)?.textContent || '0'
+        };
+        
+        for (let day = 1; day <= 31; day++) {
+            const input = document.getElementById(`day_${row}_${day}`);
+            if (input && input.value) {
+                rowData.days[day] = input.value;
+            }
+        }
+        
+        if (rowData.name || Object.keys(rowData.days).length > 0) {
+            data.push(rowData);
+        }
+    }
+    
+    console.log('Data yang akan disimpan:', data);
+    // Di sini bisa ditambahkan AJAX call untuk menyimpan ke database
+}
+</script>
+@endpush
+
 @section('content')
 <div class="space-y-6">
     <!-- Header dengan Statistik -->
@@ -92,137 +601,387 @@
                     <span id="yearButtonText">Pilih Tahun ({{ now()->format('Y') }})</span>
                 </button>
             </div>
-            <button onclick="openModal('tambahModal')" 
-                    class="group relative inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 hover:scale-105"
-                    title="Tambah Gaji">
-                <i class="fa-solid fa-plus text-lg group-hover:rotate-90 transition-all duration-300"></i>
-            </button>
+            <div class="flex gap-3">
+                <button onclick="openModal('tambahModal')" 
+                        class="btn-modern group inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <div class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center group-hover:rotate-180 transition-transform duration-300">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                    </div>
+                    <span class="text-sm font-semibold">Tambah Gaji</span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Peringatan: akumulasi potongan -->
-    <div class="rounded-lg border border-amber-200 bg-amber-50 text-amber-800 px-3 py-2 text-sm mb-3 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300">
-        <span class="font-semibold">Peringatan:</span>
-        Potongan pajak, Potongan BPJS, dan potongan lainnya sudah digabungkan. Nilai totalnya ditampilkan pada kolom <span class="font-semibold">Potongan</span>, sedangkan kolom <span class="font-semibold">Total Gaji</span> merupakan gaji bersih setelah seluruh potongan tersebut.
-    </div>
+    <!-- Tabel Gaji Karyawan -->
+    <div class="bg-white dark:bg-slate-900 shadow-lg overflow-hidden border-2 border-black dark:border-slate-400">
+        <!-- Header Perusahaan -->
+        <div class="border-b-2 border-black dark:border-slate-400 px-4 py-2">
+            <div class="flex justify-between items-start">
+                <div class="text-left text-xs text-black dark:text-white">
+                    <div class="border border-black dark:border-slate-400 px-2 py-1 mb-1">
+                        <div class="text-red-500 font-bold">PERATURAN</div>
+                        <div class="text-red-700 font-bold">DILARANG BELAH PAPAN TANPA IJIN</div>
+                        <div class="text-red-700 font-bold">DILARANG BELAH BALOK TANPA IJIN</div>
+                    </div>
+                </div>
+                <div class="flex-1 text-center">
+                    <h2 class="text-4xl font-bold text-black dark:text-white">PT. CAM JAYA ABADI</h2>
+                </div>
+                <div class="text-right text-xs text-black dark:text-white">
+                    <div class="border border-black dark:border-slate-400 px-2 py-1 mb-1 text-center">
+                        <div class="font-bold">BIAYA / UPAH KERJA</div>
+                    </div>
+                    <div class="border border-black dark:border-slate-400 px-2 py-1 text-center">
+                        <div class="font-bold">{{ now()->format('d-M-y') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CSS untuk stabilitas tabel -->
+        <style>
+            .salary-table-container {
+                width: 100%;
+                overflow-x: visible;
+                overflow-y: hidden;
+                position: relative;
+                zoom: 1 !important;
+                transform: none !important;
+            }
+            
+            .salary-table {
+                font-size: 10px !important;
+                table-layout: fixed !important;
+                width: 100% !important;
+                min-width: 1400px !important;
+                max-width: none !important;
+                border-collapse: collapse !important;
+                zoom: 1 !important;
+                transform: scale(1) !important;
+                transform-origin: top left !important;
+            }
+            
+            .salary-table th,
+            .salary-table td {
+                box-sizing: border-box !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+            
+            @media (max-width: 1200px) {
+                .salary-table-container {
+                    overflow-x: scroll;
+                }
+            }
+            
+            /* Prevent zoom effects */
+            .salary-table * {
+                zoom: 1 !important;
+                transform: none !important;
+            }
+        </style>
 
-    <!-- Tabel Gaji -->
-    <div class="bg-white rounded-lg shadow overflow-hidden dark:bg-slate-900/40 dark:border dark:border-white/10">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-white/10">
-                <thead class="bg-gray-50 dark:bg-slate-800/60">
+        <!-- Tabel Gaji -->
+        <div class="salary-table-container" id="salaryTableContainer" style="position: relative;">
+            <!-- Overlay garis vertikal untuk area TANGGAL -->
+            <div id="dateGridOverlay" aria-hidden="true" style="position:absolute; top:0; left:0; height:0; width:0; pointer-events:none; z-index:50;
+                 background-image: repeating-linear-gradient(to right, rgba(0,0,0,0.8) 0px, rgba(0,0,0,0.8) 1px, transparent 1px, transparent 35px);
+                 background-repeat:repeat; background-size:35px 100%; opacity:1;"></div>
+            <table class="salary-table border-collapse w-full">
+                <thead>
                     <tr>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Karyawan</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gaji Pokok</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tunjangan</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bonus</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lembur</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Potongan</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Gaji</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%;">ITEM</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 10%;"></th>
+                        
+                        <!-- Tanggal yang bisa scroll horizontal -->
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 35%;">TANGGAL</th>
+                        
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%;">JUMLAH</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%;">BIAYA PRODUKSI</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%;">TOTAL</th>
+                        <th class="px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 17%; border-top: 1px solid rgba(0,0,0,0.6); border-bottom: 1px solid rgba(0,0,0,0.6); border-right: 1px solid rgba(0,0,0,0.6);">KETERANGAN</th>
                     </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200 dark:bg-transparent dark:divide-white/10">
-                    @forelse($salaries ?? [] as $salary)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-white/5">
-                        <td class="px-3 py-2 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="text-sm font-medium text-gray-900 dark:text-slate-100">{{ $salary->employee->nama_karyawan }}</div>
+                    <tr class="bg-gray-100 dark:bg-slate-700">
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%;">KODE</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 10%;">DESKRIPSI</th>
+                        
+                        <!-- Container scroll horizontal untuk tanggal -->
+                        <td class="border border-black dark:border-slate-400 px-0 py-0 date-grid" style="width: 35%;">
+                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
+                                <div class="date-columns">
+                                    @for($i = 1; $i <= 31; $i++)
+                                        <div class="date-column border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white bg-gray-100 dark:bg-slate-700" style="font-size: 8px; height: 100%; display: flex; align-items: center; justify-content: center;">{{ $i }}</div>
+                                    @endfor
+                                </div>
                             </div>
                         </td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
-                            {{ DateTime::createFromFormat('!m', $salary->bulan)->format('F') }} {{ $salary->tahun }}
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;">JUMLAH</th>
+                        <!-- Kolom kosong kiri HSL. PROD -->
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;">HSL. PROD</th>
+                        <!-- Kolom kosong kanan HSL. PROD -->
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
+                        <!-- HARGA di bawah BIAYA PRODUKSI -->
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 8%;">HARGA</th>
+                        <!-- TOTAL -->
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;">TOTAL</th>
+                        <!-- KETERANGAN (tanpa garis kiri) -->
+                        <th class="px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 17%; border-top: 1px solid rgba(0,0,0,0.6); border-bottom: 1px solid rgba(0,0,0,0.6); border-right: 1px solid rgba(0,0,0,0.6);"></th>
+                    </tr>
+                    <tr class="bg-gray-100 dark:bg-slate-700">
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 10%;"></th>
+                        
+                        <!-- Baris kosong untuk tanggal -->
+                        <td class="border border-black dark:border-slate-400 px-0 py-0" style="width: 35%;">
+                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
+                                <div class="date-columns">
+                                    @for($i = 1; $i <= 31; $i++)
+                                        <div class="date-column border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white bg-gray-100 dark:bg-slate-700" style="font-size: 8px; height: 100%;"></div>
+                                    @endfor
+                                </div>
+                            </div>
                         </td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">Rp {{ number_format($salary->gaji_pokok, 0, ',', '.') }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">Rp {{ number_format($salary->tunjangan ?? 0, 0, ',', '.') }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">Rp {{ number_format($salary->bonus ?? 0, 0, ',', '.') }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">Rp {{ number_format($salary->lembur ?? 0, 0, ',', '.') }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-red-600 dark:text-red-300">Rp {{ number_format($salary->total_potongan, 0, ',', '.') }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">Rp {{ number_format($salary->total_gaji, 0, ',', '.') }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded-full {{ $salary->status_pembayaran === 'dibayar' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-200' }}">
-                                {{ $salary->status_pembayaran === 'dibayar' ? 'Dibayar' : 'Belum Dibayar' }}
-                            </span>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 8%;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;"></th>
+                        <th class="px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 17%; border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;"></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-slate-900">
+                    @forelse($salaries ?? [] as $index => $salary)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-xs font-medium text-black dark:text-white bg-white dark:bg-slate-900" style="height: 12px; line-height: 12px; width: 8%;">
+                            {{ strtoupper($salary->employee->nama_karyawan) }}
                         </td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">
-                            <x-table.action-buttons 
-                                onEdit="editSalary({{ json_encode($salary) }})"
-                                deleteAction="{{ route('salary.destroy', $salary) }}"
-                                confirmText="Yakin ingin menghapus data gaji ini?"
-                                :useMenu="false"
-                            />
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-xs text-black dark:text-white bg-white dark:bg-slate-900" style="height: 12px; line-height: 11px; width: 10%;">
+                            <div style="font-size: 7px;">KUBOTA 110 X 110 EKSPOR</div>
+                            <div style="font-size: 7px;">{{ strtoupper($salary->employee->posisi ?? 'KARYAWAN') }}</div>
+                        </td>
+                        
+                        <!-- Container scroll horizontal untuk input tanggal -->
+                        <td class="border border-black dark:border-slate-400 px-0 py-0 date-grid" style="width: 35%; height: 12px;">
+                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
+                                <div class="date-columns">
+                                    @for($day = 1; $day <= 31; $day++)
+                                        <div class="date-column border border-black dark:border-slate-400" style="height: 12px; padding: 0;">
+                                            <input type="text" 
+                                                   class="w-full h-full text-center text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" 
+                                                   style="font-size: 8px; padding: 0px; line-height: 12px; resize: none;"
+                                                   placeholder=""
+                                                   onchange="calculateRow({{ $index }})"
+                                                   id="day_{{ $index }}_{{ $day }}">
+                                        </div>
+                                    @endfor
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-center text-xs text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
+                            <span id="total_{{ $index }}">{{ rand(450, 500) }}</span> pcs
+                        </td>
+                        <!-- Kolom kosong kiri HSL. PROD -->
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-xs text-black dark:text-white bg-white dark:bg-slate-900" style="height: 12px; line-height: 12px; width: 3%;"></td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-xs text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
+                            {{ number_format(10120, 0, ',', '.') }}
+                        </td>
+                        <!-- Kolom kosong kanan HSL. PROD -->
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-xs text-black dark:text-white bg-white dark:bg-slate-900" style="height: 12px; line-height: 12px; width: 3%;"></td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-xs text-black dark:text-white" style="height: 12px; line-height: 12px; width: 8%;">
+                            {{ number_format(rand(100000, 200000), 0, ',', '.') }}
+                        </td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-xs font-bold text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
+                            <span id="grand_total_{{ $index }}">{{ number_format($salary->total_gaji, 0, ',', '.') }}</span>
+                        </td>
+                        <td class="px-1 py-0 text-left text-xs bg-white dark:bg-slate-900" style="height: 12px; line-height: 12px; width: 17%; padding-left: 4px; border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;">
+                            @if($salary->status_pembayaran === 'dibayar')
+                                <span class="text-green-600 dark:text-green-400 font-bold" style="font-size: 7px;">LUNAS</span>
+                            @else
+                                <span class="text-red-600 dark:text-red-400 font-bold" style="font-size: 7px;">BELUM LUNAS</span>
+                            @endif
                         </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="10" class="px-6 py-4 text-center text-gray-500">Belum ada data gaji</td>
+                    <!-- Baris kosong untuk input manual -->
+                    @for($i = 1; $i <= 28; $i++)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 12px; width: 8%;">
+                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" placeholder="Kode Karyawan" style="line-height: 12px; padding: 0;">
+                        </td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 12px; width: 10%;">
+                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" placeholder="Deskripsi Pekerjaan" style="line-height: 12px; padding: 0;">
+                        </td>
+                        
+                        <!-- Container scroll horizontal untuk input tanggal -->
+                        <td class="border border-black dark:border-slate-400 px-0 py-0" style="width: 35%; height: 12px;">
+                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
+                                <div class="date-columns">
+                                    @for($day = 1; $day <= 31; $day++)
+                                        <div class="date-column border border-black dark:border-slate-400" style="height: 12px; padding: 0;">
+                                            <input type="text" 
+                                                   class="w-full h-full text-center text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" 
+                                                   style="font-size: 8px; padding: 0px; line-height: 12px; resize: none;"
+                                                   placeholder=""
+                                                   onchange="calculateRow({{ $i }})"
+                                                   id="day_{{ $i }}_{{ $day }}">
+                                        </div>
+                                    @endfor
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
+                            <span id="total_{{ $i }}">0</span> pcs
+                        </td>
+                        <!-- Kolom kosong kiri HSL. PROD -->
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 bg-white dark:bg-slate-900" style="height: 12px; width: 3%;"></td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 12px; width: 6%;">
+                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none text-right" placeholder="10.120" id="hsl_prod_{{ $i }}" style="line-height: 12px; padding: 0;">
+                        </td>
+                        <!-- Kolom kosong kanan HSL. PROD -->
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 bg-white dark:bg-slate-900" style="height: 12px; width: 3%;"></td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 12px; width: 8%;">
+                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none text-right" placeholder="0" id="biaya_prod_{{ $i }}" style="line-height: 12px; padding: 0;">
+                        </td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-xs font-bold text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
+                            <span id="grand_total_{{ $i }}">0</span>
+                        </td>
+                        <td class="px-1 py-0" style="height: 12px; width: 17%; border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;">
+                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" style="line-height: 12px; padding: 0; padding-left: 4px;">
+                        </td>
                     </tr>
+                    @endfor
                     @endforelse
                 </tbody>
+                <!-- Footer Total -->
+                <tfoot>
+                    <tr class="bg-gray-100 dark:bg-slate-700 font-bold">
+                        <td colspan="2" class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">Hasil produksi pallet dan biaya borongan</td>
+                        <!-- Container scroll horizontal untuk total per hari -->
+                        <td class="border border-black dark:border-slate-400 px-0 py-0" style="width: 35%;">
+                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
+                                <div class="date-columns">
+                                    @for($day = 1; $day <= 31; $day++)
+                                        <div class="date-column" id="day_total_{{ $day }}" style="font-size: 8px; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px;">{{ $day <= 20 ? rand(20, 50) : 0 }}</div>
+                                    @endfor
+                                </div>
+                            </div>
+                        </td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-center text-xs text-black dark:text-white" id="grand_pieces">486 pcs</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">TOTAL</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">-</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">-</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">-</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-right text-xs font-bold text-black dark:text-white" id="final_total">4.937.120</td>
+                        <td class="px-1 py-1 text-xs text-black dark:text-white" style="border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;">-</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
-    </div>
-</div>
-
-<!-- Toast peringatan duplikasi (non-blokir) -->
-<div id="toast-duplicate" class="fixed top-4 right-4 z-[60] hidden">
-    <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 shadow-lg dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300">
-        <svg class="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z" />
-        </svg>
-        <div class="text-sm">
-            <span class="font-semibold">Peringatan:</span>
-            Data gaji untuk karyawan dan bulan ini sudah ada. Silakan periksa kembali atau gunakan menu edit jika ingin mengubah.
-        </div>
-    </div>
-    <style>
-        #toast-duplicate.show { display:block; animation: fadeOut 3.2s forwards; }
-        #toast-duplicate { display:none; }
-        @keyframes fadeOut { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0; display:none} }
-    </style>
-</div>
-
-<!-- Modal Peringatan Duplikasi (tengah, dengan tombol Kembali) -->
-<div id="duplicateCenterModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[70]">
-    <div class="bg-white rounded-lg shadow-2xl w-11/12 sm:w-[460px] p-6">
-        <div class="flex items-start gap-3">
-            <svg class="w-6 h-6 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z" />
-            </svg>
-            <div>
-                <h4 class="text-base font-semibold text-gray-900">Duplikasi Data Gaji</h4>
-                <p class="mt-1 text-sm text-gray-600">
-                    Gaji untuk karyawan dan periode yang dipilih sudah tercatat. Silakan periksa kembali atau gunakan menu edit.
-                </p>
+        
+        <!-- Footer dengan Signature -->
+        <div class="border-t-2 border-black dark:border-slate-400 px-4 py-4">
+            <div class="flex justify-between items-end">
+                <div class="text-xs text-black dark:text-white">
+                    <div class="mb-4">TOTAL BON: <span class="font-bold">0</span></div>
+                    <div class="mb-1">GRAND TOTAL GAJI DITERIMA: <span class="font-bold">4.937.120</span></div>
+                    <div class="grid grid-cols-1 gap-1 mt-4">
+                        <div class="bg-yellow-200 dark:bg-yellow-300 px-2 py-1 text-center text-black">BON MANG DIDI</div>
+                        <div class="bg-yellow-200 dark:bg-yellow-300 px-2 py-1 text-center text-black">BON JOKOWI</div>
+                        <div class="bg-yellow-200 dark:bg-yellow-300 px-2 py-1 text-center text-black">BON MANG DIDI</div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="border-2 border-black dark:border-slate-400 px-8 py-4 mb-2">
+                        <div class="text-lg font-bold text-black dark:text-white">486 PALLET</div>
+                    </div>
+                    <div class="text-xs text-black dark:text-white">
+                        <div>Reid Kubro Wahyudin</div>
+                        <div class="font-bold">DIREKTUR</div>
+                        <div class="mt-8 border-t border-black dark:border-slate-400">DIREKTUR UTAMA</div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="mt-5 text-right">
-            <button type="button" onclick="closeDuplicateCenterModal()" class="inline-flex items-center px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300">Kembali</button>
-        </div>
     </div>
-    <style>
-        #duplicateCenterModal { display: none; }
-        #duplicateCenterModal.show { display: flex; }
-    </style>
-    <script>
-        function openDuplicateCenterModal(){ document.getElementById('duplicateCenterModal').classList.add('show'); }
-        function closeDuplicateCenterModal(){ document.getElementById('duplicateCenterModal').classList.remove('show'); }
-    </script>
 </div>
 
-<!-- Modal Generate Payroll -->
-<div id="payrollModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-900">Generate Payroll</h3>
-            <button onclick="closeModal('payrollModal')" class="text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+<!-- Toast Notifikasi Modern -->
+<div id="toast-duplicate" class="fixed top-6 right-6 z-[60] hidden transform translate-x-full transition-transform duration-300">
+    <div class="flex items-start gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-4 text-amber-800 shadow-2xl backdrop-blur-sm dark:from-amber-900/30 dark:to-orange-900/30 dark:border-amber-700 dark:text-amber-300 min-w-[350px]">
+        <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-triangle-exclamation text-white text-lg"></i>
         </div>
+        <div class="flex-1">
+            <h4 class="font-bold text-amber-900 dark:text-amber-200 mb-1">Duplikasi Data!</h4>
+            <p class="text-sm text-amber-700 dark:text-amber-300">Data gaji untuk karyawan dan bulan ini sudah ada. Gunakan menu edit untuk mengubah.</p>
+        </div>
+        <button onclick="closeToast()" class="w-6 h-6 bg-amber-200 dark:bg-amber-800 rounded-full flex items-center justify-center hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors">
+            <i class="fa-solid fa-times text-xs text-amber-700 dark:text-amber-300"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Modal Peringatan Modern -->
+<div id="duplicateCenterModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-[70] p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md transform scale-95 transition-all duration-300 border border-gray-200 dark:border-slate-600">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-6 rounded-t-3xl">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-triangle-exclamation text-white text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-white">Duplikasi Data</h4>
+                    <p class="text-amber-100 text-sm">Data sudah ada dalam sistem</p>
+                </div>
+            </div>
+        </div>
+        <!-- Content -->
+        <div class="p-6">
+            <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                Gaji untuk karyawan dan periode yang dipilih sudah tercatat dalam sistem. Silakan periksa kembali atau gunakan menu edit untuk mengubah data.
+            </p>
+            <div class="flex gap-3 justify-end">
+                <button type="button" onclick="closeDuplicateCenterModal()" 
+                        class="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold rounded-xl transition-all duration-200 transform hover:scale-105">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>Kembali
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Generate Payroll Modern -->
+<div id="payrollModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-lg transform scale-95 transition-all duration-300 border border-gray-200 dark:border-slate-600">
+        <!-- Header dengan Gradient -->
+        <div class="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 rounded-t-3xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-magic-wand-sparkles text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Generate Payroll</h3>
+                        <p class="text-purple-100 text-sm">Buat gaji otomatis untuk semua karyawan</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('payrollModal')" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center text-white transition-colors">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Content -->
+        <div class="p-6">
         <form method="POST" action="{{ route('salary.generate-payroll') }}" class="space-y-4">
             @csrf
             <div>
@@ -243,12 +1002,14 @@
                     @endfor
                 </select>
             </div>
-            <div class="flex justify-end space-x-3 pt-4">
-                <button type="button" onclick="closeModal('payrollModal')" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
-                    Batal
+            <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-600">
+                <button type="button" onclick="closeModal('payrollModal')" 
+                        class="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold rounded-xl transition-all duration-200 transform hover:scale-105">
+                    <i class="fa-solid fa-times mr-2"></i>Batal
                 </button>
-                <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
-                    Generate
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <i class="fa-solid fa-magic-wand-sparkles mr-2"></i>Generate Payroll
                 </button>
             </div>
         </form>
@@ -310,10 +1071,52 @@
                         @endfor
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gaji Pokok</label>
-                    <input type="text" id="gaji_pokok_display" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
-                    <input type="hidden" name="gaji_pokok" id="gaji_pokok_value">
+                <!-- Jenis Gaji -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jenis Gaji</label>
+                    <div class="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+                        <label class="flex-1 px-4 py-2 text-center cursor-pointer bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-r border-gray-300 dark:border-gray-600 transition-colors hover:bg-gray-50 dark:hover:bg-slate-600" id="label_borongan">
+                            <input type="radio" name="jenis_gaji" value="borongan" class="hidden" id="jg_borongan" checked onchange="toggleJenisGaji()">
+                            <span class="font-medium">🏭 Borongan</span>
+                        </label>
+                        <label class="flex-1 px-4 py-2 text-center cursor-pointer bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors hover:bg-gray-50 dark:hover:bg-slate-600" id="label_harian">
+                            <input type="radio" name="jenis_gaji" value="harian" class="hidden" id="jg_harian" onchange="toggleJenisGaji()">
+                            <span class="font-medium">📅 Harian</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- Input Borongan -->
+                <div id="section_borongan" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Unit</label>
+                        <input type="number" min="0" name="jumlah_unit" id="jumlah_unit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" placeholder="0" oninput="hitungGajiPokok()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tarif per Unit (Rp)</label>
+                        <input type="number" min="0" name="tarif_per_unit" id="tarif_per_unit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" placeholder="0" oninput="hitungGajiPokok()">
+                    </div>
+                </div>
+                <!-- Input Harian -->
+                <div id="section_harian" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Hari</label>
+                        <input type="number" min="0" name="jumlah_hari" id="jumlah_hari" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" placeholder="0" oninput="hitungGajiPokok()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tarif Harian (Rp)</label>
+                        <input type="number" min="0" name="tarif_harian" id="tarif_harian" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" placeholder="0" oninput="hitungGajiPokok()">
+                    </div>
+                </div>
+                <!-- Gaji Pokok (otomatis) -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gaji Pokok (otomatis)</label>
+                    <div class="relative">
+                        <input type="text" id="gaji_pokok_display" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-gray-200 font-bold text-lg">
+                        <input type="hidden" name="gaji_pokok" id="gaji_pokok_value">
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 dark:text-green-400">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tunjangan</label>
@@ -483,11 +1286,46 @@
 
 <script>
 function openModal(modalId) {
-    document.getElementById(modalId).classList.remove('hidden');
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('hidden');
+    modal.classList.remove('opacity-0');
+    modal.classList.add('opacity-100');
+    
+    // Animasi untuk modal content
+    setTimeout(() => {
+        const content = modal.querySelector('.transform');
+        if (content) {
+            content.classList.remove('scale-95', 'translate-y-4');
+            content.classList.add('scale-100', 'translate-y-0');
+        }
+    }, 10);
+    
+    // Initialize toggle untuk modal tambah
+    if (modalId === 'tambahModal') {
+        setTimeout(() => {
+            toggleJenisGaji();
+            hitungGajiPokok();
+        }, 100);
+    }
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.add('hidden');
+    const modal = document.getElementById(modalId);
+    const content = modal.querySelector('.transform');
+    
+    // Animasi keluar
+    modal.classList.remove('opacity-100');
+    modal.classList.add('opacity-0');
+    
+    if (content) {
+        content.classList.remove('scale-100', 'translate-y-0');
+        content.classList.add('scale-95', 'translate-y-4');
+    }
+    
+    // Hide setelah animasi selesai
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
 }
 
 function editSalary(salaryData) {
@@ -546,11 +1384,56 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Toggle jenis gaji dan hitung otomatis
+function toggleJenisGaji() {
+    const borongan = document.getElementById('jg_borongan').checked;
+    const sectionBorongan = document.getElementById('section_borongan');
+    const sectionHarian = document.getElementById('section_harian');
+    const labelBorongan = document.getElementById('label_borongan');
+    const labelHarian = document.getElementById('label_harian');
+    
+    if (borongan) {
+        sectionBorongan.classList.remove('hidden');
+        sectionHarian.classList.add('hidden');
+        labelBorongan.classList.add('bg-green-100', 'text-green-800', 'dark:bg-green-900/30', 'dark:text-green-300');
+        labelBorongan.classList.remove('bg-white', 'dark:bg-slate-700');
+        labelHarian.classList.remove('bg-green-100', 'text-green-800', 'dark:bg-green-900/30', 'dark:text-green-300');
+        labelHarian.classList.add('bg-white', 'dark:bg-slate-700');
+    } else {
+        sectionHarian.classList.remove('hidden');
+        sectionBorongan.classList.add('hidden');
+        labelHarian.classList.add('bg-blue-100', 'text-blue-800', 'dark:bg-blue-900/30', 'dark:text-blue-300');
+        labelHarian.classList.remove('bg-white', 'dark:bg-slate-700');
+        labelBorongan.classList.remove('bg-green-100', 'text-green-800', 'dark:bg-green-900/30', 'dark:text-green-300');
+        labelBorongan.classList.add('bg-white', 'dark:bg-slate-700');
+    }
+    hitungGajiPokok();
+}
+
+function hitungGajiPokok() {
+    const borongan = document.getElementById('jg_borongan').checked;
+    const display = document.getElementById('gaji_pokok_display');
+    const value = document.getElementById('gaji_pokok_value');
+    let total = 0;
+    
+    if (borongan) {
+        const unit = parseInt(document.getElementById('jumlah_unit').value) || 0;
+        const tarif = parseInt(document.getElementById('tarif_per_unit').value) || 0;
+        total = unit * tarif;
+    } else {
+        const hari = parseInt(document.getElementById('jumlah_hari').value) || 0;
+        const tarif = parseInt(document.getElementById('tarif_harian').value) || 0;
+        total = hari * tarif;
+    }
+    
+    display.value = 'Rp ' + total.toLocaleString('id-ID');
+    value.value = total;
+}
+
 function autoFillEmployeeData() {
-    const employeeSelect = document.getElementById('employee_select');
-    const selectedOption = employeeSelect.options[employeeSelect.selectedIndex];
-    const gajiPokokDisplay = document.getElementById('gaji_pokok_display');
-    const gajiPokokValue = document.getElementById('gaji_pokok_value');
+    // Hapus auto-fill dari employee karena sekarang pakai sistem borongan/harian
+    hitungGajiPokok();
+}
 
     if (selectedOption.value) {
         // Get raw gaji pokok value directly from data attribute
@@ -755,15 +1638,46 @@ document.addEventListener('DOMContentLoaded', function() {
     filterKaryawanTable();
 });
 
-// Tampilkan toast duplikasi
+// Tampilkan toast duplikasi dengan animasi modern
 function showDuplicateToast() {
     const toast = document.getElementById('toast-duplicate');
     if (!toast) return;
-    toast.classList.remove('show');
-    void toast.offsetWidth; // reflow untuk restart animasi
-    toast.classList.add('show');
-    // auto hide via CSS animation
-    setTimeout(() => toast.classList.remove('show'), 3300);
+    
+    // Reset dan tampilkan
+    toast.classList.remove('hidden');
+    toast.classList.remove('translate-x-full');
+    toast.classList.add('translate-x-0');
+    
+    // Auto hide setelah 4 detik
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+    }, 4000);
+}
+
+// Tutup toast manual
+function closeToast() {
+    const toast = document.getElementById('toast-duplicate');
+    if (!toast) return;
+    toast.classList.add('translate-x-full');
+    setTimeout(() => toast.classList.add('hidden'), 300);
+}
+
+// Modal functions dengan animasi
+function openDuplicateCenterModal() { 
+    const modal = document.getElementById('duplicateCenterModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.querySelector('div > div').classList.remove('scale-95');
+        modal.querySelector('div > div').classList.add('scale-100');
+    }, 10);
+}
+
+function closeDuplicateCenterModal() { 
+    const modal = document.getElementById('duplicateCenterModal');
+    modal.querySelector('div > div').classList.remove('scale-100');
+    modal.querySelector('div > div').classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 200);
 }
 
 // Cek duplikasi berdasarkan pilihan form saat ini (non-blokir)
@@ -921,6 +1835,23 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeYearModal();
     }
+});
+
+// Sync scroll untuk semua container tanggal
+document.addEventListener('DOMContentLoaded', function() {
+    const dateScrollContainers = document.querySelectorAll('.date-scroll-container');
+    
+    // Sinkronisasi scroll horizontal untuk semua container tanggal
+    dateScrollContainers.forEach((container, index) => {
+        container.addEventListener('scroll', function() {
+            const scrollLeft = this.scrollLeft;
+            dateScrollContainers.forEach((otherContainer, otherIndex) => {
+                if (otherIndex !== index) {
+                    otherContainer.scrollLeft = scrollLeft;
+                }
+            });
+        });
+    });
 });
 </script>
 

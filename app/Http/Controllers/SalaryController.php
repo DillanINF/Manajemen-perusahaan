@@ -44,9 +44,13 @@ class SalaryController extends Controller
     {
         $data = $request->validate([
             'employee_id' => 'required|exists:employees,id',
+            'jenis_gaji' => 'required|in:borongan,harian',
+            'jumlah_hari' => 'nullable|integer|min:1',
+            'tarif_harian' => 'nullable|integer|min:0',
+            'jumlah_unit' => 'nullable|integer|min:1',
+            'tarif_per_unit' => 'nullable|integer|min:0',
             'bulan' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer|min:2020|max:2030',
-            'gaji_pokok' => 'required|numeric|min:0',
             'tunjangan' => 'nullable|numeric|min:0',
             'bonus' => 'nullable|numeric|min:0',
             'lembur' => 'nullable|numeric|min:0',
@@ -58,13 +62,25 @@ class SalaryController extends Controller
             'keterangan' => 'nullable|string'
         ]);
 
+        // Validasi berdasarkan jenis gaji
+        if ($data['jenis_gaji'] === 'harian') {
+            if (empty($data['jumlah_hari']) || empty($data['tarif_harian'])) {
+                return redirect()->back()->withErrors(['error' => 'Jumlah hari dan tarif harian harus diisi untuk gaji harian.']);
+            }
+            $data['gaji_pokok'] = $data['jumlah_hari'] * $data['tarif_harian'];
+        } else { // borongan
+            if (empty($data['jumlah_unit']) || empty($data['tarif_per_unit'])) {
+                return redirect()->back()->withErrors(['error' => 'Jumlah unit dan tarif per unit harus diisi untuk gaji borongan.']);
+            }
+            $data['gaji_pokok'] = $data['jumlah_unit'] * $data['tarif_per_unit'];
+        }
+
         $data['tunjangan'] = (int)($data['tunjangan'] ?? 0);
         $data['bonus'] = (int)($data['bonus'] ?? 0);
         $data['lembur'] = (int)($data['lembur'] ?? 0);
         $data['potongan_pajak'] = (int)($data['potongan_pajak'] ?? 0);
         $data['potongan_bpjs'] = (int)($data['potongan_bpjs'] ?? 0);
         $data['potongan_lain'] = (int)($data['potongan_lain'] ?? 0);
-        $data['gaji_pokok'] = (int)$data['gaji_pokok'];
 
         // Hitung total gaji
         $totalPendapatan = $data['gaji_pokok'] + $data['tunjangan'] + $data['bonus'] + $data['lembur'];
@@ -97,9 +113,13 @@ class SalaryController extends Controller
     {
         $data = $request->validate([
             'employee_id' => 'required|exists:employees,id',
+            'jenis_gaji' => 'required|in:borongan,harian',
+            'jumlah_hari' => 'nullable|integer|min:1',
+            'tarif_harian' => 'nullable|integer|min:0',
+            'jumlah_unit' => 'nullable|integer|min:1',
+            'tarif_per_unit' => 'nullable|integer|min:0',
             'bulan' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer|min:2020|max:2030',
-            'gaji_pokok' => 'required|numeric|min:0',
             'tunjangan' => 'nullable|numeric|min:0',
             'bonus' => 'nullable|numeric|min:0',
             'lembur' => 'nullable|numeric|min:0',
@@ -111,13 +131,25 @@ class SalaryController extends Controller
             'keterangan' => 'nullable|string'
         ]);
 
+        // Validasi berdasarkan jenis gaji
+        if ($data['jenis_gaji'] === 'harian') {
+            if (empty($data['jumlah_hari']) || empty($data['tarif_harian'])) {
+                return redirect()->back()->withErrors(['error' => 'Jumlah hari dan tarif harian harus diisi untuk gaji harian.']);
+            }
+            $data['gaji_pokok'] = $data['jumlah_hari'] * $data['tarif_harian'];
+        } else { // borongan
+            if (empty($data['jumlah_unit']) || empty($data['tarif_per_unit'])) {
+                return redirect()->back()->withErrors(['error' => 'Jumlah unit dan tarif per unit harus diisi untuk gaji borongan.']);
+            }
+            $data['gaji_pokok'] = $data['jumlah_unit'] * $data['tarif_per_unit'];
+        }
+
         $data['tunjangan'] = (int)($data['tunjangan'] ?? 0);
         $data['bonus'] = (int)($data['bonus'] ?? 0);
         $data['lembur'] = (int)($data['lembur'] ?? 0);
         $data['potongan_pajak'] = (int)($data['potongan_pajak'] ?? 0);
         $data['potongan_bpjs'] = (int)($data['potongan_bpjs'] ?? 0);
         $data['potongan_lain'] = (int)($data['potongan_lain'] ?? 0);
-        $data['gaji_pokok'] = (int)$data['gaji_pokok'];
 
         // Hitung total gaji
         $totalPendapatan = $data['gaji_pokok'] + $data['tunjangan'] + $data['bonus'] + $data['lembur'];

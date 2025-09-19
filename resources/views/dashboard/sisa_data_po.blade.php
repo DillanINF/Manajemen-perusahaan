@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'TAGIHAN DATA PURCHASE ORDER')
+@section('title', 'PO Belum Terkirim')
 
 @push('styles')
 <!-- Optional modern font -->
@@ -28,7 +28,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-gray-100">
-                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>Tagihan Data Purchase Order
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>PO Belum Terkirim
                     </h1>
                     <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
                         Monitoring barang yang belum terinput lengkap ke data PO

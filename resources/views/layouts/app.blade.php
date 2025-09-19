@@ -145,7 +145,7 @@
                 <a href="{{ route('sisa-data-po.index') }}"
                    class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('sisa-data-po.*') ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>Tagihan Data PO</span>
+                    <span>PO Belum Terkirim</span>
                 </a>
                 {{-- Link Input PO di-nonaktifkan: akses form hanya lewat double click Data Invoice --}}
                 {{-- Link Data PO dihapus: akses Surat Jalan hanya dari alur Data Invoice --}}
