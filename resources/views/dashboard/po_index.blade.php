@@ -2,16 +2,11 @@
 @section('title', 'PURCHASE ORDER VENDOR')
 
 @push('styles')
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { --brand-blue: #2563EB; }
   .fade-in { animation: fadeIn 220ms ease-out; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   .bump { animation: bump 260ms ease-out; }
   @keyframes bump { 0% { transform: scale(1); } 50% { transform: scale(1.025); } 100% { transform: scale(1); } }
-  .font-inter { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji','Segoe UI Emoji'; }
 </style>
 @endpush
 
@@ -412,12 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Fungsi untuk cek stok (tanpa notifikasi)
-    function checkStokAndShowNotification(row) {
-        // Fungsi ini sudah tidak menampilkan notifikasi lagi
-        // Hanya untuk kompatibilitas dengan kode yang sudah ada
-        return;
-    }
 
     const kendaraanInput = document.getElementById('kendaraan');
     const noPolisiInput = document.getElementById('no_polisi');
@@ -432,10 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pengirimSelect = document.getElementById('pengirim');
 
-    const invoiceNomorInput = document.getElementById('invoice_nomor');
-    const invoicePtInput = document.getElementById('invoice_pt');
-    const invoiceTahunInput = document.getElementById('invoice_tahun');
-    const invoiceBulanInput = document.getElementById('invoice_tanggal');
     const tanggalPOInput = document.querySelector('input[name="tanggal_po"]');
 
     // Prefill No Surat Jalan dari data customer (code_number) jika kosong
@@ -454,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Jalankan segera setelah load, sebelum fallback dari tanggal PO
     prefillSJFromCustomer();
 
-    // Batasi input hanya angka untuk field yang memang numerik
+    // Batasi input hanya angka untuk field tahun
     function enforceDigitOnly(el) {
         if (!el) return;
         el.addEventListener('input', () => {
@@ -463,13 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
         el.setAttribute('inputmode', 'numeric');
         el.setAttribute('pattern', '[0-9]*');
     }
-    // Surat Jalan: Nomor dan PT boleh huruf/angka, JANGAN dibatasi angka
-    if (deliveryNomorInput) { deliveryNomorInput.removeAttribute('pattern'); deliveryNomorInput.removeAttribute('inputmode'); }
-    if (deliveryPtInput)    { deliveryPtInput.removeAttribute('pattern'); deliveryPtInput.removeAttribute('inputmode'); }
     // Tahun wajib angka
     enforceDigitOnly(deliveryTahunInput);
-    // Invoice: jika ada field numerik spesifik, batasi sesuai kebutuhan (biarkan nomor invoice bebas bila bukan numeric saja)
-    if (invoiceTahunInput) enforceDigitOnly(invoiceTahunInput);
 
     // Autofill Kendaraan & No Polisi berdasarkan pilihan Pengirim (field kendaraan sekarang readonly input)
     function fillFromPengirim() {
@@ -495,22 +475,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Auto-fill Bulan/Tahun dari Tanggal PO
-    function fillMonthYearFromTanggalPO() {
+    // Auto-fill Tahun dari Tanggal PO
+    function fillYearFromTanggalPO() {
         if (!tanggalPOInput || !tanggalPOInput.value) return;
         const d = new Date(tanggalPOInput.value);
         if (isNaN(d.getTime())) return;
-        const month = d.getMonth() + 1; // 1-12
         const year = d.getFullYear();
 
-        if (invoiceBulanInput && (!invoiceBulanInput.value || invoiceBulanInput.value === '')) {
-            invoiceBulanInput.value = month;
-            addAutoFillEffect(invoiceBulanInput);
-        }
-        if (invoiceTahunInput && (!invoiceTahunInput.value || invoiceTahunInput.value === '')) {
-            invoiceTahunInput.value = year;
-            addAutoFillEffect(invoiceTahunInput);
-        }
         if (deliveryTahunInput && (!deliveryTahunInput.value || deliveryTahunInput.value === '')) {
             deliveryTahunInput.value = year;
             addAutoFillEffect(deliveryTahunInput);
@@ -632,12 +603,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function updateNoPolisi() {
-        const selected = kendaraanSelect.options[kendaraanSelect.selectedIndex];
-        const nopol = selected.dataset.nopol || '';
-        noPolisiInput.value = nopol;
-        addAutoFillEffect(noPolisiInput);
-    }
 
     function updateCustomerAddresses() {
         const selected = customerSelect.options[customerSelect.selectedIndex];
@@ -651,24 +616,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const deliveryNomor = selected.getAttribute('data-delivery-nomor') || '';
             const deliveryPt = selected.getAttribute('data-delivery-pt') || '';
             const deliveryTahun = selected.getAttribute('data-delivery-tahun') || '';
-
-            const invoiceNomor = selected.getAttribute('data-invoice-nomor') || '';
-            const invoicePt = selected.getAttribute('data-invoice-pt') || '';
-            const invoiceTahun = selected.getAttribute('data-invoice-tahun') || '';
-            
-            const paymentTerms = selected.getAttribute('data-payment-terms') || '30';
-            const debugTerms = selected.getAttribute('data-debug-terms');
-            
-            // Debug log
-            console.log('Customer selected:', selected.textContent);
-            console.log('Payment terms from data-payment-terms:', paymentTerms);
-            console.log('Payment terms from data-debug-terms:', debugTerms);
-            console.log('Raw payment_terms_days value:', debugTerms);
-            
-            // Show payment terms notification
-            paymentTermsText.textContent = `${paymentTerms} hari setelah tanggal invoice (Debug: ${debugTerms})`;
-            paymentInfo.classList.remove('hidden');
-            paymentInfo.classList.add('fade-in');
             
             // Auto-fill address
             address1Input.value = address1;
@@ -680,9 +627,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (deliveryNomorInput && !deliveryNomorInput.value) deliveryNomorInput.value = deliveryNomor;
             if (deliveryPtInput && !deliveryPtInput.value) deliveryPtInput.value = deliveryPt;
             if (deliveryTahunInput && !deliveryTahunInput.value) deliveryTahunInput.value = deliveryTahun;
-            if (invoiceNomorInput && !invoiceNomorInput.value) invoiceNomorInput.value = invoiceNomor;
-            if (invoicePtInput && !invoicePtInput.value) invoicePtInput.value = invoicePt;
-            if (invoiceTahunInput && !invoiceTahunInput.value) invoiceTahunInput.value = invoiceTahun;
 
             if (address1Input) { address1Input.value = address1; if (address1) addAutoFillEffect(address1Input); address1Input.readOnly = true; }
             if (address2Input) { address2Input.value = address2; if (address2) addAutoFillEffect(address2Input); address2Input.readOnly = true; }
@@ -698,18 +642,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 deliveryTahunInput.readOnly = false;
             }
 
-            // Biarkan NOMOR INVOICE diisi manual -> kosongkan dan jangan readonly
-            if (invoiceNomorInput) { invoiceNomorInput.value = ''; invoiceNomorInput.placeholder = 'Nomor'; invoiceNomorInput.readOnly = false; }
-            if (invoicePtInput) { invoicePtInput.value = invoicePt; if (invoicePt) addAutoFillEffect(invoicePtInput); invoicePtInput.readOnly = true; }
-            // Tahun (Invoice) bisa diisi manual: hanya prefill jika kosong, dan tetap editable
-            if (invoiceTahunInput) {
-                if (!invoiceTahunInput.value && invoiceTahun) {
-                    invoiceTahunInput.value = invoiceTahun;
-                    addAutoFillEffect(invoiceTahunInput);
-                }
-                invoiceTahunInput.readOnly = false;
-            }
-
             // Jika customer tidak punya alamat, tetap bisa edit
             if (!address1 && !address1Input.value) {
                 address1Input.classList.add('border-yellow-400', 'bg-yellow-50');
@@ -718,10 +650,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 address1Input.classList.remove('border-yellow-400', 'bg-yellow-50');
             }
-        } else {
-            // Hide payment terms notification when no customer selected
-            paymentInfo.classList.add('hidden');
-            paymentInfo.classList.remove('fade-in');
         }
     }
 
@@ -732,54 +660,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Fungsi untuk attach event ke row item
-    function attachRowEvents(row) {
-        const produkSelect = row.querySelector('.produk-select');
-        const qtyInput = row.querySelector('.item-qty');
-        const hargaInput = row.querySelector('.item-harga');
-        const removeBtn = row.querySelector('.remove-item-btn');
-
-        if (produkSelect) {
-            produkSelect.addEventListener('change', () => {
-                calculateRowTotal(row);
-                updateGrandTotal();
-                checkStokAndShowNotification(row);
-            });
-        }
-        
-        if (qtyInput) {
-            qtyInput.addEventListener('input', () => {
-                calculateRowTotal(row);
-                updateGrandTotal();
-                checkStokAndShowNotification(row);
-            });
-        }
-        
-        if (hargaInput) {
-            hargaInput.addEventListener('input', () => {
-                calculateRowTotal(row);
-                updateGrandTotal();
-            });
-        }
-        
-        if (removeBtn) {
-            removeBtn.addEventListener('click', () => {
-                row.remove();
-                renumberRows();
-                updateGrandTotal();
-            });
-        }
-    }
 
     // Attach to initial row dan hitung awal
     document.querySelectorAll('.item-row').forEach(row => { 
         attachRowEvents(row); 
         calculateRowTotal(row);
-        checkStokAndShowNotification(row);
     });
     renumberRows();
     updateGrandTotal();
-    updateNoPolisi();
     // Prefill No Surat Jalan jika #customer bukan SELECT
     if (customerSelect && customerSelect.tagName !== 'SELECT') {
         try {
@@ -795,11 +683,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCustomerAddresses();
     }
 
-    // Hook: saat tanggal PO berubah, isi Bulan/Tahun otomatis
+    // Hook: saat tanggal PO berubah, isi Tahun otomatis
     if (tanggalPOInput) {
-        tanggalPOInput.addEventListener('change', fillMonthYearFromTanggalPO);
+        tanggalPOInput.addEventListener('change', fillYearFromTanggalPO);
         // Prefill sekali di awal jika ada nilai
-        fillMonthYearFromTanggalPO();
+        fillYearFromTanggalPO();
     }
 });
 </script>
@@ -853,4 +741,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endsection
-{{-- WIP: tampilkan kolom no_invoice di tabel PO --}}

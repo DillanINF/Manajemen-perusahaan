@@ -21,7 +21,8 @@ use App\Http\Controllers\{
     UserController,
     BarangMasukController,
     BarangKeluarController,
-    SisaDataPOController
+    SisaDataPOController,
+    ExcelTemplateController
 };
 
 /*
@@ -161,6 +162,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/generate-payroll', [SalaryController::class, 'generatePayroll'])->name('generate-payroll');
         Route::patch('/{salary}/payment', [SalaryController::class, 'markAsPaid'])->name('mark-paid');
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excel Template Generator
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/excel/generate', [ExcelTemplateController::class, 'generateFromExcel'])->name('excel.generate');
 
     /*
     |--------------------------------------------------------------------------

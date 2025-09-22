@@ -26,6 +26,96 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <!-- CSS untuk Auto-Expand Forms ketika Sidebar Hidden -->
+    <style>
+        /* Transisi smooth untuk semua elemen form */
+        .form-container,
+        .table-container,
+        .card-container,
+        .content-wrapper,
+        .bg-white,
+        .bg-gray-50,
+        .rounded-xl,
+        .shadow-lg,
+        .border,
+        .overflow-x-auto,
+        .salary-table-container,
+        table {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Ketika sidebar tersembunyi, perlebar konten */
+        @media (min-width: 768px) {
+            /* Ketika sidebar hidden, perlebar semua container form */
+            body.sidebar-hidden main {
+                padding-left: 3rem !important;
+                padding-right: 3rem !important;
+                max-width: none !important;
+            }
+            
+            /* Perlebar semua card dan container */
+            body.sidebar-hidden .bg-white,
+            body.sidebar-hidden .bg-gray-50,
+            body.sidebar-hidden .rounded-xl,
+            body.sidebar-hidden .shadow-lg,
+            body.sidebar-hidden .border {
+                max-width: none !important;
+                width: 100% !important;
+            }
+            
+            /* Khusus untuk tabel salary dan tabel lainnya */
+            body.sidebar-hidden .salary-table-container,
+            body.sidebar-hidden .overflow-x-auto,
+            body.sidebar-hidden table {
+                min-width: 100% !important;
+                width: 100% !important;
+            }
+            
+            /* Perlebar grid layouts */
+            body.sidebar-hidden .grid {
+                gap: 2rem !important;
+            }
+            
+            /* Perlebar input fields dan form elements */
+            body.sidebar-hidden input,
+            body.sidebar-hidden select,
+            body.sidebar-hidden textarea {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            /* Khusus untuk tabel salary - perlebar kolom tanggal */
+            body.sidebar-hidden .salary-table {
+                min-width: 100% !important;
+                width: 100% !important;
+            }
+            
+            body.sidebar-hidden .date-column {
+                min-width: 40px !important;
+                width: 40px !important;
+            }
+            
+            /* Perlebar modal dan popup */
+            body.sidebar-hidden .modal-content,
+            body.sidebar-hidden .dropdown-content {
+                max-width: 90vw !important;
+            }
+        }
+        
+        /* Alternatif menggunakan CSS custom property untuk kontrol yang lebih baik */
+        :root {
+            --sidebar-width: 16rem; /* 64 dalam rem */
+            --content-padding: 2.5rem; /* 10 dalam rem */
+        }
+        
+        /* Ketika sidebar tersembunyi */
+        .sidebar-hidden {
+            --sidebar-width: 0rem;
+            --content-padding: 3rem; /* Tambah padding ketika sidebar hidden */
+        }
+    </style>
+    
     @stack('styles')
 </head>
 <body x-data="{ mobileSidebarOpen: false, desktopSidebarOpen: true }" x-init="
@@ -40,8 +130,19 @@
         if (e.matches) { mobileSidebarOpen = false; }
       };
       if (mq.addEventListener) { mq.addEventListener('change', onChange); } else { mq.addListener(onChange); }
+      
+      // Watch for sidebar state changes and update body class
+      $watch('desktopSidebarOpen', (value) => {
+        document.body.classList.toggle('sidebar-hidden', !value);
+        // Trigger resize event untuk chart dan komponen lain
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+          window.dispatchEvent(new Event('forcechartresize'));
+        }, 300);
+      });
     })();
-  " class="flex font-sans bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden @yield('body-classes')">
+  " class="flex font-sans bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden @yield('body-classes')"
+  :class="{ 'sidebar-hidden': !desktopSidebarOpen }">
 
       <aside id="sidebar" class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen flex flex-col transform transition-transform duration-300 fixed inset-y-0 left-0 z-40 -translate-x-full md:fixed md:inset-y-0 md:left-0 overflow-hidden"
            x-bind:class="{
@@ -334,7 +435,11 @@
     
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col md:ml-64 overflow-x-hidden">
+    <div class="flex-1 flex flex-col transition-all duration-300 overflow-x-hidden"
+         :class="{
+             'md:ml-64': desktopSidebarOpen,
+             'md:ml-0': !desktopSidebarOpen
+         }">
         <header class="sticky top-0 z-30 h-16 bg-white/90 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 md:px-6 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
                 <!-- Hamburger (desktop only) to restore sidebar when hidden -->

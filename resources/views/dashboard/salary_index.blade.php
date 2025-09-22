@@ -4,90 +4,6 @@
 
 @push('styles')
 <style>
-/* Animasi Custom untuk UI Modern */
-@keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideOutRight {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-}
-
-@keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.6); }
-}
-
-.animate-slide-in { animation: slideInRight 0.3s ease-out; }
-.animate-slide-out { animation: slideOutRight 0.3s ease-in; }
-.animate-pulse-glow { animation: pulse-glow 2s infinite; }
-
-/* Hover effects untuk tabel */
-.table-row-hover:hover {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Button hover effects */
-.btn-modern {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-modern:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.btn-modern:hover:before {
-    left: 100%;
-}
-
-.btn-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-}
-
-.btn-modern:active {
-    transform: translateY(0);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-}
-
-.loading-spinner {
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #3498db;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 1s linear infinite;
-    display: inline-block;
-    margin-right: 10px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 /* Hide scrollbar for date columns */
 .overflow-x-auto::-webkit-scrollbar {
     display: none;
@@ -121,33 +37,7 @@
     min-width: 35px;
 }
 
-/* === HAPUS SEMUA CSS LAMA YANG BERTENTANGAN === */
-
-/* === SOLUSI FINAL: GARIS VERTIKAL UTUH === */
-
-/* 1. HAPUS SEMUA BORDER PADA DATE-COLUMN */
-.salary-table .date-column,
-.salary-table .date-column.border,
-.salary-table .date-column.border-black,
-.salary-table thead .date-column,
-.salary-table tbody .date-column,
-.salary-table tfoot .date-column {
-  border: 0 !important;
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-  border-left: 0 !important;
-  border-right: 0 !important;
-  border-width: 0 !important;
-  box-shadow: none !important;
-  position: relative;
-}
-
-/* 2. BUAT GARIS VERTIKAL YANG MENEMBUS SELURUH TABEL */
-.salary-table .date-columns {
-  position: relative;
-}
-
-/* Buat garis vertikal dengan pseudo-element yang menembus dari atas ke bawah */
+/* Garis vertikal untuk kolom tanggal */
 .salary-table .date-columns::before {
   content: '';
   position: absolute;
@@ -164,202 +54,53 @@
   );
   background-size: 35px 100%;
   background-repeat: repeat-x;
-  background-attachment: local;
-  /* Bantu browser merender garis tetap tajam saat zoom */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: background-position;
   pointer-events: none;
   z-index: 5;
 }
 
-/* 3. PASTIKAN CONTAINER TIDAK MEMOTONG GARIS */
 .salary-table .date-columns {
-  overflow: visible !important;
   position: relative;
-  z-index: 10;
-  /* Override box-shadow dari date-column individual */
+  overflow: visible !important;
 }
 
-/* FORCE RESET: Hilangkan SEMUA border pada date-column dengan prioritas tertinggi */
-.salary-table .date-column.border.border-black,
-.salary-table thead .date-column.border.border-black,
-.salary-table tbody .date-column.border.border-black,
-.salary-table tfoot .date-column.border.border-black,
-.salary-table .date-column.border,
 .salary-table .date-column {
   border: 0 !important;
-  border-width: 0 !important;
-  border-style: none !important;
-  border-color: transparent !important;
-  border-left: 0 !important;
-  border-right: 0 !important;
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-  border-left-width: 0 !important;
-  border-right-width: 0 !important;
-  border-top-width: 0 !important;
-  border-bottom-width: 0 !important;
-  box-shadow: none !important;
-  outline: 0 !important;
+  position: relative;
 }
 
 .salary-table td.date-grid {
   border-left: 0 !important;
   border-right: 0 !important;
-  border-top: 0 !important;
-  border-bottom: 0 !important;
   padding: 0;
   overflow: visible !important;
-  position: relative;
-  box-shadow: none !important;
 }
 
-/* 4. SAMAKAN GARIS HORIZONTAL: gunakan border-collapse agar tidak dobel */
 .salary-table {
   border-collapse: collapse !important;
-  border-spacing: 0 !important;
 }
 
-/* Semua sel default 1px tipis (seperti KODE/ITEM) */
 .salary-table th,
 .salary-table td {
   border: 1px solid rgba(0,0,0,0.6) !important;
-  position: relative;
 }
 
-/* KHUSUS: Hilangkan SEMUA border pada kolom tanggal agar garis vertikal menyatu */
-.salary-table tbody td.date-grid,
-.salary-table thead td.date-grid,
-.salary-table tfoot td.date-grid {
-  border: 0 !important;
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-  border-left: 0 !important;
-  border-right: 0 !important;
+.salary-table tbody tr {
   background: transparent !important;
 }
 
-/* Hilangkan border horizontal pada SEMUA baris yang mengandung kolom tanggal */
-.salary-table tbody tr,
-.salary-table thead tr,
-.salary-table tfoot tr {
-  background: transparent !important;
+/* Kontrol tinggi baris */
+.salary-table {
+  --row-h: 10px;
 }
 
-/* Khusus untuk sel yang berisi date-grid: hilangkan border yang memotong garis vertikal */
-.salary-table tr td.date-grid,
-.salary-table tr th.date-grid {
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-}
-
-/* Pastikan overflow visible pada semua container */
-.salary-table,
-.salary-table tbody,
-.salary-table thead,
-.salary-table tfoot {
-  overflow: visible !important;
-}
-
-/* Pastikan garis horizontal tabel tidak memotong garis vertikal */
-.salary-table tr {
-  position: relative;
-  z-index: 1;
-}
-
-.salary-table .date-column {
-  position: relative;
-  z-index: 10;
-}
-
-/* 5. INPUT TRANSPARAN DAN TIDAK MENGHALANGI GARIS */
-.salary-table .date-column input {
-  background: transparent !important;
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  position: relative;
-  z-index: 10;
-  pointer-events: auto;
-}
-
-/* Pastikan garis vertikal selalu di atas elemen lain */
-.salary-table .date-columns::before {
-  z-index: 15 !important;
-}
-
-/* 6. PERBAIKI SEMUA GARIS AGAR TIPIS DAN SERAGAM */
-/* FORCE: Hilangkan semua border tebal dan ganti dengan tipis */
-.salary-table .border-b-2,
-.salary-table .border-b-black,
-.salary-table th.border-b-2,
-.salary-table td.border-b-2,
-.salary-table th.border-b-2.border-b-black,
-.salary-table td.border-b-2.border-b-black {
-  border-bottom-width: 1px !important;
-  border-bottom-style: solid !important;
-  border-bottom-color: rgba(0,0,0,0.6) !important;
-}
-
-/* Reset semua border pada tabel agar seragam */
 .salary-table th,
 .salary-table td {
-  border-width: 1px !important;
-  border-color: rgba(0,0,0,0.6) !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  line-height: 1.2 !important;
+  font-size: 10px !important;
 }
 
-/* Khusus untuk header tanggal: hilangkan border bawah */
-.salary-table thead .date-column.border-b-2,
-.salary-table thead .date-column.border-b-black,
-.salary-table thead .date-column {
-  border-bottom: 0 !important;
-}
-
-/* Garis horizontal header yang tipis seperti KODE dan ITEM */
-.salary-table thead th,
-.salary-table thead td:not(.date-grid) {
-  border-bottom: 1px solid rgba(0,0,0,0.6) !important;
-}
-
-/* Khusus kolom tanggal di header: tidak ada border bawah */
-.salary-table thead td.date-grid {
-  border-bottom: 0 !important;
-}
-
-/* HINDARI DOUBLE BORDER antar baris header */
-.salary-table thead tr:not(:first-child) th,
-.salary-table thead tr:not(:first-child) td {
-  border-top: 0 !important;
-}
-
-.salary-table thead tr:first-child th,
-.salary-table thead tr:first-child td {
-  border-top: 1px solid rgba(0,0,0,0.6) !important;
-}
-
-.salary-table thead tr:not(:last-child) th,
-.salary-table thead tr:not(:last-child) td {
-  border-bottom: 1px solid rgba(0,0,0,0.6) !important;
-}
-
-.salary-table thead tr:last-child th,
-.salary-table thead tr:last-child td {
-  border-bottom: 1px solid rgba(0,0,0,0.6) !important;
-}
-
-/* Override inline style yang mungkin ada */
-.salary-table th[style*="border-bottom: 2px"],
-.salary-table td[style*="border-bottom: 2px"] {
-  border-bottom: 1px solid rgba(0,0,0,0.6) !important;
-}
-
-/* 7. KONTROL TINGGI BARIS BODY AGAR TIDAK TERLALU PANJANG */
-.salary-table {
-  --row-h: 10px; /* ubah angka ini jika ingin lebih tinggi/rendah */
-}
-
-/* Terapkan tinggi baris ke semua sel tbody */
 .salary-table tbody td,
 .salary-table tbody th {
   height: var(--row-h) !important;
@@ -368,7 +109,6 @@
   padding-bottom: 0 !important;
 }
 
-/* Khusus kolom tanggal */
 .salary-table .date-column { 
   height: var(--row-h) !important; 
 }
@@ -378,6 +118,75 @@
   line-height: var(--row-h) !important;
   padding: 0 !important;
 }
+
+ /* Header Salary: gaya label biaya/upah kerja dan tanggal */
+ .salary-header-right {
+   width: 280px;
+   align-self: flex-start;
+   margin-left: auto; /* mentokin ke kanan */
+ }
+ .salary-header-label {
+  border: 1px solid #000; /* kembalikan outline seperti semula */
+  padding: 0 6px;
+  font-weight: 700;
+  font-size: 8px;
+  color: #000;
+  text-align: left; /* teks ke kiri */
+  background: #e5e7eb; /* buat sisi kiri sama gray seperti kanan */
+  position: relative; /* untuk garis pemisah */
+ }
+ .salary-header-label::before { /* kolom kanan abu-abu */
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 1px;
+  left: calc(50% + 17px); /* mulai tepat di kanan separator baru */
+  height: 100%;
+  background-color:#e5e7eb; /* gray solid, tanpa tekstur */
+ }
+ .salary-header-label::after { /* garis pemisah vertikal sisi kanan */
+  content: '';
+  position: absolute;
+  top: -1px;             /* overlap 1px agar menyambung dengan outline */
+  left: calc(50% + 16px); /* geser sedikit lebih ke kanan */
+  transform: none;
+  width: 1px;            /* lebih tipis, tidak bold */
+  height: calc(100% + 2px); /* overlap bawah juga */
+  background: #000;
+ }
+ .salary-header-date {
+   border: 1px solid #000; /* kembalikan outline seperti semula */
+   margin-top: 2px;
+   padding: 1px 6px;
+   text-align: center;
+   font-weight: 700;
+   font-size: 10px;
+   color: #000;
+ }
+
+ /* Header kecil & profesional */
+ .company-title {
+   font-size: 28px; /* lebih kecil dari 4xl */
+   font-weight: 800;
+   letter-spacing: 0.02em;
+ }
+ .rules-box {
+   border: 1px solid #000;
+   padding: 4px 6px;
+   line-height: 1.15;
+   background: #fff;
+ }
+ .rules-box .title { 
+   color: #dc2626; /* red-600 */
+   font-weight: 800;
+   font-size: 10px;
+   letter-spacing: 0.02em;
+ }
+ .rules-box .item { 
+   color: #b91c1c; /* red-700 */
+   font-weight: 800;
+   font-size: 10px;
+ }
 </style>
 @endpush
 
@@ -466,48 +275,64 @@ function updateGrandTotal() {
     }
 }
 
-// Event listener untuk input harga
+// Auto-load Excel Template
 document.addEventListener('DOMContentLoaded', function() {
-    // Add event listeners untuk semua input harga
-    for (let i = 1; i <= 20; i++) {
-        const priceInput = document.getElementById(`price_${i}`);
-        if (priceInput) {
-            priceInput.addEventListener('input', function() {
-                calculateRow(i);
-            });
-        }
-    }
+    loadExcelTemplate();
 });
 
-// Fungsi untuk menyimpan data (opsional)
-function saveData() {
-    const data = [];
-    
-    for (let row = 1; row <= 20; row++) {
-        const rowData = {
-            name: document.querySelector(`#row_${row} input[placeholder="Nama Karyawan"]`)?.value || '',
-            description: document.querySelector(`#row_${row} input[placeholder="Deskripsi Pekerjaan"]`)?.value || '',
-            days: {},
-            total: document.getElementById(`total_${row}`)?.textContent || '0',
-            price: document.getElementById(`price_${row}`)?.value || '10120',
-            grandTotal: document.getElementById(`grand_total_${row}`)?.textContent || '0'
-        };
+async function loadExcelTemplate() {
+    try {
+        const response = await fetch('/excel/generate');
+        const data = await response.json();
         
-        for (let day = 1; day <= 31; day++) {
-            const input = document.getElementById(`day_${row}_${day}`);
-            if (input && input.value) {
-                rowData.days[day] = input.value;
-            }
+        if (data.success) {
+            const container = document.getElementById('excelTemplateContainer');
+            container.innerHTML = data.html;
+            
+            // Add JavaScript untuk perhitungan otomatis
+            addCalculationListeners();
+            
+            console.log('✅ Template Excel berhasil dimuat:', data.info);
+        } else {
+            throw new Error(data.error || 'Gagal memuat template Excel');
         }
-        
-        if (rowData.name || Object.keys(rowData.days).length > 0) {
-            data.push(rowData);
-        }
+    } catch (error) {
+        console.error('❌ Error loading Excel template:', error);
+        const container = document.getElementById('excelTemplateContainer');
+        container.innerHTML = `
+            <div class="p-4 text-center border-2 border-red-200 bg-red-50">
+                <div class="text-red-600 mb-2">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <p class="text-red-700 font-medium">Gagal memuat template Excel</p>
+                <p class="text-red-600 text-sm mt-1">${error.message}</p>
+                <button onclick="loadExcelTemplate()" class="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                    Coba Lagi
+                </button>
+            </div>
+        `;
     }
-    
-    console.log('Data yang akan disimpan:', data);
-    // Di sini bisa ditambahkan AJAX call untuk menyimpan ke database
 }
+
+function addCalculationListeners() {
+    // Add event listeners untuk semua input yang ada di template Excel
+    const inputs = document.querySelectorAll('#excelTemplateContainer input[type="text"]');
+    inputs.forEach((input, index) => {
+        if (input.id && input.id.includes('day_')) {
+            input.addEventListener('input', function() {
+                const rowMatch = input.id.match(/day_(\d+)_/);
+                if (rowMatch) {
+                    calculateRow(parseInt(rowMatch[1]));
+                }
+            });
+        }
+    });
+    
+    console.log(`✅ Added calculation listeners to ${inputs.length} input fields`);
+}
+
 </script>
 @endpush
 
@@ -601,40 +426,35 @@ function saveData() {
                     <span id="yearButtonText">Pilih Tahun ({{ now()->format('Y') }})</span>
                 </button>
             </div>
-            <div class="flex gap-3">
-                <button onclick="openModal('tambahModal')" 
-                        class="btn-modern group inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                    <div class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center group-hover:rotate-180 transition-transform duration-300">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                    </div>
-                    <span class="text-sm font-semibold">Tambah Gaji</span>
-                </button>
-            </div>
         </div>
     </div>
 
-    <!-- Tabel Gaji Karyawan -->
-    <div class="bg-white dark:bg-slate-900 shadow-lg overflow-hidden border-2 border-black dark:border-slate-400">
+    <!-- Excel Template Container (Auto-Generated) -->
+    <div id="excelTemplateContainer" class="bg-white dark:bg-slate-900 shadow-lg overflow-hidden">
+        <div class="p-4 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Memuat template Excel...</p>
+        </div>
+    </div>
+
+    <!-- Tabel Lama (Hidden, akan diganti dengan Excel Template) -->
+    <div class="hidden bg-white dark:bg-slate-900 shadow-lg overflow-hidden border-2 border-black dark:border-slate-400 salary-outline">
         <!-- Header Perusahaan -->
-        <div class="border-b-2 border-black dark:border-slate-400 px-4 py-2">
+        <div class="border-b-2 border-black dark:border-slate-400 pl-4 pr-0 pt-0 pb-1">
             <div class="flex justify-between items-start">
                 <div class="text-left text-xs text-black dark:text-white">
-                    <div class="border border-black dark:border-slate-400 px-2 py-1 mb-1">
-                        <div class="text-red-500 font-bold">PERATURAN</div>
-                        <div class="text-red-700 font-bold">DILARANG BELAH PAPAN TANPA IJIN</div>
-                        <div class="text-red-700 font-bold">DILARANG BELAH BALOK TANPA IJIN</div>
+                    <div class="rules-box mb-1">
+                        <div class="title">PERATURAN</div>
+                        <div class="item">DILARANG BELAH PAPAN TANPA IJIN</div>
+                        <div class="item">DILARANG BELAH BALOK TANPA IJIN</div>
                     </div>
                 </div>
                 <div class="flex-1 text-center">
-                    <h2 class="text-4xl font-bold text-black dark:text-white">PT. CAM JAYA ABADI</h2>
+                    <h2 class="company-title text-black dark:text-white">PT. CAM JAYA ABADI</h2>
                 </div>
-                <div class="text-right text-xs text-black dark:text-white">
-                    <div class="border border-black dark:border-slate-400 px-2 py-1 mb-1 text-center">
-                        <div class="font-bold">BIAYA / UPAH KERJA</div>
-                    </div>
-                    <div class="border border-black dark:border-slate-400 px-2 py-1 text-center">
-                        <div class="font-bold">{{ now()->format('d-M-y') }}</div>
-                    </div>
+                <div class="text-right text-xs text-black dark:text-white salary-header-right">
+                    <div class="salary-header-label">BIAYA / UPAH KERJA</div>
+                    <div class="salary-header-date"><span class="font-bold">{{ now()->format('d-M-y') }}</span></div>
                 </div>
             </div>
         </div>
@@ -654,12 +474,53 @@ function saveData() {
                 font-size: 10px !important;
                 table-layout: fixed !important;
                 width: 100% !important;
-                min-width: 1400px !important;
+                min-width: 1600px !important;
                 max-width: none !important;
                 border-collapse: collapse !important;
                 zoom: 1 !important;
                 transform: scale(1) !important;
                 transform-origin: top left !important;
+                transition: all 0.3s ease-in-out !important;
+            }
+            
+            /* Ketika sidebar hidden, perlebar tabel salary */
+            body.sidebar-hidden .salary-table {
+                min-width: 100% !important;
+                font-size: 11px !important;
+            }
+            
+            body.sidebar-hidden .salary-table-container {
+                overflow-x: visible !important;
+            }
+            
+            body.sidebar-hidden .date-column {
+                width: 45px !important;
+                min-width: 45px !important;
+            }
+            
+            /* Optimasi untuk konsistensi ukuran */
+            .salary-table .date-column {
+                width: 35px !important;
+                min-width: 35px !important;
+                flex-shrink: 0;
+            }
+            
+            .salary-table input {
+                font-family: inherit !important;
+                border-radius: 0 !important;
+            }
+            
+            /* Pastikan semua sel memiliki ukuran konsisten */
+            .salary-table tbody tr {
+                height: 10px !important;
+            }
+            
+            .salary-table thead tr {
+                height: 12px !important;
+            }
+            
+            .salary-table tfoot tr {
+                height: 12px !important;
             }
             
             .salary-table th,
@@ -681,6 +542,44 @@ function saveData() {
                 zoom: 1 !important;
                 transform: none !important;
             }
+
+            /* Garis tabel sedikit lebih tebal */
+            .salary-table th,
+            .salary-table td {
+                border-color: #000 !important;
+                border-width: 1.2px !important;
+                border-style: solid !important;
+            }
+
+            /* Pemisah antara header dan body dibuat lebih tebal agar jelas */
+            .salary-table thead th {
+                border-bottom-width: 1.8px !important;
+            }
+            .salary-table tbody tr:first-child td {
+                border-top-width: 1.8px !important;
+            }
+
+            /* Kolom DESKRIPSI abu-abu (body dan header) */
+            .salary-table thead th:nth-child(2) {
+                background-color:rgb(206, 206, 206) !important; /* gray-200 */
+            }
+            .salary-table tbody td:nth-child(2) {
+                background-color:rgb(206, 206, 206) !important; /* gray-200 */
+            }
+
+            /* Zebra striping HANYA untuk area tanggal */
+            .salary-table tbody tr:nth-child(odd) td.date-grid { 
+                background-color: rgb(206, 206, 206) !important; 
+            }
+            .salary-table tbody tr:nth-child(even) td.date-grid { 
+                background-color: #ffffff !important; 
+            }
+            /* Pastikan konten di dalam date-grid transparan agar warna td terlihat */
+            .salary-table tbody td.date-grid .date-scroll-container,
+            .salary-table tbody td.date-grid .date-columns,
+            .salary-table tbody td.date-grid .date-column {
+                background-color: transparent !important;
+            }
         </style>
 
         <!-- Tabel Gaji -->
@@ -689,93 +588,59 @@ function saveData() {
             <div id="dateGridOverlay" aria-hidden="true" style="position:absolute; top:0; left:0; height:0; width:0; pointer-events:none; z-index:50;
                  background-image: repeating-linear-gradient(to right, rgba(0,0,0,0.8) 0px, rgba(0,0,0,0.8) 1px, transparent 1px, transparent 35px);
                  background-repeat:repeat; background-size:35px 100%; opacity:1;"></div>
+            <style>
+                /* Outline luar (container utama) menjadi garis putus-putus */
+                .salary-outline {
+                    border-style: dashed !important;
+                    border-width: 2px !important; /* lebih tebal */
+                    border-color: #000 !important;
+                }
+            </style>
             <table class="salary-table border-collapse w-full">
                 <thead>
-                    <tr>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%;">ITEM</th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 10%;"></th>
-                        
-                        <!-- Tanggal yang bisa scroll horizontal -->
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 35%;">TANGGAL</th>
-                        
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%;">JUMLAH</th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%;">BIAYA PRODUKSI</th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%;">TOTAL</th>
-                        <th class="px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 17%; border-top: 1px solid rgba(0,0,0,0.6); border-bottom: 1px solid rgba(0,0,0,0.6); border-right: 1px solid rgba(0,0,0,0.6);">KETERANGAN</th>
-                    </tr>
                     <tr class="bg-gray-100 dark:bg-slate-700">
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%;">KODE</th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 10%;">DESKRIPSI</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%; height: 12px; font-size: 9px;">ITEM</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%; height: 12px; font-size: 9px;">DESKRIPSI</th>
                         
                         <!-- Container scroll horizontal untuk tanggal -->
-                        <td class="border border-black dark:border-slate-400 px-0 py-0 date-grid" style="width: 35%;">
-                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
-                                <div class="date-columns">
+                        <td class="border border-black dark:border-slate-400 px-0 py-0 date-grid" style="width: 45%; height: 12px;">
+                            <div class="date-scroll-container" style="width: 100%; height: 100%; overflow-x: auto;">
+                                <div class="date-columns" style="width: 1085px; display: flex;">
                                     @for($i = 1; $i <= 31; $i++)
-                                        <div class="date-column border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white bg-gray-100 dark:bg-slate-700" style="font-size: 8px; height: 100%; display: flex; align-items: center; justify-content: center;">{{ $i }}</div>
+                                        <div class="date-column border border-black dark:border-slate-400 px-1 py-0 text-center font-bold text-black dark:text-white bg-gray-100 dark:bg-slate-700" style="font-size: 8px; height: 12px; display: flex; align-items: center; justify-content: center; width: 35px; min-width: 35px; flex-shrink: 0;">{{ $i }}</div>
                                     @endfor
                                 </div>
                             </div>
                         </td>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;">JUMLAH</th>
-                        <!-- Kolom kosong kiri HSL. PROD -->
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;">HSL. PROD</th>
-                        <!-- Kolom kosong kanan HSL. PROD -->
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
-                        <!-- HARGA di bawah BIAYA PRODUKSI -->
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 8%;">HARGA</th>
-                        <!-- TOTAL -->
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;">TOTAL</th>
-                        <!-- KETERANGAN (tanpa garis kiri) -->
-                        <th class="px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 17%; border-top: 1px solid rgba(0,0,0,0.6); border-bottom: 1px solid rgba(0,0,0,0.6); border-right: 1px solid rgba(0,0,0,0.6);"></th>
-                    </tr>
-                    <tr class="bg-gray-100 dark:bg-slate-700">
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 8%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 10%;"></th>
                         
-                        <!-- Baris kosong untuk tanggal -->
-                        <td class="border border-black dark:border-slate-400 px-0 py-0" style="width: 35%;">
-                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
-                                <div class="date-columns">
-                                    @for($i = 1; $i <= 31; $i++)
-                                        <div class="date-column border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white bg-gray-100 dark:bg-slate-700" style="font-size: 8px; height: 100%;"></div>
-                                    @endfor
-                                </div>
-                            </div>
-                        </td>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 3%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 8%;"></th>
-                        <th class="border border-black dark:border-slate-400 px-1 py-1 text-center font-bold text-black dark:text-white" style="width: 6%;"></th>
-                        <th class="px-1 py-1 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 17%; border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 4%; height: 12px; font-size: 9px;">JUMLAH</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 2%; height: 12px; font-size: 9px;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%; height: 12px; font-size: 9px;">HSL. PROD</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 2%; height: 12px; font-size: 9px;"></th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 7%; height: 12px; font-size: 9px;">HARGA</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 6%; height: 12px; font-size: 9px;">TOTAL</th>
+                        <th class="border border-black dark:border-slate-400 px-1 py-0 text-center font-bold bg-gray-100 dark:bg-slate-700 text-black dark:text-white" style="width: 14%; height: 12px; font-size: 9px;">KETERANGAN</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-slate-900">
                     @forelse($salaries ?? [] as $index => $salary)
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800">
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-xs font-medium text-black dark:text-white bg-white dark:bg-slate-900" style="height: 12px; line-height: 12px; width: 8%;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 font-medium text-black dark:text-white bg-white dark:bg-slate-900" style="height: 10px; line-height: 10px; width: 6%; font-size: 9px;">
                             {{ strtoupper($salary->employee->nama_karyawan) }}
                         </td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-xs text-black dark:text-white bg-white dark:bg-slate-900" style="height: 12px; line-height: 11px; width: 10%;">
-                            <div style="font-size: 7px;">KUBOTA 110 X 110 EKSPOR</div>
-                            <div style="font-size: 7px;">{{ strtoupper($salary->employee->posisi ?? 'KARYAWAN') }}</div>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white bg-white dark:bg-slate-900" style="height: 10px; line-height: 10px; width: 8%; font-size: 9px;">
+                            {{ strtoupper($salary->employee->posisi ?? 'KARYAWAN') }}
                         </td>
                         
                         <!-- Container scroll horizontal untuk input tanggal -->
-                        <td class="border border-black dark:border-slate-400 px-0 py-0 date-grid" style="width: 35%; height: 12px;">
-                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
-                                <div class="date-columns">
+                        <td class="border border-black dark:border-slate-400 px-0 py-0 date-grid" style="width: 45%; height: 10px;">
+                            <div class="date-scroll-container" style="width: 100%; height: 100%; overflow-x: auto;">
+                                <div class="date-columns" style="width: 1085px; display: flex;">
                                     @for($day = 1; $day <= 31; $day++)
-                                        <div class="date-column border border-black dark:border-slate-400" style="height: 12px; padding: 0;">
+                                        <div class="date-column border border-black dark:border-slate-400" style="height: 10px; padding: 0; width: 35px; min-width: 35px; flex-shrink: 0;">
                                             <input type="text" 
-                                                   class="w-full h-full text-center text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" 
-                                                   style="font-size: 8px; padding: 0px; line-height: 12px; resize: none;"
+                                                   class="w-full h-full text-center border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" 
+                                                   style="font-size: 8px; padding: 0px; line-height: 10px; resize: none;"
                                                    placeholder=""
                                                    onchange="calculateRow({{ $index }})"
                                                    id="day_{{ $index }}_{{ $day }}">
@@ -785,27 +650,27 @@ function saveData() {
                             </div>
                         </td>
                         
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-center text-xs text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
-                            <span id="total_{{ $index }}">{{ rand(450, 500) }}</span> pcs
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-center text-black dark:text-white" style="height: 10px; line-height: 10px; width: 4%; font-size: 9px;">
+                            <span id="total_{{ $index }}">{{ rand(450, 500) }}</span>
                         </td>
                         <!-- Kolom kosong kiri HSL. PROD -->
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-xs text-black dark:text-white bg-white dark:bg-slate-900" style="height: 12px; line-height: 12px; width: 3%;"></td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-xs text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white bg-white dark:bg-slate-900" style="height: 10px; line-height: 10px; width: 2%;"></td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-black dark:text-white" style="height: 10px; line-height: 10px; width: 6%; font-size: 9px;">
                             {{ number_format(10120, 0, ',', '.') }}
                         </td>
                         <!-- Kolom kosong kanan HSL. PROD -->
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-xs text-black dark:text-white bg-white dark:bg-slate-900" style="height: 12px; line-height: 12px; width: 3%;"></td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-xs text-black dark:text-white" style="height: 12px; line-height: 12px; width: 8%;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white bg-white dark:bg-slate-900" style="height: 10px; line-height: 10px; width: 2%;"></td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-black dark:text-white" style="height: 10px; line-height: 10px; width: 7%; font-size: 9px;">
                             {{ number_format(rand(100000, 200000), 0, ',', '.') }}
                         </td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-xs font-bold text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right font-bold text-black dark:text-white" style="height: 10px; line-height: 10px; width: 6%; font-size: 9px;">
                             <span id="grand_total_{{ $index }}">{{ number_format($salary->total_gaji, 0, ',', '.') }}</span>
                         </td>
-                        <td class="px-1 py-0 text-left text-xs bg-white dark:bg-slate-900" style="height: 12px; line-height: 12px; width: 17%; padding-left: 4px; border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-left bg-white dark:bg-slate-900" style="height: 10px; line-height: 10px; width: 14%; padding-left: 2px; font-size: 9px;">
                             @if($salary->status_pembayaran === 'dibayar')
-                                <span class="text-green-600 dark:text-green-400 font-bold" style="font-size: 7px;">LUNAS</span>
+                                <span class="text-green-600 dark:text-green-400 font-bold">LUNAS</span>
                             @else
-                                <span class="text-red-600 dark:text-red-400 font-bold" style="font-size: 7px;">BELUM LUNAS</span>
+                                <span class="text-red-600 dark:text-red-400 font-bold">BELUM</span>
                             @endif
                         </td>
                     </tr>
@@ -813,22 +678,22 @@ function saveData() {
                     <!-- Baris kosong untuk input manual -->
                     @for($i = 1; $i <= 28; $i++)
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800">
-                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 12px; width: 8%;">
-                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" placeholder="Kode Karyawan" style="line-height: 12px; padding: 0;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 10px; width: 6%;">
+                            <input type="text" class="w-full h-full border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" placeholder="" style="line-height: 10px; padding: 0; font-size: 9px;">
                         </td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 12px; width: 10%;">
-                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" placeholder="Deskripsi Pekerjaan" style="line-height: 12px; padding: 0;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 10px; width: 8%;">
+                            <input type="text" class="w-full h-full border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" placeholder="" style="line-height: 10px; padding: 0; font-size: 9px;">
                         </td>
                         
                         <!-- Container scroll horizontal untuk input tanggal -->
-                        <td class="border border-black dark:border-slate-400 px-0 py-0" style="width: 35%; height: 12px;">
+                        <td class="border border-black dark:border-slate-400 px-0 py-0 date-grid" style="width: 45%; height: 10px;">
                             <div class="date-scroll-container" style="width: 100%; height: 100%;">
                                 <div class="date-columns">
                                     @for($day = 1; $day <= 31; $day++)
-                                        <div class="date-column border border-black dark:border-slate-400" style="height: 12px; padding: 0;">
+                                        <div class="date-column border border-black dark:border-slate-400" style="height: 10px; padding: 0;">
                                             <input type="text" 
-                                                   class="w-full h-full text-center text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" 
-                                                   style="font-size: 8px; padding: 0px; line-height: 12px; resize: none;"
+                                                   class="w-full h-full text-center border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" 
+                                                   style="font-size: 8px; padding: 0px; line-height: 10px; resize: none;"
                                                    placeholder=""
                                                    onchange="calculateRow({{ $i }})"
                                                    id="day_{{ $i }}_{{ $day }}">
@@ -838,24 +703,24 @@ function saveData() {
                             </div>
                         </td>
                         
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
-                            <span id="total_{{ $i }}">0</span> pcs
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white" style="height: 10px; line-height: 10px; width: 4%; font-size: 9px;">
+                            <span id="total_{{ $i }}">0</span>
                         </td>
                         <!-- Kolom kosong kiri HSL. PROD -->
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 bg-white dark:bg-slate-900" style="height: 12px; width: 3%;"></td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 12px; width: 6%;">
-                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none text-right" placeholder="10.120" id="hsl_prod_{{ $i }}" style="line-height: 12px; padding: 0;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 bg-white dark:bg-slate-900" style="height: 10px; width: 2%;"></td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 10px; width: 6%;">
+                            <input type="text" class="w-full h-full border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none text-right" placeholder="" id="hsl_prod_{{ $i }}" style="line-height: 10px; padding: 0; font-size: 9px;">
                         </td>
                         <!-- Kolom kosong kanan HSL. PROD -->
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 bg-white dark:bg-slate-900" style="height: 12px; width: 3%;"></td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 12px; width: 8%;">
-                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none text-right" placeholder="0" id="biaya_prod_{{ $i }}" style="line-height: 12px; padding: 0;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 bg-white dark:bg-slate-900" style="height: 10px; width: 2%;"></td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 10px; width: 7%;">
+                            <input type="text" class="w-full h-full border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none text-right" placeholder="" id="biaya_prod_{{ $i }}" style="line-height: 10px; padding: 0; font-size: 9px;">
                         </td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right text-xs font-bold text-black dark:text-white" style="height: 12px; line-height: 12px; width: 6%;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-right font-bold text-black dark:text-white" style="height: 10px; line-height: 10px; width: 7%; font-size: 9px;">
                             <span id="grand_total_{{ $i }}">0</span>
                         </td>
-                        <td class="px-1 py-0" style="height: 12px; width: 17%; border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;">
-                            <input type="text" class="w-full h-full text-xs border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" style="line-height: 12px; padding: 0; padding-left: 4px;">
+                        <td class="border border-black dark:border-slate-400 px-1 py-0" style="height: 10px; width: 14%; border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;">
+                            <input type="text" class="w-full h-full border-0 bg-transparent dark:bg-slate-900 text-black dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 dark:focus:text-black focus:outline-none" style="line-height: 10px; padding: 0; padding-left: 2px; font-size: 9px;">
                         </td>
                     </tr>
                     @endfor
@@ -864,24 +729,23 @@ function saveData() {
                 <!-- Footer Total -->
                 <tfoot>
                     <tr class="bg-gray-100 dark:bg-slate-700 font-bold">
-                        <td colspan="2" class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">Hasil produksi pallet dan biaya borongan</td>
+                        <td colspan="2" class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white" style="height: 12px; font-size: 9px;">Hasil produksi pallet dan biaya borongan</td>
                         <!-- Container scroll horizontal untuk total per hari -->
-                        <td class="border border-black dark:border-slate-400 px-0 py-0" style="width: 35%;">
-                            <div class="date-scroll-container" style="width: 100%; height: 100%;">
-                                <div class="date-columns">
+                        <td class="border border-black dark:border-slate-400 px-0 py-0" style="width: 45%; height: 12px;">
+                            <div class="date-scroll-container" style="width: 100%; height: 100%; overflow-x: auto;">
+                                <div class="date-columns" style="width: 1085px; display: flex;">
                                     @for($day = 1; $day <= 31; $day++)
-                                        <div class="date-column" id="day_total_{{ $day }}" style="font-size: 8px; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px;">{{ $day <= 20 ? rand(20, 50) : 0 }}</div>
+                                        <div class="date-column" id="day_total_{{ $day }}" style="font-size: 8px; height: 12px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0; width: 35px; min-width: 35px; flex-shrink: 0;">{{ $day <= 20 ? rand(20, 50) : 0 }}</div>
                                     @endfor
                                 </div>
                             </div>
                         </td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-center text-xs text-black dark:text-white" id="grand_pieces">486 pcs</td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">TOTAL</td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">-</td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">-</td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-xs text-black dark:text-white">-</td>
-                        <td class="border border-black dark:border-slate-400 px-1 py-1 text-right text-xs font-bold text-black dark:text-white" id="final_total">4.937.120</td>
-                        <td class="px-1 py-1 text-xs text-black dark:text-white" style="border-top: 1px solid black; border-bottom: 1px solid black; border-right: 1px solid black;">-</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-center text-black dark:text-white" style="height: 12px; font-size: 9px;">-</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white" style="height: 12px; font-size: 9px;">-</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-center text-black dark:text-white" id="grand_pieces" style="height: 12px; font-size: 9px;">486</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white" style="height: 12px; font-size: 9px;">-</td>
+                        <td colspan="2" class="border border-black dark:border-slate-400 px-1 py-0 text-right font-bold text-black dark:text-white" id="final_total" style="height: 12px; font-size: 9px;">4.937.120</td>
+                        <td class="border border-black dark:border-slate-400 px-1 py-0 text-black dark:text-white" style="height: 12px; font-size: 9px;">-</td>
                     </tr>
                 </tfoot>
             </table>
@@ -1037,252 +901,8 @@ function saveData() {
                 </button>
             </div>
         </div>
-        <!-- Form Content -->
-        <div class="p-8 bg-gray-50 dark:bg-slate-800">
-        <form method="POST" action="{{ route('salary.store') }}" class="space-y-6" onsubmit="return prepareFormSubmission(this)">
-            @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Karyawan</label>
-                    <select name="employee_id" id="employee_select" required onchange="autoFillEmployeeData()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                        <option value="">Pilih Karyawan</option>
-                        @foreach($employees ?? [] as $employee)
-                        <option value="{{ $employee->id }}" data-gaji-pokok="{{ $employee->gaji_pokok ?? 0 }}" data-nama="{{ $employee->nama_karyawan }}" data-posisi="{{ $employee->posisi }}">
-                            {{ $employee->nama_karyawan }} - {{ $employee->posisi }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bulan</label>
-                    <select name="bulan" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                        @for($i = 1; $i <= 12; $i++)
-                        <option value="{{ $i }}" {{ $i == date('n') ? 'selected' : '' }}>
-                            {{ DateTime::createFromFormat('!m', $i)->format('F') }}
-                        </option>
-                        @endfor
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tahun</label>
-                    <select name="tahun" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                        @for($i = 2020; $i <= 2030; $i++)
-                        <option value="{{ $i }}" {{ $i == date('Y') ? 'selected' : '' }}>{{ $i }}</option>
-                        @endfor
-                    </select>
-                </div>
-                <!-- Jenis Gaji -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jenis Gaji</label>
-                    <div class="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
-                        <label class="flex-1 px-4 py-2 text-center cursor-pointer bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-r border-gray-300 dark:border-gray-600 transition-colors hover:bg-gray-50 dark:hover:bg-slate-600" id="label_borongan">
-                            <input type="radio" name="jenis_gaji" value="borongan" class="hidden" id="jg_borongan" checked onchange="toggleJenisGaji()">
-                            <span class="font-medium">🏭 Borongan</span>
-                        </label>
-                        <label class="flex-1 px-4 py-2 text-center cursor-pointer bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 transition-colors hover:bg-gray-50 dark:hover:bg-slate-600" id="label_harian">
-                            <input type="radio" name="jenis_gaji" value="harian" class="hidden" id="jg_harian" onchange="toggleJenisGaji()">
-                            <span class="font-medium">📅 Harian</span>
-                        </label>
-                    </div>
-                </div>
-                <!-- Input Borongan -->
-                <div id="section_borongan" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Unit</label>
-                        <input type="number" min="0" name="jumlah_unit" id="jumlah_unit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" placeholder="0" oninput="hitungGajiPokok()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tarif per Unit (Rp)</label>
-                        <input type="number" min="0" name="tarif_per_unit" id="tarif_per_unit" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" placeholder="0" oninput="hitungGajiPokok()">
-                    </div>
-                </div>
-                <!-- Input Harian -->
-                <div id="section_harian" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2 hidden">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Hari</label>
-                        <input type="number" min="0" name="jumlah_hari" id="jumlah_hari" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" placeholder="0" oninput="hitungGajiPokok()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tarif Harian (Rp)</label>
-                        <input type="number" min="0" name="tarif_harian" id="tarif_harian" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" placeholder="0" oninput="hitungGajiPokok()">
-                    </div>
-                </div>
-                <!-- Gaji Pokok (otomatis) -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gaji Pokok (otomatis)</label>
-                    <div class="relative">
-                        <input type="text" id="gaji_pokok_display" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-gray-200 font-bold text-lg">
-                        <input type="hidden" name="gaji_pokok" id="gaji_pokok_value">
-                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 dark:text-green-400">
-                            <i class="fa-solid fa-calculator"></i>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tunjangan</label>
-                    <input type="text" id="tunjangan_display" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                    <input type="hidden" name="tunjangan" id="tunjangan_value">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bonus</label>
-                    <input type="text" id="bonus_display" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                    <input type="hidden" name="bonus" id="bonus_value">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lembur</label>
-                    <input type="text" id="lembur_display" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                    <input type="hidden" name="lembur" id="lembur_value">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Potongan Pajak</label>
-                    <input type="text" id="potongan_pajak_display" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                    <input type="hidden" name="potongan_pajak" id="potongan_pajak_value">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Potongan BPJS</label>
-                    <input type="text" id="potongan_bpjs_display" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                    <input type="hidden" name="potongan_bpjs" id="potongan_bpjs_value">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Potongan Lain</label>
-                    <input type="text" id="potongan_lain_display" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                    <input type="hidden" name="potongan_lain" id="potongan_lain_value">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status Pembayaran</label>
-                    <select name="status_pembayaran" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                        <option value="belum_dibayar">Belum Dibayar</option>
-                        <option value="dibayar">Dibayar</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Bayar</label>
-                    <input type="date" name="tanggal_bayar" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keterangan</label>
-                <textarea name="keterangan" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"></textarea>
-            </div>
-            <!-- Action Buttons -->
-            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-slate-600">
-                <button type="button" onclick="closeModal('tambahModal')" 
-                        class="px-6 py-3 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition-all duration-200 font-medium">
-                    <i class="fa-solid fa-times mr-2"></i>Batal
-                </button>
-                <button type="submit" 
-                        class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl">
-                    <i class="fa-solid fa-save mr-2"></i>Simpan Gaji
-                </button>
-            </div>
-        </form>
-        </div>
-    </div>
-</div>
+       
 
-<!-- Modal Edit Gaji -->
-<div id="editModal" class="fixed inset-0 bg-black/50 dark:bg-black/70 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div class="sticky top-0 bg-white dark:bg-slate-800 p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Edit Data Gaji</h3>
-            <button onclick="closeModal('editModal')" class="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-        <div class="p-6">
-        <form method="POST" id="editForm" class="space-y-4">
-            @csrf
-            @method('PUT')
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Karyawan</label>
-                    <select name="employee_id" id="edit_employee_select" required disabled class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-gray-300 cursor-not-allowed">
-                        <option value="">Pilih Karyawan</option>
-                        @foreach($employees ?? [] as $employee)
-                        <option value="{{ $employee->id }}" data-gaji-pokok="{{ $employee->gaji_pokok ?? 0 }}" data-nama="{{ $employee->nama_karyawan }}" data-posisi="{{ $employee->posisi }}">
-                            {{ $employee->nama_karyawan }} - {{ $employee->posisi }}
-                        </option>
-                        @endforeach
-                    </select>
-                    <input type="hidden" name="employee_id" id="edit_employee_id_hidden">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bulan</label>
-                    <select name="bulan" id="edit_bulan" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                        @for($i = 1; $i <= 12; $i++)
-                        <option value="{{ $i }}">
-                            {{ DateTime::createFromFormat('!m', $i)->format('F') }}
-                        </option>
-                        @endfor
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tahun</label>
-                    <select name="tahun" id="edit_tahun" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                        @for($i = 2020; $i <= 2030; $i++)
-                        <option value="{{ $i }}">{{ $i }}</option>
-                        @endfor
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gaji Pokok</label>
-                    <!-- readonly (bukan disabled) agar ikut terkirim saat submit -->
-                    <input type="text" name="gaji_pokok" id="edit_gaji_pokok" required min="0" readonly class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-gray-200">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tunjangan</label>
-                    <input type="text" name="tunjangan" id="edit_tunjangan" min="0" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bonus</label>
-                    <input type="text" name="bonus" id="edit_bonus" min="0" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lembur</label>
-                    <input type="text" name="lembur" id="edit_lembur" min="0" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Potongan Pajak</label>
-                    <input type="text" name="potongan_pajak" id="edit_potongan_pajak" min="0" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Potongan BPJS</label>
-                    <input type="text" name="potongan_bpjs" id="edit_potongan_bpjs" min="0" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Potongan Lain</label>
-                    <input type="text" name="potongan_lain" id="edit_potongan_lain" min="0" class="currency-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" oninput="formatCurrencyInput(this)" onblur="formatCurrencyInput(this)">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status Pembayaran</label>
-                    <select name="status_pembayaran" id="edit_status_pembayaran" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                        <option value="belum_dibayar">Belum Dibayar</option>
-                        <option value="dibayar">Dibayar</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Bayar</label>
-                    <input type="date" name="tanggal_bayar" id="edit_tanggal_bayar" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
-                </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keterangan</label>
-                <textarea name="keterangan" id="edit_keterangan" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"></textarea>
-            </div>
-            <div class="flex justify-end space-x-3 pt-4">
-                <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
-                    Batal
-                </button>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                    Update
-                </button>
-            </div>
-        </form>
-        </div>
-    </div>
-</div>
 
 <script>
 function openModal(modalId) {
@@ -1505,8 +1125,6 @@ function updateHiddenField(displayInput, value) {
 }
 
 function prepareFormSubmission(form) {
-    console.log('[v0] Preparing form submission...');
-    
     // Cek duplikasi: 1 karyawan hanya boleh 1 gaji per bulan & tahun
     try {
         const employeeId = parseInt(form.querySelector('#employee_select')?.value);
@@ -1520,7 +1138,7 @@ function prepareFormSubmission(form) {
                 return false;
             }
         }
-    } catch (e) { console.warn('Duplicate check error:', e); }
+    } catch (e) { /* ignore */ }
 
     // Normalisasi angka sebelum submit
     const currencyFields = ['tunjangan', 'bonus', 'lembur', 'potongan_pajak', 'potongan_bpjs', 'potongan_lain'];
@@ -1637,88 +1255,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Terapkan filter awal dan hitung kartu
     filterKaryawanTable();
 });
-
-// Tampilkan toast duplikasi dengan animasi modern
-function showDuplicateToast() {
-    const toast = document.getElementById('toast-duplicate');
-    if (!toast) return;
-    
-    // Reset dan tampilkan
-    toast.classList.remove('hidden');
-    toast.classList.remove('translate-x-full');
-    toast.classList.add('translate-x-0');
-    
-    // Auto hide setelah 4 detik
-    setTimeout(() => {
-        toast.classList.add('translate-x-full');
-        setTimeout(() => toast.classList.add('hidden'), 300);
-    }, 4000);
-}
-
-// Tutup toast manual
-function closeToast() {
-    const toast = document.getElementById('toast-duplicate');
-    if (!toast) return;
-    toast.classList.add('translate-x-full');
-    setTimeout(() => toast.classList.add('hidden'), 300);
-}
-
-// Modal functions dengan animasi
-function openDuplicateCenterModal() { 
-    const modal = document.getElementById('duplicateCenterModal');
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        modal.querySelector('div > div').classList.remove('scale-95');
-        modal.querySelector('div > div').classList.add('scale-100');
-    }, 10);
-}
-
-function closeDuplicateCenterModal() { 
-    const modal = document.getElementById('duplicateCenterModal');
-    modal.querySelector('div > div').classList.remove('scale-100');
-    modal.querySelector('div > div').classList.add('scale-95');
-    setTimeout(() => modal.classList.add('hidden'), 200);
-}
-
-// Cek duplikasi berdasarkan pilihan form saat ini (non-blokir)
-function checkDuplicateSelection() {
-    const empEl = document.getElementById('employee_select');
-    const bulanEl = document.querySelector('#tambahModal [name="bulan"]');
-    const tahunEl = document.querySelector('#tambahModal [name="tahun"]');
-    if (!empEl || !bulanEl || !tahunEl) return;
-    const employeeId = parseInt(empEl.value);
-    const bulan = parseInt(bulanEl.value);
-    const tahun = parseInt(tahunEl.value);
-    if (isNaN(employeeId) || isNaN(bulan) || isNaN(tahun)) return;
-    const exists = (existingSalariesData || []).some(s => parseInt(s.employee_id) === employeeId && parseInt(s.bulan) === bulan && parseInt(s.tahun) === tahun);
-    if (exists) showDuplicateToast();
-}
-
-// Data salary untuk validasi payroll (ambil dari backend, array of {bulan, tahun})
-const existingPayrolls = @json(($salaries ?? [])->map(fn($s) => ['bulan' => $s->bulan, 'tahun' => $s->tahun])->unique());
-
-// Validasi generate payroll agar hanya untuk bulan/tahun yang belum ada
-document.addEventListener('DOMContentLoaded', function() {
-    const payrollForm = document.querySelector('#payrollModal form');
-    if (payrollForm) {
-        payrollForm.addEventListener('submit', function(e) {
-            const bulan = parseInt(payrollForm.querySelector('[name="bulan"]').value);
-            const tahun = parseInt(payrollForm.querySelector('[name="tahun"]').value);
-            const exists = existingPayrolls.some(p => parseInt(p.bulan) === bulan && parseInt(p.tahun) === tahun);
-            if (exists) {
-                alert('Payroll untuk bulan dan tahun tersebut sudah ada!');
-                e.preventDefault();
-            }
-        });
-    }
-
-    // Peringatan hanya saat submit (tidak pada perubahan input)
-});
 </script>
 
 <!-- Modal Pilih Tahun -->
 <div id="yearModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-    <div class="absolute inset-0 bg-black/40" onclick="closeYearModal()"></div>
     <div class="relative bg-white w-[92vw] max-w-lg rounded-2xl shadow-lg overflow-hidden dark:bg-gray-800">
         <div class="px-5 py-4 border-b flex items-center justify-between dark:border-gray-700">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Pilih Tahun</h3>
@@ -1752,40 +1292,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <script>
-// Modal functions
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    const modalContent = modal.querySelector('.bg-white, .dark\\:bg-slate-900');
-    
-    // Show modal
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    
-    // Trigger animation
-    setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        modal.classList.add('opacity-100');
-        modalContent.classList.remove('scale-95', 'translate-y-4');
-        modalContent.classList.add('scale-100', 'translate-y-0');
-    }, 10);
-}
-
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    const modalContent = modal.querySelector('.bg-white, .dark\\:bg-slate-900');
-    
-    // Trigger exit animation
-    modal.classList.remove('opacity-100');
-    modal.classList.add('opacity-0');
-    modalContent.classList.remove('scale-100', 'translate-y-0');
-    modalContent.classList.add('scale-95', 'translate-y-4');
-    
-    // Hide modal after animation
-    setTimeout(() => {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }, 300);
-}
 
 function openYearModal() {
     document.getElementById('yearModal').classList.remove('hidden');
@@ -1804,7 +1310,6 @@ function closeYearModal() {
 }
 
 function selectYear(year) {
-    // Update filter tahun dengan tahun yang dipilih
     const filterTahun = document.getElementById('filterTahun');
     const yearButtonText = document.getElementById('yearButtonText');
     
@@ -1813,12 +1318,10 @@ function selectYear(year) {
         filterKaryawanTable();
     }
     
-    // Update text pada tombol untuk menampilkan tahun yang dipilih
     if (yearButtonText) {
         yearButtonText.textContent = 'Pilih Tahun (' + year + ')';
     }
     
-    // Update highlighting pada modal
     document.querySelectorAll('.year-btn').forEach(btn => {
         if (btn.dataset.year == year) {
             btn.className = 'year-btn px-3 py-2 text-sm font-medium rounded-md border transition-colors bg-indigo-600 text-white border-indigo-600';
@@ -1830,18 +1333,15 @@ function selectYear(year) {
     closeYearModal();
 }
 
-// Close modal with Escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeYearModal();
     }
 });
 
-// Sync scroll untuk semua container tanggal
 document.addEventListener('DOMContentLoaded', function() {
     const dateScrollContainers = document.querySelectorAll('.date-scroll-container');
     
-    // Sinkronisasi scroll horizontal untuk semua container tanggal
     dateScrollContainers.forEach((container, index) => {
         container.addEventListener('scroll', function() {
             const scrollLeft = this.scrollLeft;
