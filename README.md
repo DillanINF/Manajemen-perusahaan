@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-✅%20Production%20Ready-success?style=flat-square" alt="Status">
-  <img src="https://img.shields.io/badge/Version-2.8.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-3.0.0-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square" alt="Build">
 </p>
@@ -46,6 +46,7 @@
 #### Kenapa proyek ini berbeda?
 - ✅ Fokus pada alur bisnis nyata: PO → Surat Jalan → Invoice → Jatuh Tempo → Pembayaran
 - ✅ Terkoneksi end-to-end dengan master data (Customer, Produk, Kendaraan, Pengirim)
+- ✅ **BARU!** Auto-generate Excel template ke HTML interaktif untuk manajemen gaji
 - ✅ Siap produksi: performa cepat, aman, dan mudah dipelihara
 - ✅ Dokumentasi rapi + changelog aktif, memudahkan adopsi dan kolaborasi
 
