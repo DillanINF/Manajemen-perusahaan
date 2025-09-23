@@ -169,6 +169,7 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/excel/generate', [ExcelTemplateController::class, 'generateFromExcel'])->name('excel.generate');
+    Route::post('/excel/save', [ExcelTemplateController::class, 'saveEdits'])->name('excel.save');
 
     /*
     |--------------------------------------------------------------------------

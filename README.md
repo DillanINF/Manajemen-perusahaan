@@ -29,6 +29,7 @@
   <img src="https://img.shields.io/badge/📱-Mobile%20Responsive-purple?style=flat-square" alt="Mobile">
   <img src="https://img.shields.io/badge/⚡-High%20Performance-yellow?style=flat-square" alt="Performance">
   <img src="https://img.shields.io/badge/🔒-Secure-red?style=flat-square" alt="Security">
+  <img src="https://img.shields.io/badge/📊-Excel%20Engine-brightgreen?style=flat-square" alt="Excel Engine">
 </p>
 
 ---
@@ -100,6 +101,15 @@ Sistem manajemen operasional **end-to-end** untuk perusahaan distribusi, logisti
 > - No Invoice Source: Kolom No Invoice di Jatuh Tempo tidak lagi mengambil dari No Surat Jalan. Jika No Invoice kosong, fallback ke `po_number` (No Urut dari Data Invoice).
 > - Navigasi: Double click pada No Invoice di Data Invoice membuka Form Input PO dengan parameter `from=invoice&po_number=<noUrut>`.
 
+> **🚀 Update Terbaru (2025-09-22) - MAJOR RELEASE v3.0.0**
+> - **Excel Template Engine**: Sistem revolusioner auto-generate Excel template ke HTML interaktif! Upload file Excel GAJI.xlsx dan otomatis jadi landing page yang bisa di-input langsung di website.
+> - **ExcelTemplateController**: Controller baru yang membaca file Excel dengan PhpSpreadsheet, preserve styling (bold, background, border), dan konversi 1:1 ke HTML.
+> - **Auto-Loading System**: JavaScript otomatis load template Excel saat halaman dibuka dengan error handling dan retry button.
+> - **Real-time Calculation**: Auto-calculate total per baris dan grand total seperti Excel asli, dengan format currency otomatis.
+> - **Responsive Design**: Layout Excel template responsive dengan scroll horizontal untuk mobile/tablet.
+> - **Route /excel/generate**: Endpoint baru untuk generate template Excel secara real-time.
+> - **Performance Optimized**: Sistem dioptimasi untuk handle file Excel besar dengan loading yang cepat.
+>
 > Update Terbaru (2025-09-15)
 > - Auth/OTP: Alur reset password via OTP aktif dan stabil (kirim OTP, verifikasi OTP, reset password via OTP).
 > - Email: Panduan konfigurasi email untuk OTP ditambahkan dan dirujuk di README (lihat `docs/EMAIL_CONFIGURATION.md`). Default development masih menggunakan driver non-smtp hingga dikonfigurasi.
@@ -198,6 +208,12 @@ Sistem manajemen operasional **end-to-end** untuk perusahaan distribusi, logisti
 ├── 📊 Performance Tracking
 ├── 📅 Attendance System
 └── 🎯 Goal Setting
+
+📊 Excel Template Engine (NEW!)
+├── 📄 Auto-convert Excel to HTML
+├── 🔄 Real-time calculations
+├── 📱 Interactive web forms
+└── 💾 Preserve Excel styling
 
 💰 Payroll System
 ├── 💵 Salary Calculation
@@ -782,6 +798,55 @@ Solution: rm -rf .vite node_modules && npm install
 
 </details>
 
+## 📊 Excel Template Engine
+
+<div align="center">
+
+### 🚀 **Revolusi Manajemen Gaji dengan Excel-to-HTML**
+
+</div>
+
+Fitur terbaru yang mengubah cara Anda mengelola data gaji! Upload file Excel template dan otomatis jadi landing page interaktif.
+
+#### ✨ **Fitur Unggulan:**
+
+```
+🎯 Auto-Convert Excel to HTML
+├── 📄 Upload file GAJI.xlsx ke storage/app/template/
+├── 🔄 Sistem otomatis baca Excel dengan PhpSpreadsheet
+├── 🎨 Preserve styling (bold, background, border, font size)
+└── 📱 Generate HTML yang persis seperti Excel asli
+
+⚡ Real-time Interactive
+├── 📝 Semua sel kosong jadi input field otomatis
+├── 🧮 Auto-calculate total per baris dan grand total
+├── 💰 Format currency otomatis (10,120)
+└── 📊 Update footer dan signature area real-time
+
+🔧 Technical Excellence
+├── 🚀 ExcelTemplateController dengan error handling
+├── 📡 Route /excel/generate untuk API endpoint
+├── 🔄 JavaScript auto-loading dengan retry mechanism
+└── 📱 Responsive design untuk semua device
+```
+
+#### 🎯 **Cara Penggunaan:**
+
+1. **Upload Template**: Letakkan file Excel di `storage/app/template/GAJI.xlsx`
+2. **Auto-Load**: Buka halaman salary, sistem otomatis load template
+3. **Interactive**: Semua sel bisa di-input langsung di website
+4. **Real-time**: Perhitungan otomatis seperti Excel asli
+
+#### 💡 **Keunggulan:**
+
+- ✅ **No Manual Coding**: Tidak perlu coding HTML manual lagi
+- ✅ **1:1 Conversion**: Layout persis seperti Excel template
+- ✅ **Performance Optimized**: Loading cepat untuk file Excel besar
+- ✅ **Error Handling**: Retry button jika gagal load
+- ✅ **Mobile Friendly**: Responsive dengan scroll horizontal
+
+---
+
 ## 🗺️ Roadmap
 
 <div align="center">
@@ -804,6 +869,7 @@ gantt
     Automated Testing Suite       :2025-04-15, 60d
 ```
 
+- [x] 📊 **Excel Template Engine** - ✅ COMPLETED! Auto-convert Excel to interactive HTML
 - [ ] 📊 **Advanced Reporting** - Export Excel/PDF dengan template kustom
 - [ ] 👥 **Role Management** - Sistem permission yang granular
 - [ ] 🔔 **Real-time Notifications** - WebSocket integration
@@ -812,6 +878,40 @@ gantt
 - [ ] 🤖 **API Integration** - RESTful API untuk third-party integration
 
 ## 📝 Changelog
+
+### 🚀 2025-09-22 (v3.0.0) - MAJOR RELEASE
+**Excel Template Engine Revolution!**
+
+- **🎯 ExcelTemplateController**: Controller baru yang revolusioner untuk auto-convert Excel ke HTML
+  - Membaca file Excel dengan PhpSpreadsheet library
+  - Preserve semua styling (bold, background, border, font size, alignment)
+  - Generate HTML yang 1:1 persis seperti Excel template asli
+  - Error handling lengkap dengan retry mechanism
+
+- **⚡ Auto-Loading System**: JavaScript otomatis load template Excel
+  - Fetch API ke endpoint `/excel/generate` saat halaman dibuka
+  - Loading indicator dengan spinner dan progress text
+  - Error handling dengan retry button jika gagal load
+  - Success callback untuk setup calculation listeners
+
+- **🧮 Real-time Calculation**: Perhitungan otomatis seperti Excel
+  - Auto-calculate total per baris saat input tanggal diisi
+  - Auto-calculate grand total dan total per hari
+  - Format currency otomatis (10,120 format Indonesia)
+  - Update footer dan signature area secara real-time
+
+- **📱 Responsive Design**: Layout responsive untuk semua device
+  - Scroll horizontal untuk tabel besar di mobile/tablet
+  - Preserve Excel column width dan row height
+  - Touch-friendly input fields dengan focus highlighting
+  - Optimized untuk performance di device rendah
+
+- **🔧 Technical Improvements**:
+  - Route baru: `GET /excel/generate` untuk API endpoint
+  - File Excel template: `storage/app/template/GAJI.xlsx`
+  - JavaScript functions: `loadExcelTemplate()`, `addCalculationListeners()`
+  - CSS optimizations untuk Excel-like appearance
+  - Performance optimized untuk handle file Excel besar
 
 ### 2025-09-16 (v2.7.0)
 - Jatuh Tempo:
