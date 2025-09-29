@@ -1,4 +1,4 @@
-﻿# Manajemen Perusahaan
+# Manajemen Perusahaan
 
 Aplikasi manajemen operasional end-to-end: PO  Surat Jalan  Invoice  Jatuh Tempo  Pembayaran.
 
@@ -6,49 +6,43 @@ Aplikasi manajemen operasional end-to-end: PO  Surat Jalan  Invoice  Jatuh Tempo
 - Status: Production-ready
 
 ## Fitur Utama
-- Purchase Order, Surat Jalan, Invoice, Jatuh Tempo
 - Master Data: Customer, Produk, Pengirim, Kendaraan
 - Export: Excel Surat Jalan, Tanda Terima, Invoice PDF
 - Salary: Template Excel ke HTML interaktif (auto-calc, responsive)
 
 ## Quick Start
-`ash
+```bash
 # Clone & masuk folder
 git clone https://github.com/DillanINF/Manajemen-perusahaan.git
 cd Manajemen-perusahaan
 
-# Install
+# Install dependencies
 composer install
 npm install
 
-# Env & key
+# Salin env & generate app key
 cp .env.example .env
 php artisan key:generate
 
-# Database
+# Siapkan database
 php artisan migrate
-# php artisan db:seed  (opsional)
+# php artisan db:seed   # opsional
 
-# Jalankan
+# Jalankan (dua terminal terpisah)
 npm run dev
 php artisan serve
-`
+```
 
 ## .env Contoh (ringkas)
-`ini
+```env
 APP_NAME="Manajemen Perusahaan"
 APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
+{{ ... }}
 DB_PORT=3306
 DB_DATABASE=manajemen_perusahaan
 DB_USERNAME=root
 DB_PASSWORD=
-`
-
+```
 ## Modul & Rute (ringkas)
 - Dashboard: /dashboard
 - PO: /po
@@ -62,6 +56,51 @@ DB_PASSWORD=
 - Build frontend: Vite (npm run dev/build)
 - Export file pruning: folder exports otomatis menyimpan 20 file terbaru
 - Keamanan: CSRF, session, standar Laravel
+
+## Prasyarat
+- PHP 8.2+
+- Composer 2+
+- Node.js 18+ dan npm 9+
+- MySQL 8+ (atau sesuaikan `.env`)
+
+## Perintah Penting
+```bash
+# Development
+npm run dev            # Vite dev server
+php artisan serve      # Laravel server
+
+# Production build
+npm run build
+
+# Migrasi / rollback
+php artisan migrate
+php artisan migrate:rollback
+
+# Cache optimisasi
+php artisan optimize
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+```
+
+## Modul Salary (Template Excel)
+- File template `GAJI.xlsx` ditempatkan di salah satu path berikut:
+  - `storage/app/template/GAJI.xlsx`
+  - `storage/template/GAJI.xlsx`
+- Sistem merender Excel menjadi HTML di halaman `salary_index` dengan penyesuaian:
+  - Auto-fit tinggi konten dalam iframe.
+  - Cropping area kosong bawah/kanan agar tidak menyisakan ruang.
+  - Penyembunyian elemen gambar/branding bila diperlukan.
+
+## Struktur Utama (ringkas)
+- `app/Http/Controllers/` — logika bisnis modul (PO, Surat Jalan, Invoice, Salary, dll)
+- `resources/views/` — Blade templates (dashboard, modul-modul, layout)
+- `routes/web.php` — definisi rute aplikasi
+- `public/` — aset publik
+
+## Deployment Singkat
+1) Set `APP_ENV=production`, `APP_DEBUG=false` di `.env`.
+2) Jalankan build front-end: `npm run build`.
+3) Jalankan optimisasi: `php artisan optimize`.
+4) Pastikan permission storage/logs dan storage/framework writeable.
 
 ## Lisensi
 MIT
