@@ -36,7 +36,6 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'is_admin' => ['required', 'boolean'],
         ]);
 
         // Password hashing is handled by User model cast ('password' => 'hashed')
@@ -44,7 +43,8 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
-            'is_admin' => $validated['is_admin'],
+            // Paksa semua user baru sebagai user biasa (bukan admin)
+            'is_admin' => 0,
         ]);
 
         return redirect()->route('users.create')->with('status', 'user-created');

@@ -210,7 +210,7 @@
         @endif
 
         <!-- Peringatan: gaya serupa form gaji karyawan -->
-        <div class="rounded-xl p-4 mb-6 shadow-lg border border-amber-500/60 bg-[#1f2937] text-amber-300">
+        <div class="rounded-xl p-4 mb-6 shadow-lg border bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-700">
             <span class="font-semibold">Peringatan:</span>
             Setelah tanda terima ditandatangani, ubah status invoice pada kolom <span class="font-semibold">Status</span> menjadi <span class="font-semibold">Accept</span>.
             Sistem akan menyinkronkan data ke Jatuh Tempo agar penagihan berjalan tepat waktu.

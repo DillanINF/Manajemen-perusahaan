@@ -650,6 +650,22 @@
         }
     </script>
 
+    @if (app()->environment('production'))
+    <!-- Silence non-critical console output in production -->
+    <script>
+        (function(){
+            try {
+                const noop = function(){};
+                if (window && window.console) {
+                    console.log = noop;
+                    console.info = noop;
+                    console.debug = noop;
+                }
+            } catch(e) {}
+        })();
+    </script>
+    @endif
+
     @stack('modals')
     @stack('scripts')
 </body>

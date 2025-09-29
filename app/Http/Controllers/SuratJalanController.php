@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\SuratJalan;
 use App\Models\PO;
 use App\Models\Produk;
-use App\Models\Kendaraan;
 use App\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use App\Exports\SuratJalanExport;
@@ -80,8 +79,6 @@ class SuratJalanController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $kendaraans = Kendaraan::all();
-
         // CHANGE: Tambahkan data pengirim untuk dropdown
         $pengirims = DB::table('pos')
             ->select('pengirim as nama')
@@ -108,7 +105,7 @@ class SuratJalanController extends Controller
                 $monthlyStats->put($m, (object)[
                     'month' => $m,
                     'total_sum' => $monthData->total_sum ?? 0,
-                    'total_count' => $monthData->total_count ?? 0
+                    'total_count' => $monthData->total_count ?? 0,
                 ]);
             }
         }
@@ -117,20 +114,16 @@ class SuratJalanController extends Controller
             'suratjalan'      => $suratjalan,
             'produk'          => $produk,
             'pos'             => $pos,
-            'kendaraans'      => $kendaraans,
-            'pengirims'       => $pengirims, // CHANGE: Tambahkan pengirims ke view
+            'pengirims'       => $pengirims,
             'availableYears'  => $availableYears,
             'allYears'        => $allYears,
-            'bulanNow'        => $month,
-            'tahunNow'        => $year,
-            'monthlyStats'    => $monthlyStats,
-            'poNumber'        => $poNumber, // PERBAIKAN: Kirim po_number ke view
+            'month'           => $month,
+            'year'            => $year,
+            'poNumber'        => $poNumber,
         ]);
     }
 
-    /**
-     * Menyimpan Surat Jalan baru.
-     */
+
     public function store(Request $request)
     {
         $request->validate([

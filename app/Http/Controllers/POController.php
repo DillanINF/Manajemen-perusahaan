@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\PO;
 use App\Models\POItem;
 use App\Models\SuratJalan;
-use App\Models\Kendaraan;
 use App\Models\Produk;
 use App\Models\BarangKeluar;
 use App\Models\Customer;
@@ -25,9 +24,8 @@ class POController extends Controller
 {
     public function index()
     {
-        // Ambil semua PO beserta relasi items->produk dan kendaraan
-        $pos        = PO::with(['items.produk', 'kendaraanRel'])->latest()->get();
-        $kendaraans = Kendaraan::all();
+        // Ambil semua PO beserta relasi items->produk (relasi kendaraan tidak dipakai lagi)
+        $pos        = PO::with(['items.produk'])->latest()->get();
         $produks    = Produk::all();
         $customers  = Customer::all();
         
@@ -38,7 +36,7 @@ class POController extends Controller
             ->orderBy('nama', 'asc')
             ->get();
 
-        return view('dashboard.po_index', compact('pos', 'kendaraans', 'produks', 'customers', 'pengirims'));
+        return view('dashboard.po_index', compact('pos', 'produks', 'customers', 'pengirims'));
     }
 
     public function create()
@@ -50,8 +48,6 @@ class POController extends Controller
             return redirect()->route('invoice.index')
                 ->with('error', 'Akses formulir PO hanya melalui Data Invoice (double click pada nomor urut).');
         }
-
-        $kendaraans = Kendaraan::all();
         $produks    = Produk::all();
         $customers  = Customer::all();
         
@@ -63,7 +59,7 @@ class POController extends Controller
             ->get();
 
         // Optional: tampilkan juga daftar PO seperti di index agar view konsisten
-        $pos = PO::with(['items.produk', 'kendaraanRel'])->latest()->get();
+        $pos = PO::with(['items.produk'])->latest()->get();
 
         // Prefill tanggal dari draft POS (no urut terkait) atau fallback ke hari ini
         $prefillTanggal = null;
@@ -116,7 +112,7 @@ class POController extends Controller
 
         // Kirim draft sebagai $po agar binding form (customer_id, dsb) otomatis terpilih
         $po = $draft;
-        return view('dashboard.po_index', compact('pos', 'kendaraans', 'produks', 'customers', 'pengirims', 'prefillTanggal', 'po', 'sjCodeParts', 'sjNomor', 'sjPt', 'sjTahun'));
+        return view('dashboard.po_index', compact('pos', 'produks', 'customers', 'pengirims', 'prefillTanggal', 'po', 'sjCodeParts', 'sjNomor', 'sjPt', 'sjTahun'));
     }
 
     public function store(Request $request)
@@ -668,8 +664,7 @@ class POController extends Controller
     public function edit($id)
     {
         $po         = PO::findOrFail($id);
-        $pos        = PO::with(['produkRel', 'kendaraanRel'])->latest()->get();
-        $kendaraans = Kendaraan::all();
+        $pos        = PO::with(['produkRel'])->latest()->get();
         $produks    = Produk::all();
         $customers  = Customer::all();
         
@@ -680,7 +675,7 @@ class POController extends Controller
             ->orderBy('nama', 'asc')
             ->get();
 
-        return view('dashboard.po_index', compact('po', 'pos', 'kendaraans', 'produks', 'customers', 'pengirims'));
+        return view('dashboard.po_index', compact('po', 'pos', 'produks', 'customers', 'pengirims'));
     }
 
     public function update(Request $request, PO $po)

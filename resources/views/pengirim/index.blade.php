@@ -365,18 +365,6 @@ window.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', applyFilter);
     }
     applyFilter();
-
-    // Debug: log clicks on all edit buttons to verify handler firing
-    try {
-        document.querySelectorAll('.js-edit-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                console.log('[Pengirim] Edit button clicked', this);
-            });
-        });
-        console.log('[Pengirim] Debug binding complete. typeof openEditModal:', typeof window.openEditModal);
-    } catch (e) {
-        console.error('[Pengirim] Failed binding debug listeners:', e);
-    }
 });
 function openAddModal() {
     const modal = document.getElementById('addModal');
@@ -423,13 +411,9 @@ function closeAddModal() {
 
 window.openEditModal = function(id, nama, kendaraan = '', noPolisi = '') {
     try {
-        console.log('openEditModal pengirim:', { id, nama });
         const form = document.getElementById('editForm');
         const modal = document.getElementById('editModal');
-        if (!form || !modal) {
-            console.error('Edit form atau modal tidak ditemukan');
-            return;
-        }
+        if (!form || !modal) { return; }
         form.action = `{{ url('pengirim') }}/${id}`;
         const namaInput = document.getElementById('editNama');
         const oldNamaInput = document.getElementById('oldNama');
@@ -445,7 +429,6 @@ window.openEditModal = function(id, nama, kendaraan = '', noPolisi = '') {
             if (namaInput) namaInput.focus();
         }, 100);
     } catch (e) {
-        console.error('Gagal membuka modal edit pengirim:', e);
         alert('Terjadi masalah saat membuka form edit. Coba reload halaman.');
     }
 }

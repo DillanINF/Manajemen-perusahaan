@@ -115,7 +115,7 @@
         @endif
 
         <div class="mb-4">
-            <div class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-gradient-to-r from-white to-blue-50/60 dark:from-slate-900/60 dark:to-slate-800/60 shadow-sm p-3 sm:p-4">
+            <div class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm p-3 sm:p-4">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                         <i class="fa-solid fa-circle-info text-blue-600"></i>
@@ -123,19 +123,14 @@
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <a href="{{ route('invoice.index') }}"
-                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition bg-white text-blue-700 border-blue-200 hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300 dark:border-blue-900 dark:hover:bg-slate-800">
+                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition bg-white text-blue-700 border-blue-300 hover:bg-blue-50 shadow-sm dark:bg-slate-900 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-slate-800">
                             <i class="fa-solid fa-arrow-left"></i>
                             Kembali ke Data Invoice
                         </a>
-                        <a href="{{ route('sisa-data-po.index') }}"
-                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400">
-                            <i class="fa-solid fa-exclamation-triangle text-white"></i>
-                            Sisa Data PO
-                        </a>
-                        <a id="btn-to-sj" href="{{ route('suratjalan.index', ['month' => now()->format('n'), 'year' => now()->format('Y'), 'po_number' => request('po_number')]) }}"
-                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                            <i class="fa-solid fa-table-list text-white"></i>
-                            Lihat Data PO (Surat Jalan)
+                        <a id="btn-next-po" href="{{ route('po.create', ['from' => 'invoice', 'po_number' => request('po_number')]) }}"
+                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 border border-indigo-700/70 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            <i class="fa-solid fa-arrow-right text-white"></i>
+                            Lanjut ke Form Data PO
                         </a>
                     </div>
                 </div>
@@ -263,15 +258,15 @@
                         <input type="text" name="address_2" id="address_2" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800" value="{{ old('address_2', $po->alamat_2 ?? '') }}" placeholder="Alamat tambahan (opsional)" readonly>
                     </div>
 
-                    <!-- Pengiriman: Pengirim + Kendaraan + No Polisi (digabung dalam satu baris) -->
+                    <!-- Pengiriman: gaya mengikuti No Surat Jalan (3 kolom sejajar, tanpa slash) -->
                     <div class="space-y-2 md:col-span-2 lg:col-span-3">
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <i class="fas fa-truck-fast text-purple-600 mr-1"></i>Pengiriman
                         </label>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <!-- Pengirim -->
-                            <div>
-                                <select name="pengirim" id="pengirim" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-500/30 transition-all duration-200">
+                        <div class="flex flex-col sm:flex-row gap-2 sm:items-center w-full min-w-0">
+                            <div class="flex gap-2 items-center w-full">
+                                <!-- Pengirim (lebih panjang) -->
+                                <select name="pengirim" id="pengirim" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[2] basis-1/2 min-w-0 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-500/30" >
                                     <option value="">-- Pilih Pengirim --</option>
                                     @foreach($pengirims as $p)
                                         <option value="{{ $p->nama }}" data-kendaraan="{{ $p->kendaraan ?? '' }}" data-nopol="{{ $p->no_polisi ?? '' }}" @selected(old('pengirim', $po->pengirim ?? '') == $p->nama)>
@@ -279,14 +274,12 @@
                                         </option>
                                     @endforeach
                                 </select>
-                            </div>
-                            <!-- Kendaraan (readonly seperti No Polisi) -->
-                            <div>
-                                <input type="text" name="kendaraan" id="kendaraan" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-100" value="{{ old('kendaraan', $po->kendaraan ?? '') }}" readonly>
-                            </div>
-                            <!-- No Polisi (readonly) -->
-                            <div>
-                                <input type="text" name="no_polisi" id="no_polisi" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-100" value="{{ old('no_polisi', $po->no_polisi ?? '') }}" readonly>
+
+                                <!-- Kendaraan (readonly) -->
+                                <input type="text" name="kendaraan" id="kendaraan" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" value="{{ old('kendaraan', $po->kendaraan ?? '') }}" readonly>
+
+                                <!-- No Polisi (readonly) -->
+                                <input type="text" name="no_polisi" id="no_polisi" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" value="{{ old('no_polisi', $po->no_polisi ?? '') }}" readonly>
                             </div>
                         </div>
                     </div>
@@ -303,7 +296,7 @@
                             <div class="md:col-span-2">Quantity</div>
                             <div class="md:col-span-2">Harga</div>
                             <div class="md:col-span-3">Total</div>
-                            <div class="md:col-span-1 text-right">Aksi</div>
+                            <div class="md:col-span-1 text-right pr-4">Aksi</div>
                         </div>
 
                         <!-- Item Row Template (first row) -->
@@ -345,13 +338,13 @@
                                 <input type="number" name="items[0][harga]" class="item-harga w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-500/30" min="0" step="0.01" required>
                             </div>
                             <!-- Total -->
-                            <div class="space-y-2 md:col-span-2">
+                            <div class="space-y-2 md:col-span-3">
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Total</label>
                                 <input type="number" name="items[0][total]" class="item-total w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100" readonly>
                             </div>
                             <!-- Remove Button -->
-                            <div class="md:col-span-1">
-                                <button type="button" class="remove-item-btn w-full px-3 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400">
+                            <div class="md:col-span-1 flex md:justify-end pr-4">
+                                <button type="button" class="remove-item-btn inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>

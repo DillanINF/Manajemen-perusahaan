@@ -6,7 +6,6 @@ use App\Http\Controllers\{
     POController,
     ProfileController,
     POExportController,
-    KendaraanController,
     ProdukController,
     CustomerController,
     PengirimController, // Added PengirimController import
@@ -94,12 +93,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     Route::resource('users', UserController::class)->only(['create','store']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Kendaraan (CRUD)
-    |--------------------------------------------------------------------------
-    */
-    Route::resource('kendaraan', KendaraanController::class);
+    // Kendaraan (CRUD) dinonaktifkan: data kendaraan sudah diintegrasikan di modul Pengirim
+    // Route::resource('kendaraan', KendaraanController::class);
 
     /*
     |--------------------------------------------------------------------------

@@ -11,6 +11,8 @@ use App\Models\PO;
 use App\Models\Kendaraan;
 use Carbon\Carbon;
 use App\Models\JatuhTempo;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class POExportController extends Controller
 {
@@ -177,6 +179,9 @@ class POExportController extends Controller
                     'Cache-Control' => 'max-age=0',
                 ];
 
+                // Prune folder exports: simpan 20 terbaru, hapus sisanya
+                $this->pruneExports(20);
+
                 \Log::info('[export-timing] ready_to_stream_template_only_ms=' . number_format((microtime(true) - $t0) * 1000, 2));
                 return response()->streamDownload(function () use ($spreadsheet) {
                     if (ob_get_length()) { @ob_end_clean(); }
@@ -300,6 +305,9 @@ class POExportController extends Controller
                 'Cache-Control' => 'max-age=0',
             ];
 
+            // Prune folder exports: simpan 20 terbaru, hapus sisanya
+            $this->pruneExports(20);
+
             // Download langsung ke browser
             \Log::info('[export-timing] ready_to_stream_ms=' . number_format((microtime(true) - $t0) * 1000, 2));
             return response()->streamDownload(function () use ($spreadsheet) {
@@ -316,6 +324,45 @@ class POExportController extends Controller
         } catch (\Exception $e) {
             \Log::error('Excel Export Error: ' . $e->getMessage());
             return response()->json(['error' => 'Terjadi kesalahan saat export Excel.'], 500);
+        }
+    }
+
+    /**
+     * Jaga direktori exports agar tidak menumpuk.
+     * Menyimpan hanya 20 file Excel terbaru di `storage/app/public/exports`.
+     */
+    private function pruneExports(int $keep = 20): void
+    {
+        try {
+            $disk = Storage::disk('public');
+            // Ambil semua file di folder exports
+            $files = collect($disk->files('exports'))
+                // Filter hanya file Excel yang relevan
+                ->filter(function ($path) {
+                    $name = basename($path);
+                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    if (!in_array($ext, ['xls', 'xlsx', 'xlsm'])) return false;
+                    // Nama yang umum pada app ini
+                    return Str::startsWith($name, ['PO_', 'PO-', 'Tanda-Terima-']);
+                })
+                // Map dengan timestamp untuk sorting
+                ->map(function ($path) use ($disk) {
+                    $ts = 0;
+                    try { $ts = $disk->lastModified($path); } catch (\Throwable $e) {}
+                    return ['path' => $path, 'ts' => $ts];
+                })
+                ->sortByDesc('ts')
+                ->values();
+
+            if ($files->count() <= $keep) return;
+
+            // Sisakan 20 terbaru, hapus sisanya
+            $toDelete = $files->slice($keep)->pluck('path');
+            foreach ($toDelete as $p) {
+                try { $disk->delete($p); } catch (\Throwable $e) { /* ignore */ }
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Prune exports gagal: ' . $e->getMessage());
         }
     }
 }

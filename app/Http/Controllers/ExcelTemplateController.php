@@ -171,7 +171,7 @@ class ExcelTemplateController extends Controller
         // Sel yang selalu editable meskipun berada di header
         $alwaysEditable = ['A1', 'B1', 'C1', 'D1', 'E1']; // tambah lebih banyak sel header
         
-        $editableCount = 0; // counter untuk debug
+        // counter debug dihapus (tidak diperlukan)
 
         // Proses merged cells untuk lookup yang efisien
         $mergedCellMap = [];
@@ -298,7 +298,6 @@ class ExcelTemplateController extends Controller
                 $isEditable = ($rowNum >= $dataStartRow) || in_array($cellRef, $alwaysEditable, true);
                 
                 if ($isEditable) {
-                    $editableCount++; // increment counter
                     // Input field untuk area data (tetap tampil walau ada nilai)
                     $prefill = isset($value) ? htmlspecialchars((string)$value) : '';
                     $html .= '<input type="text" value="' . $prefill . '" ';
@@ -310,9 +309,9 @@ class ExcelTemplateController extends Controller
                     $html .= 'style="width: 100%; height: 100%; border: none; background: transparent; ';
                     $html .= 'font-size: inherit; font-weight: inherit; color: inherit; text-align: inherit; ';
                     $html .= 'padding: 2px; margin: 0; outline: none; cursor: text; z-index: 10; position: relative;" ';
-                    $html .= 'onfocus="this.style.backgroundColor=\'#ffffcc\'; console.log(\'Focus on: ' . $cellRef . '\');" ';
+                    $html .= 'onfocus="this.style.backgroundColor=\'#ffffcc\';" ';
                     $html .= 'onblur="this.style.backgroundColor=\'transparent\'" ';
-                    $html .= 'onclick="this.focus(); console.log(\'Click on: ' . $cellRef . '\');" ';
+                    $html .= 'onclick="this.focus();" ';
                     $html .= 'title="Editable: ' . $cellRef . '">';
                 } else {
                     // Static content dari Excel
