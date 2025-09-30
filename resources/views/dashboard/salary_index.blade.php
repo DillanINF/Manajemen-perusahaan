@@ -270,7 +270,7 @@ function updateManualGrandTotal() {
 @endpush
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6 overflow-hidden">
     <!-- Header dengan Statistik -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
         <div class="bg-green-50 border border-green-200 rounded-lg p-4 dark:bg-white/5 dark:border-white/10">
@@ -331,7 +331,7 @@ function updateManualGrandTotal() {
     </div>
 
     <!-- Card Container Utama -->
-    <div class="bg-white dark:bg-slate-900 shadow-lg rounded-lg overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 shadow-lg rounded-lg overflow-hidden w-full max-w-full">
         <!-- Header dan Tombol Aksi -->
         <div class="p-6 border-b border-gray-200 dark:border-slate-700 no-print mb-6 print:mb-0">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
@@ -376,8 +376,8 @@ function updateManualGrandTotal() {
 
         <!-- Tabel Manual Salary (disembunyikan di landing page) -->
         <div id="manualSalaryTable" class="hidden overflow-hidden mt-12 pt-0 bg-white dark:bg-slate-800 print:mt-0 print:pt-0 print:bg-white">
-            <!-- Wrapper untuk Header + Tabel + Footer yang bisa scroll bersama -->
-            <div class="overflow-x-auto table-wrapper">
+            <!-- Wrapper untuk Header + Tabel + Footer -->
+            <div class="overflow-hidden table-wrapper">
                 <!-- Header Perusahaan - Rapi (simple black, natural height) -->
                 <div class="report-header p-2 pb-1 border-b-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white mb-0" style="width: 100%;">
                     <div class="flex justify-between items-center gap-3" style="width: 100%;">
@@ -421,7 +421,7 @@ function updateManualGrandTotal() {
                             
                             <!-- Kolom Tanggal 5-20 -->
                             @for($day = 5; $day <= 20; $day++)
-                                <th class="border border-black dark:border-white p-0 text-[9px] font-bold text-center dark:text-white print:border-black" style="width: 2.5%; height: 12px; line-height: 12px;">{{ $day }}</th>
+                                <th class="border border-black dark:border-white p-0 text-[9px] font-bold text-center dark:text-white print:border-black" style="width: 2.1%; height: 12px; line-height: 12px;">{{ $day }}</th>
                             @endfor
                             
                             <th class="border border-black dark:border-white p-1 text-[10px] font-bold text-center dark:text-white print:border-black" style="width: 5%; height: 12px;">JUMLAH</th>
@@ -593,23 +593,23 @@ function updateManualGrandTotal() {
 
     
 
-    {{-- Render GAJI.xlsx di bawahnya (isolasi via iframe agar ukuran/bentuk sesuai) --}}
-    @if(!empty($gajiXlsxError))
+    {{-- Render gaji_borongan.xlsx (isolasi via iframe agar ukuran/bentuk sesuai) --}}
+    @if(!empty($gajiTemplateError))
         <div class="mt-4 p-4 rounded-lg border border-red-300 bg-red-50 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
-            {{ $gajiXlsxError }}
+            {{ $gajiTemplateError }}
         </div>
-    @elseif(!empty($gajiXlsxHtml))
+    @elseif(!empty($gajiBoronganHtml))
         <div class="mt-4 bg-white dark:bg-slate-900 rounded-lg">
-            <div class="overflow-auto rounded-lg" style="border: 1px solid rgba(0,0,0,.1);">
-                <iframe id="gajiXlsxIframe" style="width: 100%; height: 1px; border: 0; background: white; display: block;"></iframe>
+            <div id="gajiTplWrapper" class="overflow-hidden rounded-lg h-[80vh] w-full" style="border: 1px solid rgba(0,0,0,.1);">
+                <iframe id="gajiTplIframe" style="width: 100%; height: 100%; border: 0; background: white; display: block;"></iframe>
             </div>
-            <template id="gajiXlsxTpl">{!! $gajiXlsxHtml !!}</template>
+            <template id="gajiTplTpl">{!! $gajiBoronganHtml !!}</template>
         </div>
         <script>
         (function renderGajiIframe(){
             try {
-                const iframe = document.getElementById('gajiXlsxIframe');
-                const tpl = document.getElementById('gajiXlsxTpl');
+                const iframe = document.getElementById('gajiTplIframe');
+                const tpl = document.getElementById('gajiTplTpl');
                 if (!iframe || !tpl) return;
                 const html = tpl.innerHTML;
                 const doc = iframe.contentDocument || iframe.contentWindow.document;
@@ -617,7 +617,7 @@ function updateManualGrandTotal() {
                 doc.open();
                 doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
                 <style>
-                    html, body { margin:0; padding:0; background:#fff; }
+                    html, body { margin:0; padding:0; background:#fff; overflow:hidden; }
                     body { font-family: Calibri, Arial, sans-serif; }
                     /* Reset ringan agar style excel dari writer dominan */
                     table { border-collapse: separate; border-spacing: 0; }
