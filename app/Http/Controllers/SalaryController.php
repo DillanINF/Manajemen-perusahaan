@@ -6,8 +6,6 @@ use App\Models\Salary;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class SalaryController extends Controller
 {
@@ -25,92 +23,12 @@ class SalaryController extends Controller
         $jumlahKaryawanDibayar = Salary::dibayar()->distinct('employee_id')->count();
         $rataRataGaji = Salary::dibayar()->avg('total_gaji') ?? 0;
 
-        // Render HTML dari template gaji_borongan.xlsx dan GAJI.xlsx agar tampilan sama persis
-        $gajiTemplateError = null;     // error untuk borongan
+        // DINONAKTIFKAN PERMANENT: Excel rendering terlalu lambat (5-10 detik loading)
+        // Gunakan tabel manual saja yang sudah ada di view
+        $gajiTemplateError = null;
         $gajiBoronganHtml = null;
-        $gajiXlsxError = null;         // error untuk GAJI.xlsx
+        $gajiXlsxError = null;
         $gajiXlsxHtml = null;
-        try {
-            if (class_exists(\PhpOffice\PhpSpreadsheet\IOFactory::class)) {
-                $candidates = [
-                    storage_path('app/template/gaji_borongan.xlsx'),
-                    storage_path('template/gaji_borongan.xlsx'),
-                    base_path('storage/app/template/gaji_borongan.xlsx'),
-                    base_path('storage/template/gaji_borongan.xlsx'),
-                ];
-                $path = null;
-                foreach ($candidates as $p) {
-                    if (file_exists($p)) { $path = $p; break; }
-                }
-                if ($path) {
-                    $spreadsheet = IOFactory::load($path);
-                    // Paksa sheet pertama aktif
-                    $spreadsheet->setActiveSheetIndex(0);
-                    // Tulis sebagai HTML
-                    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Html($spreadsheet);
-                    // Matikan gambar bila perlu agar ringan (opsional)
-                    // $writer->setIncludeCharts(false);
-                    ob_start();
-                    $writer->save('php://output');
-                    $gajiBoronganHtml = ob_get_clean();
-                } else {
-                    $gajiTemplateError = 'File gaji_borongan.xlsx tidak ditemukan di storage/app/template atau storage/template';
-                }
-            } else {
-                $gajiTemplateError = 'PhpSpreadsheet belum terpasang. Jalankan: composer require phpoffice/phpspreadsheet';
-            }
-            // Render GAJI.xlsx
-            try {
-                $candidates2 = [
-                    storage_path('app/template/GAJI.xlsx'),
-                    storage_path('template/GAJI.xlsx'),
-                    base_path('storage/app/template/GAJI.xlsx'),
-                    base_path('storage/template/GAJI.xlsx'),
-                ];
-                $path2 = null;
-                foreach ($candidates2 as $p2) { if (file_exists($p2)) { $path2 = $p2; break; } }
-                if ($path2) {
-                    $spreadsheet2 = IOFactory::load($path2);
-                    $spreadsheet2->setActiveSheetIndex(0);
-
-                    // Crop sheet agar tidak ada ruang kosong bawah/kanan (batasi ke 109R x 29C)
-                    try {
-                        $sheet2 = $spreadsheet2->getActiveSheet();
-                        // Ambil area data nyata, bukan seluruh sheet
-                        $maxRow = (int)$sheet2->getHighestDataRow();
-                        $maxColLetter = $sheet2->getHighestDataColumn();
-                        $maxColIndex = (int) Coordinate::columnIndexFromString($maxColLetter);
-                        $endRow = min(109, $maxRow);               // batas baris
-                        $endColIndex = min(29, $maxColIndex);       // 29 kolom (AC)
-
-                        // Hapus baris di bawah batas
-                        if ($sheet2->getHighestRow() > $endRow) {
-                            $sheet2->removeRow($endRow + 1, $sheet2->getHighestRow() - $endRow);
-                        }
-                        // Hapus kolom di kanan batas
-                        $currentMaxColIndex = (int) Coordinate::columnIndexFromString($sheet2->getHighestColumn());
-                        if ($currentMaxColIndex > $endColIndex) {
-                            $startRemoveCol = Coordinate::stringFromColumnIndex($endColIndex + 1);
-                            $sheet2->removeColumn($startRemoveCol, $currentMaxColIndex - $endColIndex);
-                        }
-                    } catch (\Throwable $__) {
-                        // abaikan jika cropping gagal, tetap render apa adanya
-                    }
-
-                    $writer2 = new \PhpOffice\PhpSpreadsheet\Writer\Html($spreadsheet2);
-                    ob_start();
-                    $writer2->save('php://output');
-                    $gajiXlsxHtml = ob_get_clean();
-                } else {
-                    $gajiXlsxError = 'File GAJI.xlsx tidak ditemukan di storage/app/template atau storage/template';
-                }
-            } catch (\Throwable $e2) {
-                $gajiXlsxError = 'Gagal merender GAJI.xlsx: ' . $e2->getMessage();
-            }
-
-        } catch (\Throwable $e) {
-            $gajiTemplateError = 'Gagal merender template: ' . $e->getMessage();
-        }
 
         return view('dashboard.salary_index', compact(
             'salaries', 

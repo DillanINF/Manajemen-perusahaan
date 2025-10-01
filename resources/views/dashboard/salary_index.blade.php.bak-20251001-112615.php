@@ -4,68 +4,6 @@
 
 @push('styles')
 <style>
-/* VERSION: {{ now()->timestamp }} - FORCE RELOAD */
-
-/* Force height untuk semua sel tabel - SUPER KUAT */
-#manualSalaryTable table tbody tr,
-#manualSalaryTable table tbody tr td,
-#manualSalaryTable table tbody tr th {
-  height: 12px !important;
-  max-height: 12px !important;
-  min-height: 12px !important;
-  line-height: 12px !important;
-}
-
-#manualSalaryTable table tbody td {
-  height: 12px !important;
-  max-height: 12px !important;
-  min-height: 12px !important;
-  padding: 0 2px !important;
-  vertical-align: middle !important;
-  font-size: 12px !important;
-}
-
-#manualSalaryTable table tbody td input,
-#manualSalaryTable table tbody td span {
-  height: 12px !important;
-  max-height: 12px !important;
-  min-height: 12px !important;
-  line-height: 12px !important;
-  padding: 0px 2px !important;
-  font-size: 12px !important;
-  box-sizing: border-box !important;
-}
-
-#manualSalaryTable table thead tr {
-  height: 12px !important;
-  max-height: 12px !important;
-  min-height: 12px !important;
-}
-
-#manualSalaryTable table thead th {
-  height: 12px !important;
-  max-height: 12px !important;
-  min-height: 12px !important;
-  line-height: 12px !important;
-  padding: 0px 2px !important;
-  font-size: 12px !important;
-}
-
-#manualSalaryTable table tfoot tr {
-  height: 12px !important;
-  max-height: 12px !important;
-  min-height: 12px !important;
-}
-
-#manualSalaryTable table tfoot td {
-  height: 12px !important;
-  max-height: 12px !important;
-  min-height: 12px !important;
-  line-height: 1 !important;
-  padding: 0px 2px !important;
-  font-size: 11px !important;
-  vertical-align: middle !important;
-}
 
 .report-header .side-box {
   height: 28px;
@@ -230,12 +168,12 @@
 
 @push('scripts')
 <script>
-// Fungsi perhitungan untuk tabel baru (kolom tanggal: 5-20)
-function calculateRow(rowIndex) {
+// Fungsi perhitungan untuk tabel manual
+function calculateManualRow(rowIndex) {
     let total = 0;
     
-    // Hitung total dari kolom tanggal 5-20
-    for (let day = 5; day <= 20; day++) {
+    // Hitung total dari kolom tanggal 1-31
+    for (let day = 1; day <= 31; day++) {
         const input = document.getElementById(`day_${rowIndex}_${day}`);
         if (input && input.value) {
             total += parseFloat(input.value) || 0;
@@ -248,33 +186,35 @@ function calculateRow(rowIndex) {
         totalElement.textContent = total;
     }
     
-    // Hitung total baris (total * harga)
+    // Hitung grand total (total * harga)
     const priceInput = document.getElementById(`price_${rowIndex}`);
-    const price = priceInput ? (parseInt(priceInput.value.replace(/\D/g, '')) || 0) : 0;
-    const rowTotal = total * price;
+    const price = priceInput ? (parseInt(priceInput.value) || 10120) : 10120;
+    const grandTotal = total * price;
     
-    const rowTotalElement = document.getElementById(`row_total_${rowIndex}`);
-    if (rowTotalElement) {
-        rowTotalElement.textContent = rowTotal.toLocaleString('id-ID');
+    const grandTotalElement = document.getElementById(`grand_total_${rowIndex}`);
+    if (grandTotalElement) {
+        grandTotalElement.textContent = grandTotal.toLocaleString('id-ID');
     }
     
     // Update total kolom per hari
-    updateDayTotals();
+    updateManualDayTotals();
     
     // Update grand total keseluruhan
-    updateGrandTotal();
+    updateManualGrandTotal();
 }
 
-function updateDayTotals() {
-    // Total untuk tanggal 5-20
-    for (let day = 5; day <= 20; day++) {
+function updateManualDayTotals() {
+    for (let day = 1; day <= 31; day++) {
         let dayTotal = 0;
-        for (let row = 1; row <= 30; row++) {
+        
+        // Hitung total per hari dari semua baris
+        for (let row = 1; row <= 25; row++) {
             const input = document.getElementById(`day_${row}_${day}`);
             if (input && input.value) {
                 dayTotal += parseFloat(input.value) || 0;
             }
         }
+        
         const dayTotalElement = document.getElementById(`day_total_${day}`);
         if (dayTotalElement) {
             dayTotalElement.textContent = dayTotal;
@@ -282,56 +222,49 @@ function updateDayTotals() {
     }
 }
 
-function updateGrandTotal() {
+function updateManualGrandTotal() {
     let grandTotal = 0;
     let totalPieces = 0;
     
     // Hitung total dari semua baris
-    for (let row = 1; row <= 30; row++) {
+    for (let row = 1; row <= 25; row++) {
         const totalElement = document.getElementById(`total_${row}`);
         if (totalElement) {
             const pieces = parseInt(totalElement.textContent) || 0;
             totalPieces += pieces;
             
-            const rowTotalElement = document.getElementById(`row_total_${row}`);
-            if (rowTotalElement) {
-                const rowTotal = parseInt(rowTotalElement.textContent.replace(/\D/g, '')) || 0;
-                grandTotal += rowTotal;
-            }
+            const priceInput = document.getElementById(`price_${row}`);
+            const price = priceInput ? (parseInt(priceInput.value) || 10120) : 10120;
+            grandTotal += pieces * price;
         }
     }
     
-    // Update displays
+    // Update total pieces
     const grandPiecesElement = document.getElementById('grand_pieces');
     if (grandPiecesElement) {
         grandPiecesElement.textContent = totalPieces + ' pcs';
     }
     
+    // Update final total
     const finalTotalElement = document.getElementById('final_total');
     if (finalTotalElement) {
         finalTotalElement.textContent = grandTotal.toLocaleString('id-ID');
     }
     
-    const totalPalletDisplay = document.getElementById('total_pallet_display');
-    if (totalPalletDisplay) {
-        totalPalletDisplay.textContent = totalPieces;
+    // Update final salary
+    const finalSalaryElement = document.getElementById('final_salary');
+    if (finalSalaryElement) {
+        finalSalaryElement.textContent = grandTotal.toLocaleString('id-ID');
     }
     
-    const totalGajiDisplay = document.getElementById('total_gaji_display');
-    if (totalGajiDisplay) {
-        totalGajiDisplay.textContent = grandTotal.toLocaleString('id-ID');
-    }
-    
-    // Hitung grand total diterima (total gaji - total bon)
-    const totalBonDisplay = document.getElementById('total_bon_display');
-    const totalBon = totalBonDisplay ? parseInt(totalBonDisplay.textContent.replace(/\D/g, '')) || 0 : 0;
-    const grandTotalDiterima = grandTotal - totalBon;
-    
-    const grandTotalDisplay = document.getElementById('grand_total_display');
-    if (grandTotalDisplay) {
-        grandTotalDisplay.textContent = grandTotalDiterima.toLocaleString('id-ID');
+    // Update total pallet
+    const totalPalletElement = document.getElementById('total_pallet');
+    if (totalPalletElement) {
+        totalPalletElement.textContent = totalPieces + ' PALLET';
     }
 }
+
+// fungsi simpan template dihapus sesuai permintaan
 
 </script>
 @endpush
@@ -443,125 +376,113 @@ function updateGrandTotal() {
 
         <!-- Tabel Manual Salary (disembunyikan di landing page) -->
         <div id="manualSalaryTable" class="overflow-hidden mt-12 pt-0 bg-white dark:bg-slate-800 print:mt-0 print:pt-0 print:bg-white">
-            <!-- Wrapper A4 Landscape untuk Header + Tabel + Footer -->
-            <div class="overflow-hidden table-wrapper" style="width: 297mm; max-width: 297mm; height: 210mm; margin: 0; border: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: white;">
-                <!-- Header Perusahaan - Sesuai Foto 2 -->
-                <div class="report-header p-3 border-b-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white mb-0" style="width: 297mm; max-width: 297mm;">
-                    <div class="flex justify-between items-start">
-                        <!-- Kiri: Peraturan Merah -->
-                        <div class="text-left">
-                            <div class="text-red-600 dark:text-red-400 font-bold text-[10px] leading-tight">PERATURAN</div>
-                            <div class="text-red-600 dark:text-red-400 font-bold text-[9px] leading-tight">DILARANG BELAH PAPAN TANPA IJIN</div>
-                            <div class="text-red-600 dark:text-red-400 font-bold text-[9px] leading-tight">DILARANG BELAH BALOK TANPA IJIN</div>
+            <!-- Wrapper untuk Header + Tabel + Footer -->
+            <div class="overflow-hidden table-wrapper">
+                <!-- Header Perusahaan - Rapi (simple black, natural height) -->
+                <div class="report-header p-2 pb-1 border-b-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white mb-0" style="width: 100%;">
+                    <div class="flex justify-between items-center gap-3" style="width: 100%;">
+                        <!-- Peraturan (Kiri) -->
+                        <div class="flex-shrink-0">
+                            <div class="rules-box border-2 border-black dark:border-white p-1 bg-white dark:bg-slate-700" style="width: 150px;">
+                                <div class="text-black dark:text-white font-bold text-[10px] leading-tight">PERATURAN</div>
+                                <div class="text-black dark:text-white text-[10px] leading-tight">DILARANG BELAH PAPAN/BALOK TANPA IJIN</div>
+                            </div>
                         </div>
-                        
-                        <!-- Tengah: Nama Perusahaan -->
-                        <div class="flex-1 text-center">
-                            <h1 class="text-3xl font-black text-black dark:text-white tracking-wider">PT. CAM JAYA ABADI</h1>
+
+                        <!-- Nama Perusahaan (Tengah) -->
+                        <div class="flex-1 text-center px-2">
+                            <div class="flex flex-col items-center justify-center leading-tight">
+                                <h1 class="text-base font-extrabold text-black dark:text-white whitespace-nowrap">PT. CAM JAYA ABADI</h1>
+                                <div class="text-[11px] font-semibold text-gray-800 dark:text-gray-200">LAPORAN PENGGAJIAN KARYAWAN</div>
+                            </div>
                         </div>
-                        
-                        <!-- Kanan: Info Tanggal -->
-                        <div class="text-right">
-                            <div class="text-[10px] font-bold dark:text-white">BIAYA UPAH KERJA</div>
-                            <div class="text-[10px] font-bold dark:text-white">{{ now()->format('d-M-Y') }}</div>
+
+                        <!-- Info Biaya (Kanan) -->
+                        <div class="flex-shrink-0 text-right">
+                            <div class="border-2 border-black dark:border-white bg-white dark:bg-slate-700" style="width: 140px; height: 30px; display: flex; flex-direction: column; justify-content: center;">
+                                <div class="border-b border-black dark:border-white p-0.5">
+                                    <div class="font-bold text-[10px] text-center dark:text-white">BIAYA / UPAH KERJA</div>
+                                </div>
+                                <div class="p-0.5">
+                                    <div class="font-bold text-[10px] text-center dark:text-white">{{ now()->format('d-M-Y') }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tabel Utama - Layout Vertikal Sesuai Foto 2 -->
-                <table class="border-collapse" style="table-layout: auto; margin-top: 0; width: 297mm; max-width: 297mm;">
-                    <!-- Header Tabel - Layout Vertikal: ITEM di atas, KODE & DESKRIPSI di bawah -->
+                <!-- Tabel Utama - Responsive -->
+                <table class="w-full border-collapse" style="table-layout: fixed; margin-top: 4px;">
+                    <!-- Header Tabel - Sesuai Referensi -->
                     <thead>
-                        <!-- Baris 1: ITEM -->
-                        <tr class="bg-gray-200 dark:bg-slate-600" style="height: 12px !important;">
-                            <th colspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="height: 12px !important; max-height: 12px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">ITEM</th>
+                        <tr class="bg-gray-100 dark:bg-slate-600 print:bg-gray-200">
+                            <th class="border border-black dark:border-white p-1 text-[10px] font-bold text-center dark:text-white print:border-black" style="width: 8%; height: 12px;">ITEM</th>
+                            <th class="border border-black dark:border-white p-1 text-[10px] font-bold text-center bg-gray-200 dark:bg-slate-500 dark:text-white print:bg-gray-300" style="width: 15%; height: 12px;">DESKRIPSI</th>
                             
-                            <!-- Header TANGGAL (colspan untuk semua tanggal) -->
-                            <th colspan="16" rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">TANGGAL</th>
-                            
-                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="width: 60px; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">JUMLAH</th>
-                            
-                            <!-- Header BIAYA PRODUKSI (colspan 3) -->
-                            <th colspan="3" rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">BIAYA PRODUKSI</th>
-                            
-                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 100px; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">KETERANGAN</th>
-                        </tr>
-                        
-                        <!-- Baris 2: KODE & DESKRIPSI -->
-                        <tr class="bg-gray-200 dark:bg-slate-600" style="height: 12px !important;">
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 180px; height: 12px !important; max-height: 12px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">KODE</th>
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 300px; height: 12px !important; max-height: 12px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">DESKRIPSI</th>
-                        </tr>
-                        
-                        <!-- Baris 3: Angka tanggal & sub-header BIAYA PRODUKSI -->
-                        <tr class="bg-gray-200 dark:bg-slate-600" style="height: 10px !important;">
-                            <!-- Kolom kosong untuk KODE dan DESKRIPSI -->
-                            <th class="border border-black dark:border-white bg-gray-200 dark:bg-slate-600" style="width: 180px; height: 10px !important; max-height: 10px !important; padding: 0;"></th>
-                            <th class="border border-black dark:border-white bg-gray-200 dark:bg-slate-600" style="width: 300px; height: 10px !important; max-height: 10px !important; padding: 0;"></th>
-                            
-                            <!-- Sub-header: Angka tanggal 5-20 -->
-                            @for($day = 5; $day <= 20; $day++)
-                                <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 32px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px; vertical-align: middle;">{{ $day }}</th>
+                            <!-- Kolom Tanggal 1-31 -->
+                            @for($day = 1; $day <= 31; $day++)
+                                <th class="border border-black dark:border-white p-0 text-[9px] font-bold text-center dark:text-white print:border-black" style="width: 22px; height: 12px; line-height: 12px;">{{ $day }}</th>
                             @endfor
                             
-                            <!-- Sub-header BIAYA PRODUKSI -->
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="width: 70px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">HSL. PROD</th>
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="width: 70px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">HARGA</th>
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="width: 80px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">TOTAL</th>
+                            <th class="border border-black dark:border-white p-1 text-[10px] font-bold text-center dark:text-white print:border-black" style="width: 5%; height: 12px;">JUMLAH</th>
+                            <th class="border border-black dark:border-white p-1 text-[10px] font-bold text-center dark:text-white print:border-black" style="width: 8%; height: 12px;">HSL. PROD</th>
+                            <th class="border border-black dark:border-white p-1 text-[10px] font-bold text-center dark:text-white print:border-black" style="width: 8%; height: 12px;">HARGA</th>
+                            <th class="border border-black dark:border-white p-1 text-[10px] font-bold text-center dark:text-white print:border-black" style="width: 10%; height: 12px;">TOTAL</th>
+                            <th class="border border-black dark:border-white p-1 text-[10px] font-bold text-center dark:text-white print:border-black" style="width: 12%; height: 12px;">KETERANGAN</th>
                         </tr>
                     </thead>
                     
                     <!-- Body Tabel -->
                     <tbody>
-                        <!-- Baris Data (30 baris kosong untuk input manual) -->
-                        @for($row = 1; $row <= 30; $row++)
-                        <tr class="{{ $row % 2 == 0 ? 'bg-gray-50 dark:bg-slate-700' : 'bg-white dark:bg-slate-800' }}" style="height: 12px !important; max-height: 12px !important;">
-                            <!-- KODE -->
-                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px;" 
-                                       id="kode_{{ $row }}">
+                        <!-- Baris Data Karyawan -->
+                        @for($row = 1; $row <= 25; $row++)
+                        <tr class="{{ $row % 2 == 0 ? 'bg-gray-50 dark:bg-slate-700' : 'bg-white dark:bg-slate-800' }}" style="height: 14px;">
+                            <!-- ITEM -->
+                            <td class="border border-black dark:border-white p-0" style="height: 14px;">
+                                <input type="text" class="w-full h-full border-0 bg-transparent text-[9px] dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" 
+                                       placeholder="Karyawan {{ $row }}" id="item_{{ $row }}" style="height: 14px; padding: 1px;">
                             </td>
                             
                             <!-- DESKRIPSI -->
-                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px;" 
-                                       id="desc_{{ $row }}">
+                            <td class="border border-black dark:border-white p-0 bg-gray-200 dark:bg-slate-600" style="height: 14px;">
+                                <input type="text" class="w-full h-full border-0 bg-transparent text-[9px] dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" 
+                                       placeholder="Posisi" id="desc_{{ $row }}" style="height: 14px; padding: 1px;">
                             </td>
                             
-                            <!-- Kolom Tanggal (5-20) -->
-                            @for($day = 5; $day <= 20; $day++)
-                                <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                    <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px; height: 12px; max-height: 12px;" 
-                                           onchange="calculateRow({{ $row }})" id="day_{{ $row }}_{{ $day }}">
+                            <!-- Kolom Tanggal 1-31 -->
+                            @for($day = 1; $day <= 31; $day++)
+                                <td class="border border-black dark:border-white p-0 {{ $row % 2 == 0 ? 'bg-gray-100 dark:bg-slate-700' : 'bg-white dark:bg-slate-800' }}" style="height: 14px;">
+                                    <input type="text" class="w-full h-full border-0 bg-transparent text-[8px] dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" 
+                                           onchange="calculateManualRow({{ $row }})" id="day_{{ $row }}_{{ $day }}" style="height: 14px;">
                                 </td>
                             @endfor
                             
                             <!-- JUMLAH -->
-                            <td class="border border-black dark:border-white text-center bg-gray-100 dark:bg-slate-600" style="height: 12px !important; max-height: 12px !important; padding: 0px 2px; vertical-align: middle;">
-                                <span class="text-xs font-black dark:text-white" style="font-weight: 900; line-height: 1;" id="total_{{ $row }}">0</span>
+                            <td class="border border-black dark:border-white p-0 text-center" style="height: 14px;">
+                                <span class="text-[9px] font-bold dark:text-white" id="total_{{ $row }}">0</span>
                             </td>
                             
                             <!-- HSL. PROD -->
-                            <td class="border border-black dark:border-white bg-gray-100 dark:bg-slate-600" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px; height: 12px; max-height: 12px;" 
-                                       onchange="calculateRow({{ $row }})" id="prod_{{ $row }}">
+                            <td class="border border-black dark:border-white p-0" style="height: 14px;">
+                                <input type="number" class="w-full h-full border-0 bg-transparent text-[8px] dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" 
+                                       placeholder="0" onchange="calculateManualRow({{ $row }})" id="prod_{{ $row }}" style="height: 14px;">
                             </td>
                             
                             <!-- HARGA -->
-                            <td class="border border-black dark:border-white bg-gray-100 dark:bg-slate-600" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px; height: 12px; max-height: 12px;" 
-                                       onchange="calculateRow({{ $row }})" id="price_{{ $row }}">
+                            <td class="border border-black dark:border-white p-0" style="height: 14px;">
+                                <input type="number" class="w-full h-full border-0 bg-transparent text-[8px] dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" 
+                                       placeholder="0" onchange="calculateManualRow({{ $row }})" id="price_{{ $row }}" style="height: 14px;">
                             </td>
                             
                             <!-- TOTAL -->
-                            <td class="border border-black dark:border-white text-center bg-gray-100 dark:bg-slate-600" style="height: 12px !important; max-height: 12px !important; padding: 0px 2px; vertical-align: middle;">
-                                <span class="text-xs font-black dark:text-white" style="font-weight: 900; line-height: 1;" id="row_total_{{ $row }}">0</span>
+                            <td class="border border-black dark:border-white p-0 text-center" style="height: 14px;">
+                                <span class="text-[9px] font-bold dark:text-white" id="row_total_{{ $row }}">0</span>
                             </td>
                             
                             <!-- KETERANGAN -->
-                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px;" 
-                                       id="note_{{ $row }}">
+                            <td class="border border-black dark:border-white p-0" style="height: 14px;">
+                                <input type="text" class="w-full h-full border-0 bg-transparent text-[8px] dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" 
+                                       placeholder="Keterangan" id="note_{{ $row }}" style="height: 14px; padding: 1px;">
                             </td>
                         </tr>
                         @endfor
@@ -569,95 +490,97 @@ function updateGrandTotal() {
                     
                     <!-- Footer Tabel -->
                     <tfoot>
-                        <tr class="bg-gray-100 dark:bg-slate-600">
-                            <td colspan="2" class="border border-black dark:border-white text-xs font-semibold dark:text-white" style="font-weight: 600;">Hasil produksi pallet dan biaya borongan</td>
+                        <tr class="bg-gray-100 dark:bg-slate-700 font-bold">
+                            <td colspan="2" class="border border-black dark:border-white p-2 text-xs dark:text-white">Hasil produksi pallet dan biaya borongan</td>
                             
-                            <!-- Total per hari (5-20) -->
-                            @for($day = 5; $day <= 20; $day++)
-                                <td class="border border-black dark:border-white text-center text-xs font-bold dark:text-white" style="font-weight: 700;" id="day_total_{{ $day }}">0</td>
+                            <!-- Total per hari 1-31 -->
+                            @for($day = 1; $day <= 31; $day++)
+                                <td class="border border-black dark:border-white p-1 text-center text-xs dark:text-white" id="day_total_{{ $day }}">0</td>
                             @endfor
                             
-                            <td class="border border-black dark:border-white text-center text-xs font-bold dark:text-white bg-gray-200 dark:bg-slate-500" style="font-weight: 700;" id="grand_pieces">595 pcs</td>
-                            <td colspan="3" class="border border-black dark:border-white text-right text-xs font-bold dark:text-white" style="font-weight: 700;" id="final_total">5,292,000</td>
-                            <td class="border border-black dark:border-white text-xs dark:text-white"></td>
+                            <td class="border border-black dark:border-white p-1 text-center text-xs dark:text-white">-</td>
+                            <td class="border border-black dark:border-white p-1 text-xs">-</td>
+                            <td class="border border-black dark:border-white p-1 text-center text-xs dark:text-white" id="grand_pieces">0 pcs</td>
+                            <td class="border border-black dark:border-white p-1 text-xs">-</td>
+                            <td colspan="2" class="border border-black dark:border-white p-1 text-right text-xs font-bold dark:text-white" id="final_total">0</td>
+                            <td class="border border-black dark:border-white p-1 text-xs">-</td>
                         </tr>
                     </tfoot>
                 </table>
 
-                <!-- Footer Sesuai Foto -->
-                <div class="report-footer border-t-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white p-3 mt-0" style="width: 297mm; max-width: 297mm;">
-                    <div class="flex items-start gap-4" style="width: 100%;">
-                        <!-- Kiri: Signature Area -->
-                        <div class="flex-shrink-0" style="width: 25%;">
-                            <div class="flex gap-2 mb-2">
-                                <!-- Report by -->
-                                <div class="text-center flex-1">
-                                    <div class="text-[8px] mb-1 dark:text-white">Report by</div>
-                                    <div class="border border-black dark:border-white p-2" style="height: 60px;">
-                                        <img src="{{ asset('image/LOGO.png') }}" alt="CAM Logo" class="w-10 h-10 mx-auto object-contain"
-                                             onerror="this.style.display='none';">
+                <!-- Footer PERSIS Seperti Referensi -->
+                <div class="report-footer border-t-0 bg-white dark:bg-slate-800 print:bg-white p-1 mt-0" style="width: 100%;">
+                    <div class="flex items-start gap-2" style="width: 100%;">
+                        <!-- Kiri: Signature Area (pindah ke kiri, tanpa outline) -->
+                        <div class="flex-shrink-0" style="width: 35%;">
+                            <div class="flex gap-1 mb-1">
+                                <!-- Report by (Kiri) -->
+                                <div class="text-center" style="width: 50%;">
+                                    <div class="text-[7px] mb-1 dark:text-white">Report by</div>
+                                    <div class="bg-white dark:bg-slate-700 p-1" style="height: 40px;">
+                                        <img src="{{ asset('image/LOGO.png') }}" alt="CAM Logo" class="w-8 h-8 mx-auto object-contain"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="border-2 border-blue-600 bg-blue-100 rounded-full w-8 h-8 mx-auto hidden items-center justify-center">
+                                            <span class="text-[10px] font-bold text-blue-700">CAM</span>
+                                        </div>
                                     </div>
-                                    <div class="text-[7px] font-bold mt-1 dark:text-white">Reid Kubro Wahyudin</div>
-                                    <div class="text-[6px] dark:text-gray-300">DIREKTUR</div>
+                                    <div class="text-[6px] font-bold mt-1 dark:text-white">Reid Kubro Wahyudin</div>
+                                    <div class="text-[5px] dark:text-gray-300">DIREKTUR</div>
                                 </div>
                                 
-                                <!-- Approved by -->
-                                <div class="text-center flex-1">
-                                    <div class="text-[8px] mb-1 dark:text-white">Approved by</div>
-                                    <div class="border border-black dark:border-white p-2" style="height: 60px;">
-                                        <img src="{{ asset('image/LOGO.png') }}" alt="CAM Logo" class="w-10 h-10 mx-auto object-contain"
-                                             onerror="this.style.display='none';">
+                                <!-- Approved by (Kanan) -->
+                                <div class="text-center" style="width: 50%;">
+                                    <div class="text-[7px] mb-1 dark:text-white">Approved by</div>
+                                    <div class="bg-white dark:bg-slate-700 p-1" style="height: 40px;">
+                                        <img src="{{ asset('image/LOGO.png') }}" alt="CAM Logo" class="w-8 h-8 mx-auto object-contain"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="border-2 border-blue-600 bg-blue-100 rounded-full w-8 h-8 mx-auto hidden items-center justify-center">
+                                            <span class="text-[10px] font-bold text-blue-700">CAM</span>
+                                        </div>
                                     </div>
-                                    <div class="text-[7px] font-bold mt-1 dark:text-white">Panji Purnadi</div>
-                                    <div class="text-[6px] dark:text-gray-300">DIREKTUR UTAMA</div>
+                                    <div class="text-[6px] font-bold mt-1 dark:text-white">Panji Purnadi</div>
+                                    <div class="text-[5px] dark:text-gray-300">DIREKTUR UTAMA</div>
                                 </div>
                             </div>
                             
                             <!-- Warning Text Merah -->
-                            <div class="text-center mt-2">
-                                <div class="text-[7px] text-red-600 font-bold leading-tight">JIKA ADA TOLERANSI PALLET MAKA</div>
-                                <div class="text-[7px] text-red-600 font-bold leading-tight">MAKA PERBAIKAN PALLET TOLERANSI STANDAR</div>
-                                <div class="text-[7px] text-red-600 font-bold leading-tight">DAN JIKA REPAIR TIDAK MASUK HITUNGAN !!!</div>
+                            <div class="text-center">
+                                <div class="text-[6px] text-red-600 font-bold leading-none">JIKA ADA TOLERANSI PALLET MAKA</div>
+                                <div class="text-[6px] text-red-600 font-bold leading-none">MASA PERBAIKAN PALLET TOLERANSI STANDAR</div>
+                                <div class="text-[6px] text-red-600 font-bold leading-none">DAN JIKA REPAIR TIDAK MASUK HITUNGAN !!!</div>
                             </div>
                         </div>
                         
-                        <!-- Tengah: 638 PALLET -->
+                        <!-- Tengah: 595 PALLET -->
                         <div class="flex-1 text-center">
-                            <div class="text-7xl font-black dark:text-white" id="total_pallet_display">638</div>
-                            <div class="text-2xl font-bold -mt-2 dark:text-white">PALLET</div>
+                            <div class="text-6xl font-black dark:text-white">595</div>
+                            <div class="text-xl font-bold -mt-2 dark:text-white">PALLET</div>
+                            <div class="mt-2 text-[8px] text-right">
+                                <div class="font-bold dark:text-white">TOTAL QTY:</div>
+                                <div class="font-bold dark:text-white">5.292.000</div>
+                            </div>
                         </div>
                         
-                        <!-- Kanan: Box Total -->
-                        <div class="flex-shrink-0" style="width: 35%;">
-                            <div class="border-2 border-black dark:border-white bg-white dark:bg-slate-700 mb-2">
-                                <!-- TOTAL GAJI -->
-                                <div class="border-b border-black dark:border-white p-2 text-right">
-                                    <div class="text-[9px] font-bold dark:text-white">TOTAL GAJI</div>
-                                    <div class="text-[11px] font-bold dark:text-white" id="total_gaji_display">5,292,000</div>
+                        <!-- Kanan: Box Total Persegi Panjang (dipindah ke kanan) -->
+                        <div class="flex-shrink-0" style="width: 30%;">
+                            <div class="border-2 border-black dark:border-white bg-white dark:bg-slate-700">
+                                <!-- Baris 1: TOTAL BON -->
+                                <div class="border-b border-black dark:border-white p-1">
+                                    <div class="text-[8px] font-bold dark:text-white">TOTAL BON:</div>
+                                    <div class="text-[8px] font-bold dark:text-white">1.500.000</div>
                                 </div>
-                                
-                                <!-- TOTAL BON -->
-                                <div class="border-b border-black dark:border-white p-2">
-                                    <div class="flex justify-between items-center">
-                                        <div class="text-[9px] font-bold dark:text-white">TOTAL BON:</div>
-                                        <div class="text-[10px] font-bold dark:text-white" id="total_bon_display">1,500,000</div>
-                                    </div>
+                                <!-- Baris 2: GRAND TOTAL DITERIMA -->
+                                <div class="border-b border-black dark:border-white p-1">
+                                    <div class="text-[8px] font-bold dark:text-white">GRAND TOTAL DITERIMA:</div>
+                                    <div class="text-[8px] font-bold dark:text-white">3.792.000</div>
                                 </div>
-                                
-                                <!-- GRAND TOTAL GAJI DITERIMA -->
-                                <div class="border-b border-black dark:border-white p-2">
-                                    <div class="text-[9px] font-bold dark:text-white">GRAND TOTAL GAJI DITERIMA:</div>
-                                    <div class="text-[11px] font-bold dark:text-white" id="grand_total_display">3,792,000</div>
-                                </div>
-                                
-                                <!-- BON GRUPPPP (Kuning) -->
+                                <!-- Baris 3: BON GRUPPPP + Rp (Kuning) -->
                                 <div class="flex bg-yellow-300 dark:bg-yellow-400 print:bg-yellow-300">
-                                    <div class="border-r border-black dark:border-white p-2 flex-1 text-center">
-                                        <div class="text-[9px] font-bold dark:text-black">BON GRUPPPP</div>
+                                    <div class="border-r border-black dark:border-white p-1 text-center" style="width: 60%;">
+                                        <div class="text-[8px] font-bold dark:text-black">BON GRUPPPP</div>
                                     </div>
-                                    <div class="p-2 flex-1 text-center">
-                                        <div class="text-[9px] font-bold dark:text-black">Rp</div>
-                                        <div class="text-[10px] font-bold dark:text-black" id="bon_grup_display">1,500,000</div>
+                                    <div class="p-1 text-center" style="width: 40%;">
+                                        <div class="text-[8px] font-bold dark:text-black">Rp 1.500.000</div>
                                     </div>
                                 </div>
                             </div>
@@ -668,10 +591,154 @@ function updateGrandTotal() {
         </div>
     </div>
 
+    
 
+    {{-- Bagian render template Excel dinonaktifkan sesuai permintaan: gunakan tabel manual saja --}}
 
-
-
+    <!-- Tabel Lama (Hidden, akan diganti dengan Excel Template) -->
+    <div class="hidden bg-white dark:bg-slate-900 shadow-lg overflow-hidden border-2 border-black dark:border-slate-400 salary-outline">
+        <!-- Header Perusahaan -->
+        <div class="border-b-2 border-black dark:border-slate-400 pl-4 pr-0 pt-0 pb-1">
+            <div class="flex justify-between items-start">
+                <div class="text-left text-xs text-black dark:text-white">
+                    <div class="rules-box mb-1">
+                        <div class="title">PERATURAN</div>
+                        <div class="item">DILARANG BELAH PAPAN TANPA IJIN</div>
+                        <div class="item">DILARANG BELAH BALOK TANPA IJIN</div>
+                    </div>
+                </div>
+                <div class="flex-1 text-center">
+                    <h2 class="company-title text-black dark:text-white">PT. CAM JAYA ABADI</h2>
+                </div>
+                <div class="text-right text-xs text-black dark:text-white salary-header-right">
+                    <div class="salary-header-label">BIAYA / UPAH KERJA</div>
+                    <div class="salary-header-date"><span class="font-bold">{{ now()->format('d-M-y') }}</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CSS untuk stabilitas tabel -->
+        <style>
+            
+            #manualSalaryTable table {
+                font-size: 11px !important;
+                table-layout: fixed !important; /* gunakan fixed layout untuk kontrol lebar */
+            }
+            
+            #manualSalaryTable th,
+            #manualSalaryTable td {
+                padding: 1px 2px !important; /* padding minimal */
+                height: 18px !important; /* tinggi baris normal */
+                line-height: 1.1 !important;
+                vertical-align: middle !important;
+            }
+            
+            #manualSalaryTable table {
+                table-layout: fixed !important;
+                width: 100% !important;
+            }
+            
+            #manualSalaryTable th,
+            #manualSalaryTable td {
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
+            }
+            
+            #manualSalaryTable input {
+                height: 16px !important; /* tinggi input normal */
+                padding: 0px 2px !important;
+                font-size: 10px !important;
+                line-height: 1.1 !important;
+            }
+            
+            /* CSS KHUSUS UNTUK PRINT */
+            @media print {
+                /* Sembunyikan elemen yang tidak perlu saat print */
+                .no-print, button, .bg-gradient-to-r {
+                    display: none !important;
+                }
+                
+                /* Optimasi untuk print */
+                body {
+                    background: white !important;
+                    color: black !important;
+                    font-size: 10px !important;
+                }
+                
+                #manualSalaryTable {
+                    background: white !important;
+                    box-shadow: none !important;
+                }
+                
+                #manualSalaryTable table {
+                    width: 100% !important;
+                    border-collapse: collapse !important;
+                }
+                
+                #manualSalaryTable th,
+                #manualSalaryTable td {
+                    border: 2px solid black !important;
+                    padding: 2px !important;
+                    font-size: 9px !important;
+                    line-height: 1.1 !important;
+                }
+                
+                #manualSalaryTable input {
+                    border: none !important;
+                    background: transparent !important;
+                    font-size: 9px !important;
+                    padding: 0 !important;
+                }
+                
+                /* Header perusahaan untuk print */
+                .print\\:bg-white {
+                    background: white !important;
+                }
+                
+                .print\\:bg-gray-200 {
+                    background: #e5e7eb !important;
+                }
+                
+                .print\\:bg-gray-300 {
+                    background: #d1d5db !important;
+                }
+                
+                .print\\:border-black {
+                    border-color: black !important;
+                }
+            }
+            
+            /* Responsive untuk tabel manual ketika sidebar hidden */
+            body.sidebar-hidden #manualSalaryTable table {
+                width: 100% !important;
+                min-width: 100% !important;
+                table-layout: auto !important; /* auto layout untuk responsive */
+            }
+            
+            body.sidebar-hidden #manualSalaryTable .overflow-x-auto {
+                overflow-x: visible !important; /* hilangkan scroll horizontal */
+            }
+            
+            body.sidebar-hidden #manualSalaryTable {
+                width: 100% !important;
+                max-width: none !important;
+            }
+            
+            body.sidebar-hidden #manualSalaryTable th,
+            body.sidebar-hidden #manualSalaryTable td {
+                width: auto !important; /* biarkan semua kolom menyesuaikan */
+                min-width: 0 !important;
+                max-width: none !important;
+            }
+            
+            /* Sidebar hidden - table stays responsive */
+            body.sidebar-hidden #manualSalaryTable table {
+                width: 100% !important;
+                table-layout: fixed !important;
+            }
+            
+        </style>
 <script>
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -767,6 +834,35 @@ function hitungGajiPokok() {
 function autoFillEmployeeData() {
     // Hapus auto-fill dari employee karena sekarang pakai sistem borongan/harian
     hitungGajiPokok();
+}
+
+    if (selectedOption.value) {
+        // Get raw gaji pokok value directly from data attribute
+        const rawGajiPokok = selectedOption.getAttribute('data-gaji-pokok');
+        
+        
+        if (rawGajiPokok && rawGajiPokok !== '0') {
+            // Convert to integer to ensure no decimal issues
+            const gajiPokokInt = parseInt(rawGajiPokok);
+            
+            
+            // Format for display using Indonesian locale
+            const formattedGaji = 'Rp ' + gajiPokokInt.toLocaleString('id-ID');
+            gajiPokokDisplay.value = formattedGaji;
+            gajiPokokValue.value = gajiPokokInt;
+            
+            
+        } else {
+            gajiPokokDisplay.value = '';
+            gajiPokokValue.value = '';
+        }
+        
+        
+    } else {
+        // Clear form if no employee selected
+        gajiPokokDisplay.value = '';
+        gajiPokokValue.value = '';
+    }
 }
 
 function formatRupiah(number) {
@@ -978,6 +1074,13 @@ function openYearModal() {
     document.getElementById('yearModal').classList.remove('hidden');
 }
 
+// Set filter tahun ke tahun saat ini saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    const filterTahun = document.getElementById('filterTahun');
+    if (filterTahun && filterTahun.value) {
+        filterKaryawanTable();
+    }
+});
 
 function closeYearModal() {
     document.getElementById('yearModal').classList.add('hidden');
@@ -1011,6 +1114,21 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeYearModal();
     }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dateScrollContainers = document.querySelectorAll('.date-scroll-container');
+    
+    dateScrollContainers.forEach((container, index) => {
+        container.addEventListener('scroll', function() {
+            const scrollLeft = this.scrollLeft;
+            dateScrollContainers.forEach((otherContainer, otherIndex) => {
+                if (otherIndex !== index) {
+                    otherContainer.scrollLeft = scrollLeft;
+                }
+            });
+        });
+    });
 });
 </script>
 
