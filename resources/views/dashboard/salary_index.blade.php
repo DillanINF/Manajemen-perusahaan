@@ -463,51 +463,79 @@ function updateGrandTotal() {
                         <!-- Kanan: Info Tanggal -->
                         <div class="text-right">
                             <div class="text-[10px] font-bold dark:text-white">BIAYA UPAH KERJA</div>
-                            <div class="text-[10px] font-bold dark:text-white">{{ now()->format('d-M-Y') }}</div>
+                            <div class="text-[10px] font-bold dark:text-white">{{ now()->format('d-M-y') }}</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tabel Utama - Layout Vertikal Sesuai Foto 2 -->
-                <table class="border-collapse" style="table-layout: auto; margin-top: 0; width: 297mm; max-width: 297mm;">
+                <style>
+                    /* Paksa perkecil font di seluruh isi tabel (override inline) */
+                    table.report-table, table.report-table * {
+                        font-size: 9px !important;
+                        line-height: 1 !important;
+                    }
+                </style>
+                <table class="border-collapse report-table" style="table-layout: auto; margin-top: 0; width: 297mm; max-width: 297mm;">
                     <!-- Header Tabel - Layout Vertikal: ITEM di atas, KODE & DESKRIPSI di bawah -->
                     <thead>
                         <!-- Baris 1: ITEM -->
                         <tr class="bg-gray-200 dark:bg-slate-600" style="height: 12px !important;">
-                            <th colspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="height: 12px !important; max-height: 12px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">ITEM</th>
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; height: 12px !important; max-height: 12px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;">ITEM</th>
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 150px; height: 12px !important; max-height: 12px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
                             
                             <!-- Header TANGGAL (colspan untuk semua tanggal) -->
-                            <th colspan="16" rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">TANGGAL</th>
+                            <th colspan="16" rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;">TANGGAL</th>
                             
-                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="width: 60px; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">JUMLAH</th>
+                            <!-- Header JUMLAH (text di atas) -->
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 60px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;">JUMLAH</th>
                             
-                            <!-- Header BIAYA PRODUKSI (colspan 3) -->
-                            <th colspan="3" rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">BIAYA PRODUKSI</th>
+                            <!-- Kolom kosong kiri -->
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 40px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
                             
-                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 100px; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">KETERANGAN</th>
+                            <!-- HSL. PROD (kosong di atas) -->
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 70px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
+                            
+                            <!-- Kolom kosong kanan -->
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 40px; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
+                            
+                            <!-- HARGA (atas diisi BIAYA PRODUKSI) -->
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 70px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;">BIAYA PRODUKSI</th>
+                            
+                            <!-- TOTAL (kosong di atas) -->
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
+                            
+                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 100px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;">KETERANGAN</th>
                         </tr>
                         
-                        <!-- Baris 2: KODE & DESKRIPSI -->
+                        <!-- Baris 2: KODE -->
                         <tr class="bg-gray-200 dark:bg-slate-600" style="height: 12px !important;">
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 180px; height: 12px !important; max-height: 12px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">KODE</th>
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 300px; height: 12px !important; max-height: 12px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">DESKRIPSI</th>
+                            <!-- KODE dan DESKRIPSI sudah ada di baris 1 dengan rowspan="2" -->
+                            <!-- KODE dan DESKRIPSI sudah ada di baris 1 dengan rowspan="2" -->
                         </tr>
                         
-                        <!-- Baris 3: Angka tanggal & sub-header BIAYA PRODUKSI -->
+                        <!-- Baris 3: KODE & Angka tanggal & JUMLAH & sub-header BIAYA PRODUKSI -->
                         <tr class="bg-gray-200 dark:bg-slate-600" style="height: 10px !important;">
-                            <!-- Kolom kosong untuk KODE dan DESKRIPSI -->
-                            <th class="border border-black dark:border-white bg-gray-200 dark:bg-slate-600" style="width: 180px; height: 10px !important; max-height: 10px !important; padding: 0;"></th>
-                            <th class="border border-black dark:border-white bg-gray-200 dark:bg-slate-600" style="width: 300px; height: 10px !important; max-height: 10px !important; padding: 0;"></th>
+                            <!-- KODE -->
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">KODE</th>
+                            <!-- DESKRIPSI (dipindah ke baris 3) -->
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 150px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">DESKRIPSI</th>
                             
                             <!-- Sub-header: Angka tanggal 5-20 -->
                             @for($day = 5; $day <= 20; $day++)
-                                <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 32px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px; vertical-align: middle;">{{ $day }}</th>
+                                <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 32px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px; vertical-align: middle; background-color: #FFFFFF;">{{ $day }}</th>
                             @endfor
                             
+                            <!-- JUMLAH (text di bawah) -->
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 60px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">JUMLAH</th>
+                            
                             <!-- Sub-header BIAYA PRODUKSI -->
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="width: 70px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">HSL. PROD</th>
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="width: 70px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">HARGA</th>
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white bg-gray-300 dark:bg-slate-500" style="width: 80px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle;">TOTAL</th>
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 40px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;"></th>
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 70px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">HSL. PROD</th>
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 40px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;"></th>
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 70px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">HARGA</th>
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">TOTAL</th>
+                            
                         </tr>
                     </thead>
                     
@@ -515,53 +543,60 @@ function updateGrandTotal() {
                     <tbody>
                         <!-- Baris Data (30 baris kosong untuk input manual) -->
                         @for($row = 1; $row <= 30; $row++)
-                        <tr class="{{ $row % 2 == 0 ? 'bg-gray-50 dark:bg-slate-700' : 'bg-white dark:bg-slate-800' }}" style="height: 12px !important; max-height: 12px !important;">
+                        <tr style="height: 12px !important; max-height: 12px !important; background-color: {{ $row % 2 == 1 ? '#D9D9D9' : '#FFFFFF' }};">
                             <!-- KODE -->
-                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px;" 
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF;">
+                                <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px; font-size: 10px;" 
                                        id="kode_{{ $row }}">
                             </td>
                             
                             <!-- DESKRIPSI -->
-                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px;" 
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #D9D9D9;">
+                                <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px; font-size: 10px;" 
                                        id="desc_{{ $row }}">
                             </td>
                             
                             <!-- Kolom Tanggal (5-20) -->
                             @for($day = 5; $day <= 20; $day++)
                                 <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                    <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px; height: 12px; max-height: 12px;" 
+                                    <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px; height: 12px; max-height: 12px; font-size: 10px;" 
                                            onchange="calculateRow({{ $row }})" id="day_{{ $row }}_{{ $day }}">
                                 </td>
                             @endfor
                             
                             <!-- JUMLAH -->
-                            <td class="border border-black dark:border-white text-center bg-gray-100 dark:bg-slate-600" style="height: 12px !important; max-height: 12px !important; padding: 0px 2px; vertical-align: middle;">
+                            <td class="border border-black dark:border-white text-center" style="height: 12px !important; max-height: 12px !important; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">
                                 <span class="text-xs font-black dark:text-white" style="font-weight: 900; line-height: 1;" id="total_{{ $row }}">0</span>
                             </td>
                             
+                            <!-- KOLOM KOSONG KIRI -->
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF;">
+                            </td>
+                            
                             <!-- HSL. PROD -->
-                            <td class="border border-black dark:border-white bg-gray-100 dark:bg-slate-600" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px; height: 12px; max-height: 12px;" 
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #D9E1F2;">
+                                <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px; height: 12px; max-height: 12px; font-size: 10px;" 
                                        onchange="calculateRow({{ $row }})" id="prod_{{ $row }}">
                             </td>
                             
+                            <!-- KOLOM KOSONG KANAN -->
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #D9D9D9;">
+                            </td>
+                            
                             <!-- HARGA -->
-                            <td class="border border-black dark:border-white bg-gray-100 dark:bg-slate-600" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px; height: 12px; max-height: 12px;" 
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF;">
+                                <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white text-center focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px; height: 12px; max-height: 12px; font-size: 10px;" 
                                        onchange="calculateRow({{ $row }})" id="price_{{ $row }}">
                             </td>
                             
                             <!-- TOTAL -->
-                            <td class="border border-black dark:border-white text-center bg-gray-100 dark:bg-slate-600" style="height: 12px !important; max-height: 12px !important; padding: 0px 2px; vertical-align: middle;">
+                            <td class="border border-black dark:border-white text-center" style="height: 12px !important; max-height: 12px !important; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">
                                 <span class="text-xs font-black dark:text-white" style="font-weight: 900; line-height: 1;" id="row_total_{{ $row }}">0</span>
                             </td>
                             
-                            <!-- KETERANGAN -->
-                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent text-xs font-bold dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 700; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px;" 
-                                       id="note_{{ $row }}">
+                            <!-- KETERANGAN (satu kolom) -->
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF;" colspan="2">
+                                <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px; font-size: 10px;">
                             </td>
                         </tr>
                         @endfor
@@ -569,17 +604,27 @@ function updateGrandTotal() {
                     
                     <!-- Footer Tabel -->
                     <tfoot>
-                        <tr class="bg-gray-100 dark:bg-slate-600">
-                            <td colspan="2" class="border border-black dark:border-white text-xs font-semibold dark:text-white" style="font-weight: 600;">Hasil produksi pallet dan biaya borongan</td>
+                        <tr style="background-color: #FFFFFF;">
+                            <td colspan="2" class="text-xs font-semibold dark:text-white" style="font-weight: 600; background-color: #FFFFFF; border: none;">Hasil produksi pallet dan biaya borongan</td>
                             
                             <!-- Total per hari (5-20) -->
                             @for($day = 5; $day <= 20; $day++)
-                                <td class="border border-black dark:border-white text-center text-xs font-bold dark:text-white" style="font-weight: 700;" id="day_total_{{ $day }}">0</td>
+                                <td class="border border-black dark:border-white text-center text-xs font-bold dark:text-white" style="font-weight: 700; background-color: #D9D9D9;" id="day_total_{{ $day }}">0</td>
                             @endfor
                             
-                            <td class="border border-black dark:border-white text-center text-xs font-bold dark:text-white bg-gray-200 dark:bg-slate-500" style="font-weight: 700;" id="grand_pieces">595 pcs</td>
-                            <td colspan="3" class="border border-black dark:border-white text-right text-xs font-bold dark:text-white" style="font-weight: 700;" id="final_total">5,292,000</td>
-                            <td class="border border-black dark:border-white text-xs dark:text-white"></td>
+                            <td class="border border-black dark:border-white text-center text-xs font-bold dark:text-white" style="font-weight: 700; background-color: #FFFFFF;" id="grand_pieces">595 pcs</td>
+                            <!-- Footer cells aligned to: spacer kiri, HSL.PROD, spacer kanan, HARGA, TOTAL -->
+                            <td class="border border-black dark:border-white" style="background-color: #D9D9D9;"></td>
+                            <td class="border border-black dark:border-white" style="background-color: #FFFFFF;" id="footer_hsl_prod"></td>
+                            <td class="border border-black dark:border-white" style="background-color: #D9D9D9;"></td>
+                            <td colspan="2" class="border border-black dark:border-white text-right text-xs font-bold dark:text-white" style="font-weight: 700; background-color: #FFFFFF; color: #0000FF;" id="final_total">5,292,000</td>
+                            <td class="dark:border-white text-xs dark:text-white" style="background-color: #FFFFFF; border: none;"></td>
+                        </tr>
+                        <tr style="background-color: #FFFFFF;">
+                            <td colspan="2" style="border: none; text-align: left; font-style: italic; font-weight: 600; padding-top: 2px; padding-left: 48px;">
+                                <u>Bekasi, {{ now()->format('d-M-y') }}</u>
+                            </td>
+                            <td colspan="23" style="border: none;"></td>
                         </tr>
                     </tfoot>
                 </table>
