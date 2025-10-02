@@ -92,15 +92,17 @@
   width: 100% !important;
 }
 .report-footer {
-  margin-top: 0 !important;
+  margin-top: auto !important; /* dorong footer ke bawah wrapper */
   border-top: 0 !important; /* rely on table bottom border */
   width: 100% !important;
   min-width: 100% !important;
+  padding-bottom: 0 !important; /* pastikan tidak ada jarak bawah */
 }
 
 /* Force header and footer to use full available width */
 .table-wrapper {
-  display: block !important;
+  display: flex !important;
+  flex-direction: column !important;
   width: 100% !important;
 }
 
@@ -117,11 +119,152 @@
   display: flex !important;
 }
 
+
 /* Ensure print keeps the block seamless */
 @media print {
-  .report-header { border-bottom: 2px solid #000 !important; width: 100% !important; }
-  .table-wrapper > table { border-top: 2px solid #000 !important; border-bottom: 2px solid #000 !important; width: 100% !important; }
-  .report-footer { border-top: 0 !important; width: 100% !important; }
+  /* Set page to A4 landscape */
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  
+  /* Hide ALL elements by default */
+  body * {
+    visibility: hidden !important;
+  }
+  
+  /* Show ONLY the printable area and its children */
+  #printableArea,
+  #printableArea * {
+    visibility: visible !important;
+  }
+  
+  /* Position printable area at top left */
+  #printableArea {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+  }
+  
+  /* Hide non-printable elements */
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Force body and html to use full page */
+  html, body {
+    width: 297mm !important;
+    height: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  /* Main container untuk tabel */
+  #manualSalaryTable {
+    width: 297mm !important;
+    max-width: 297mm !important;
+    height: 210mm !important;
+    max-height: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Wrapper tabel - fit to A4 landscape */
+  .table-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 297mm !important;
+    max-width: 297mm !important;
+    height: 210mm !important;
+    max-height: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Header */
+  .report-header { 
+    border-bottom: 2px solid #000 !important; 
+    width: 297mm !important;
+    max-width: 297mm !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Table */
+  .table-wrapper > table { 
+    border-top: 2px solid #000 !important; 
+    border-bottom: 2px solid #000 !important; 
+    width: 297mm !important;
+    max-width: 297mm !important;
+    margin: 0 !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+  
+  /* Footer */
+  .report-footer { 
+    border-top: 0 !important; 
+    width: 297mm !important;
+    max-width: 297mm !important;
+    margin: 0 !important;
+    /* top right bottom left (bottom set to 0) */
+    padding: 8px 8px 0 8px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Ensure all cells print correctly */
+  table.report-table td,
+  table.report-table th {
+    page-break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Print background colors */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Hide outer container styling */
+  .space-y-6 {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Ensure only table wrapper is visible */
+  .table-wrapper {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Scale content to fit A4 landscape if needed */
+  #manualSalaryTable .table-wrapper {
+    transform-origin: top left;
+    /* Uncomment below if content is too large and needs scaling */
+    /* transform: scale(0.95); */
+  }
+  
+  /* Remove border and shadow from printable area when printing */
+  #printableArea {
+    border: none !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+  
+  /* Ensure proper spacing and layout */
+  #manualSalaryTable {
+    background: white !important;
+  }
 }
 
 /* Hide scrollbar for date columns */
@@ -398,7 +541,7 @@ function updateGrandTotal() {
     </div>
 
     <!-- Card Container Utama -->
-    <div class="bg-white dark:bg-slate-900 shadow-lg rounded-lg overflow-hidden w-full max-w-full">
+    <div class="bg-white dark:bg-slate-900 shadow-lg rounded-lg overflow-hidden w-full max-w-full print:shadow-none print:rounded-none print:bg-transparent">
         <!-- Header dan Tombol Aksi -->
         <div class="p-6 border-b border-gray-200 dark:border-slate-700 no-print mb-6 print:mb-0">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
@@ -444,7 +587,7 @@ function updateGrandTotal() {
         <!-- Tabel Manual Salary (disembunyikan di landing page) -->
         <div id="manualSalaryTable" class="overflow-hidden mt-12 pt-0 bg-white dark:bg-slate-800 print:mt-0 print:pt-0 print:bg-white">
             <!-- Wrapper A4 Landscape untuk Header + Tabel + Footer -->
-            <div class="overflow-hidden table-wrapper" style="width: 297mm; max-width: 297mm; height: 210mm; margin: 0; border: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: white;">
+            <div class="overflow-hidden table-wrapper" style="width: 297mm; max-width: 297mm; height: 210mm; margin: 0; border: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: white;" id="printableArea">
                 <!-- Header Perusahaan - Sesuai Foto 2 -->
                 <div class="report-header p-3 border-b-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white mb-0" style="width: 297mm; max-width: 297mm;">
                     <div class="flex justify-between items-start">
@@ -481,7 +624,7 @@ function updateGrandTotal() {
                     <thead>
                         <!-- Baris 1: ITEM -->
                         <tr class="bg-gray-200 dark:bg-slate-600" style="height: 12px !important;">
-                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; height: 12px !important; max-height: 12px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;">ITEM</th>
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; height: 12px !important; max-height: 12px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9; border-left: none;">ITEM</th>
                             <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 150px; height: 12px !important; max-height: 12px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
                             
                             <!-- Header TANGGAL (colspan untuk semua tanggal) -->
@@ -505,7 +648,7 @@ function updateGrandTotal() {
                             <!-- TOTAL (kosong di atas) -->
                             <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
                             
-                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 100px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;">KETERANGAN</th>
+                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 100px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9; border-right: none;">KETERANGAN</th>
                         </tr>
                         
                         <!-- Baris 2: KODE -->
@@ -517,7 +660,7 @@ function updateGrandTotal() {
                         <!-- Baris 3: KODE & Angka tanggal & JUMLAH & sub-header BIAYA PRODUKSI -->
                         <tr class="bg-gray-200 dark:bg-slate-600" style="height: 10px !important;">
                             <!-- KODE -->
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">KODE</th>
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF; border-left: none;">KODE</th>
                             <!-- DESKRIPSI (dipindah ke baris 3) -->
                             <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 150px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">DESKRIPSI</th>
                             
@@ -545,7 +688,7 @@ function updateGrandTotal() {
                         @for($row = 1; $row <= 30; $row++)
                         <tr style="height: 12px !important; max-height: 12px !important; background-color: {{ $row % 2 == 1 ? '#D9D9D9' : '#FFFFFF' }};">
                             <!-- KODE -->
-                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF;">
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF; border-left: none;">
                                 <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px; font-size: 10px;" 
                                        id="kode_{{ $row }}">
                             </td>
@@ -595,7 +738,7 @@ function updateGrandTotal() {
                             </td>
                             
                             <!-- KETERANGAN (satu kolom) -->
-                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF;" colspan="2">
+                            <td class="border border-black dark:border-white" style="height: 12px !important; max-height: 12px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF; border-right: none;" colspan="2">
                                 <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px 2px; height: 12px; max-height: 12px; font-size: 10px;">
                             </td>
                         </tr>
@@ -605,7 +748,7 @@ function updateGrandTotal() {
                     <!-- Footer Tabel -->
                     <tfoot>
                         <tr style="background-color: #FFFFFF;">
-                            <td colspan="2" class="text-xs font-semibold dark:text-white" style="font-weight: 600; background-color: #FFFFFF; border: none;">Hasil produksi pallet dan biaya borongan</td>
+                            <td colspan="2" class="text-xs font-semibold dark:text-white" style="font-weight: 600; background-color: #FFFFFF; border: none; border-left: none;">Hasil produksi pallet dan biaya borongan</td>
                             
                             <!-- Total per hari (5-20) -->
                             @for($day = 5; $day <= 20; $day++)
@@ -618,11 +761,11 @@ function updateGrandTotal() {
                             <td class="border border-black dark:border-white" style="background-color: #FFFFFF;" id="footer_hsl_prod"></td>
                             <td class="border border-black dark:border-white" style="background-color: #D9D9D9;"></td>
                             <td colspan="2" class="border border-black dark:border-white text-right text-xs font-bold dark:text-white" style="font-weight: 700; background-color: #FFFFFF; color: #0000FF;" id="final_total">5,292,000</td>
-                            <td class="dark:border-white text-xs dark:text-white" style="background-color: #FFFFFF; border: none;"></td>
+                            <td class="dark:border-white text-xs dark:text-white" style="background-color: #FFFFFF; border: none; border-right: none;"></td>
                         </tr>
                         <tr style="background-color: #FFFFFF;">
                             <td colspan="2" style="border: none; text-align: left; font-style: italic; font-weight: 600; padding-top: 2px; padding-left: 48px;">
-                                <u>Bekasi, {{ now()->format('d-M-y') }}</u>
+                                
                             </td>
                             <td colspan="23" style="border: none;"></td>
                         </tr>
@@ -630,16 +773,16 @@ function updateGrandTotal() {
                 </table>
 
                 <!-- Footer Sesuai Foto -->
-                <div class="report-footer border-t-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white p-3 mt-0" style="width: 297mm; max-width: 297mm;">
-                    <div class="flex items-start gap-4" style="width: 100%;">
+                <div class="report-footer border-t-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white pt-3 px-3 pb-0 mt-0 justify-end" style="width: 297mm; max-width: 297mm; height: 180px; display: flex; flex-direction: column; padding-right: 0;">
+                    <div class="flex items-stretch gap-0" style="width: 100%; flex: 1; height: 100%;">
                         <!-- Kiri: Signature Area -->
-                        <div class="flex-shrink-0" style="width: 25%;">
+                        <div class="flex-shrink-0" style="width: 20%;">
                             <div class="flex gap-2 mb-2">
                                 <!-- Report by -->
                                 <div class="text-center flex-1">
                                     <div class="text-[8px] mb-1 dark:text-white">Report by</div>
-                                    <div class="border border-black dark:border-white p-2" style="height: 60px;">
-                                        <img src="{{ asset('image/LOGO.png') }}" alt="CAM Logo" class="w-10 h-10 mx-auto object-contain"
+                                    <div class="p-2" style="height: 80px;">
+                                        <img src="{{ asset('image/Signature1.png') }}" alt="Signature 1" class="w-20 h-20 mx-auto object-contain"
                                              onerror="this.style.display='none';">
                                     </div>
                                     <div class="text-[7px] font-bold mt-1 dark:text-white">Reid Kubro Wahyudin</div>
@@ -649,8 +792,8 @@ function updateGrandTotal() {
                                 <!-- Approved by -->
                                 <div class="text-center flex-1">
                                     <div class="text-[8px] mb-1 dark:text-white">Approved by</div>
-                                    <div class="border border-black dark:border-white p-2" style="height: 60px;">
-                                        <img src="{{ asset('image/LOGO.png') }}" alt="CAM Logo" class="w-10 h-10 mx-auto object-contain"
+                                    <div class="p-2" style="height: 80px;">
+                                        <img src="{{ asset('image/Signature2.png') }}" alt="Signature 2" class="w-20 h-20 mx-auto object-contain"
                                              onerror="this.style.display='none';">
                                     </div>
                                     <div class="text-[7px] font-bold mt-1 dark:text-white">Panji Purnadi</div>
@@ -666,45 +809,52 @@ function updateGrandTotal() {
                             </div>
                         </div>
                         
-                        <!-- Tengah: 638 PALLET -->
-                        <div class="flex-1 text-center">
-                            <div class="text-7xl font-black dark:text-white" id="total_pallet_display">638</div>
-                            <div class="text-2xl font-bold -mt-2 dark:text-white">PALLET</div>
+                        <!-- Tengah Kiri: 595 PALLET -->
+                        <div class="flex-shrink-0" style="width: 25%; ">
+                            <div class="border-2 border-black dark:border-white border-r-0 flex items-center justify-center gap-4" style="background-color: #D9D9D9; height: 80px; padding: 10px; margin-right: 0;">
+                                <div class="font-bold dark:text-gray-900" id="total_pallet_display" style="font-size: 48px; line-height: 1; font-weight: 700;">595</div>
+                                <div class="font-bold dark:text-gray-900" style="font-size: 28px; line-height: 1; font-weight: 700;">PALLET</div>
+                            </div>
                         </div>
                         
-                        <!-- Kanan: Box Total -->
-                        <div class="flex-shrink-0" style="width: 35%;">
-                            <div class="border-2 border-black dark:border-white bg-white dark:bg-slate-700 mb-2">
-                                <!-- TOTAL GAJI -->
-                                <div class="border-b border-black dark:border-white p-2 text-right">
-                                    <div class="text-[9px] font-bold dark:text-white">TOTAL GAJI</div>
-                                    <div class="text-[11px] font-bold dark:text-white" id="total_gaji_display">5,292,000</div>
-                                </div>
+                        <!-- Kanan: Box Total dengan layout vertikal -->
+                        <div class="flex-1 flex flex-col" style="position: relative;">
+                            <div class="bon-box border-2 border-black dark:border-white bg-white dark:bg-slate-700" style="position: absolute; bottom: 0; right: 0; width: 84%; border-right: 0; border-bottom: 0; margin-bottom: 0;">
+                                <!-- BON GRUPPPP dengan baris kosong -->
+                                <table class="w-full border-collapse">
+                                    <colgroup>
+                                        <col style="width: 40px;" />
+                                        <col style="width: 40px;" />
+                                        <col style="width: 40px;" />
+                                        <col style="width: 150px;" />
+                                    </colgroup>
+                                    @for ($i = 1; $i <= 7; $i++)
+                                    <tr style="height:24px !important;">
+                                      <!-- KOLOM KIRI (INPUT), gabung 2 kolom -->
+                                      <td colspan="2" class="{{ $i == 7 ? '' : 'border-b' }} border-black dark:border-white p-0" style="height:24px !important;">
+                                        <input type="text"
+                                               class="w-full h-full border-0 bg-transparent dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none"
+                                               style="height:24px !important; line-height:24px !important; padding:0 2px;"
+                                               id="bon_left_{{ $i }}">
+                                      </td>
+
+                                      <!-- KOLOM KUNING (NON-INPUT) -->
+                                      <td class="{{ $i == 7 ? '' : 'border-b' }} border-l border-black dark:border-white bg-yellow-300 dark:bg-yellow-400 print:bg-yellow-300 text-center"
+                                          style="width: 40px; height:24px !important; line-height:24px !important;">
+                                        <div class="text-[11px] font-bold dark:text-black">=&gt;</div>
+                                      </td>
+
+                                      <!-- KOLOM KANAN (INPUT ANGKA) -->
+                                      <td class="{{ $i == 7 ? '' : 'border-b' }} border-black dark:border-white p-0 text-right" style="width:150px; height:24px !important;">
+                                        <input type="text"
+                                               class="w-full h-full border-0 bg-transparent dark:text-white text-right focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none"
+                                               style="height:24px !important; line-height:24px !important; padding:0 2px;"
+                                               id="bon_right_{{ $i }}">
+                                      </td>
+                                    </tr>
+                                    @endfor
                                 
-                                <!-- TOTAL BON -->
-                                <div class="border-b border-black dark:border-white p-2">
-                                    <div class="flex justify-between items-center">
-                                        <div class="text-[9px] font-bold dark:text-white">TOTAL BON:</div>
-                                        <div class="text-[10px] font-bold dark:text-white" id="total_bon_display">1,500,000</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- GRAND TOTAL GAJI DITERIMA -->
-                                <div class="border-b border-black dark:border-white p-2">
-                                    <div class="text-[9px] font-bold dark:text-white">GRAND TOTAL GAJI DITERIMA:</div>
-                                    <div class="text-[11px] font-bold dark:text-white" id="grand_total_display">3,792,000</div>
-                                </div>
-                                
-                                <!-- BON GRUPPPP (Kuning) -->
-                                <div class="flex bg-yellow-300 dark:bg-yellow-400 print:bg-yellow-300">
-                                    <div class="border-r border-black dark:border-white p-2 flex-1 text-center">
-                                        <div class="text-[9px] font-bold dark:text-black">BON GRUPPPP</div>
-                                    </div>
-                                    <div class="p-2 flex-1 text-center">
-                                        <div class="text-[9px] font-bold dark:text-black">Rp</div>
-                                        <div class="text-[10px] font-bold dark:text-black" id="bon_grup_display">1,500,000</div>
-                                    </div>
-                                </div>
+                                </table>
                             </div>
                         </div>
                     </div>

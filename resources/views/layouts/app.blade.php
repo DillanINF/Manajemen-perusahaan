@@ -54,20 +54,21 @@
                 max-width: none !important;
             }
             
-            /* Perlebar semua card dan container */
-            body.sidebar-hidden .bg-white,
-            body.sidebar-hidden .bg-gray-50,
-            body.sidebar-hidden .rounded-xl,
-            body.sidebar-hidden .shadow-lg,
-            body.sidebar-hidden .border {
+            /* Perlebar HANYA area tabel salary ketika sidebar disembunyikan */
+            body.sidebar-hidden #manualSalaryTable .bg-white,
+            body.sidebar-hidden #manualSalaryTable .bg-gray-50,
+            body.sidebar-hidden #manualSalaryTable .rounded-xl,
+            body.sidebar-hidden #manualSalaryTable .shadow-lg,
+            body.sidebar-hidden #manualSalaryTable .border {
                 max-width: none !important;
                 width: 100% !important;
             }
             
-            /* Khusus untuk tabel salary dan tabel lainnya */
-            body.sidebar-hidden .salary-table-container,
-            body.sidebar-hidden .overflow-x-auto,
-            body.sidebar-hidden table {
+            /* Khusus untuk tabel salary */
+            body.sidebar-hidden #manualSalaryTable,
+            body.sidebar-hidden #manualSalaryTable .salary-table-container,
+            body.sidebar-hidden #manualSalaryTable .overflow-x-auto,
+            body.sidebar-hidden #manualSalaryTable table {
                 min-width: 100% !important;
                 width: 100% !important;
             }
@@ -113,6 +114,19 @@
         .sidebar-hidden {
             --sidebar-width: 0rem;
             --content-padding: 3rem; /* Tambah padding ketika sidebar hidden */
+        }
+
+        /* Tinggikan sedikit sel BON */
+        .bon-box table tr { height: 22px !important; }
+        .bon-box table td { height: 22px !important; line-height: 22px !important; }
+        .bon-box table input { height: 22px !important; line-height: 22px !important; }
+
+        /* Warna kolom BON: kolom panah (2) dan kolom kanan (3) */
+        .bon-box table tr td:nth-child(2) { /* kolom panah */
+            background-color: #FFFF00 !important;
+        }
+        .bon-box table tr td:nth-child(3) { /* kolom kanan */
+            background-color: #D9D9D9 !important;
         }
     </style>
     
