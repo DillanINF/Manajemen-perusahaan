@@ -810,10 +810,16 @@ function updateGrandTotal() {
                         </div>
                         
                         <!-- Tengah Kiri: 595 PALLET -->
-                        <div class="flex-shrink-0" style="width: 25%; ">
-                            <div class="border-2 border-black dark:border-white border-r-0 flex items-center justify-center gap-4" style="background-color: #D9D9D9; height: 80px; padding: 10px; margin-right: 0;">
+                        <div class="flex-shrink-0" style="width: 27%; position: relative;">
+                            <div class="border-2 border-black dark:border-white border-r-0 flex items-center justify-center gap-4" style="background-color: #D9D9D9; height: 115px; padding: 10px; width: 270px; position: absolute; right: -93px; bottom: 123px;">
                                 <div class="font-bold dark:text-gray-900" id="total_pallet_display" style="font-size: 48px; line-height: 1; font-weight: 700;">595</div>
                                 <div class="font-bold dark:text-gray-900" style="font-size: 28px; line-height: 1; font-weight: 700;">PALLET</div>
+                            </div>
+                            <!-- Box Peringatan (baru), diletakkan PERSIS di bawah box PALLET -->
+                            <div class="border-2 border-black" style="background-color:#d9d9d9; width: 270px; border-right: 0; border-bottom: 0; position: absolute; right: -93px; bottom: 0;">
+                                <div class="text-center font-extrabold text-red-600 border-b border-black" style="height:24px; line-height:24px; font-size:10px; padding:0 10px;">JIKA ADA TOLAKAN PALLET MAKA</div>
+                                <div class="text-center font-extrabold text-red-600 border-b border-black" style="height:24px; line-height:24px; font-size:10px; padding:0 10px;">MAKA PEMBAYARAN PALET TOLAKAN DITUNDA</div>
+                                <div class="text-center font-extrabold text-red-600" style="height:24px; line-height:24px; font-size:10px; padding:0 10px;">DAN JIKA REPAIR TIDAK MASUK HITUNGAN !!!</div>
                             </div>
                         </div>
                         
@@ -839,9 +845,9 @@ function updateGrandTotal() {
                                       </td>
 
                                       <!-- KOLOM KUNING (NON-INPUT) -->
-                                      <td class="{{ $i == 7 ? '' : 'border-b' }} border-l border-black dark:border-white bg-yellow-300 dark:bg-yellow-400 print:bg-yellow-300 text-center"
+                                      <td class="{{ $i == 7 ? '' : 'border-b' }} border-l border-r border-black dark:border-white bg-yellow-300 dark:bg-yellow-400 print:bg-yellow-300 text-center"
                                           style="width: 40px; height:24px !important; line-height:24px !important;">
-                                        <div class="text-[11px] font-bold dark:text-black">=&gt;</div>
+                                        <div class="text-[11px] font-bold dark:text-black bon-icon">=&gt;</div>
                                       </td>
 
                                       <!-- KOLOM KANAN (INPUT ANGKA) -->
