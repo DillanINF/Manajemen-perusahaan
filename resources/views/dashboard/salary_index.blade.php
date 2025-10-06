@@ -169,7 +169,7 @@
     max-height: 210mm !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
   }
@@ -185,7 +185,7 @@
     margin: 0 !important;
     padding: 0 !important;
     box-sizing: border-box !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     page-break-inside: avoid !important;
   }
   
@@ -212,7 +212,7 @@
   
   /* Footer */
   .report-footer { 
-    border-top: 0 !important; 
+    border-top: 2px solid #000 !important; 
     width: 297mm !important;
     max-width: 297mm !important;
     margin: 0 !important;
@@ -250,8 +250,8 @@
   /* Scale content to fit A4 landscape if needed */
   #manualSalaryTable .table-wrapper {
     transform-origin: top left;
-    /* Uncomment below if content is too large and needs scaling */
-    /* transform: scale(0.95); */
+    /* Aktifkan scaling agar footer tidak terpotong saat print */
+    transform: scale(0.94);
   }
   
   /* Remove border and shadow from printable area when printing */
@@ -480,7 +480,7 @@ function updateGrandTotal() {
 @endpush
 
 @section('content')
-<div class="space-y-6 overflow-hidden">
+<div class="space-y-6 overflow-visible">
     <!-- Header dengan Statistik -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
         <div class="bg-green-50 border border-green-200 rounded-lg p-4 dark:bg-white/5 dark:border-white/10">
@@ -585,7 +585,7 @@ function updateGrandTotal() {
         </div>
 
         <!-- Tabel Manual Salary (disembunyikan di landing page) -->
-        <div id="manualSalaryTable" class="overflow-hidden mt-12 pt-0 bg-white dark:bg-slate-800 print:mt-0 print:pt-0 print:bg-white">
+        <div id="manualSalaryTable" class="mt-12 pt-0 bg-white dark:bg-slate-800 print:mt-0 print:pt-0 print:bg-white">
             <style>
                 /* KUNCI UKURAN CETAK PERSIS A4 LANDSCAPE */
                 @media print {
@@ -614,7 +614,7 @@ function updateGrandTotal() {
                 }
             </style>
             <!-- Wrapper A4 Landscape untuk Header + Tabel + Footer -->
-            <div class="overflow-hidden table-wrapper" style="width: 297mm; max-width: 297mm; height: 210mm; margin: 0; border: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: white;" id="printableArea">
+            <div class="table-wrapper" style="width: 297mm; max-width: 297mm; min-height: 210mm; height: auto; margin: 0; border: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: white; overflow: visible;" id="printableArea">
                 <!-- Header Perusahaan - Sesuai Foto 2 -->
                 <div class="report-header p-3 border-b-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white mb-0" style="width: 297mm; max-width: 297mm; height: 50px;">
                     <div class="flex justify-between items-start">
@@ -680,9 +680,9 @@ function updateGrandTotal() {
                         <!-- 23: HARGA -->
                         <col style="width: 70px;" />
                         <!-- 24: TOTAL -->
-                        <col style="width: 80px;" />
+                        <col style="width: 45px;" />
                         <!-- 25: KETERANGAN -->
-                        <col style="width: 100px;" />
+                        <col style="width: 220px;" />
                     </colgroup>
                     <!-- Header Tabel - Layout Vertikal: ITEM di atas, KODE & DESKRIPSI di bawah -->
                     <thead>
@@ -710,9 +710,9 @@ function updateGrandTotal() {
                             <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 70px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;">BIAYA PRODUKSI</th>
                             
                             <!-- TOTAL (kosong di atas) -->
-                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
+                            <th rowspan="2" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 45px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9;"></th>
                             
-                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 100px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9; border-right: none;">KETERANGAN</th>
+                            <th rowspan="3" class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 220px; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #D9D9D9; border-right: none;">KETERANGAN</th>
                         </tr>
                         
                         <!-- Baris 2: KODE -->
@@ -741,7 +741,7 @@ function updateGrandTotal() {
                             <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 70px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">HSL. PROD</th>
                             <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 40px; height: 10px !important; max-height: 10px !important; line-height: 1; font-weight: 900; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;"></th>
                             <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 70px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">HARGA</th>
-                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 80px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">TOTAL</th>
+                            <th class="border border-black dark:border-white text-xs font-black text-center dark:text-white" style="width: 55px; height: 10px !important; max-height: 10px !important; line-height: 1; font-size: 9px; font-weight: 700; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">TOTAL</th>
                             
                         </tr>
                     </thead>
@@ -797,13 +797,20 @@ function updateGrandTotal() {
                             </td>
                             
                             <!-- TOTAL -->
-                            <td class="border border-black dark:border-white text-center" style="height: 16px !important; max-height: 16px !important; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF;">
+                            <td class="border border-black dark:border-white text-center" style="height: 16px !important; max-height: 16px !important; padding: 0px 2px; vertical-align: middle; background-color: #FFFFFF; width: 45px;">
                                 <span class="text-xs font-black dark:text-white" style="font-weight: 900; line-height: 1; font-size: 11px;" id="row_total_{{ $row }}">0</span>
                             </td>
                             
-                            <!-- KETERANGAN (satu kolom) -->
+                            <!-- KETERANGAN (dua kolom di dalam satu sel) -->
                             <td class="border border-black dark:border-white" style="height: 16px !important; max-height: 16px !important; padding: 0; vertical-align: middle; background-color: #FFFFFF; border-right: none;">
-                                <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 1; padding: 0px 2px; height: 16px; max-height: 16px; font-size: 11px;">
+                                <div class="flex w-full h-full" style="height: 16px; max-height: 16px;">
+                                    <div class="flex-1 p-0" style="height: 16px; max-height: 16px;">
+                                        <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white text-right focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 16px; padding: 0 2px; height: 16px; max-height: 16px; font-size: 11px;" id="ket_left_{{ $row }}">
+                                    </div>
+                                    <div class="flex-1 p-0" style="height: 16px; max-height: 16px; border-left: 1px solid #000;">
+                                        <input type="text" class="w-full h-full border-0 bg-transparent dark:text-white text-right focus:bg-yellow-100 dark:focus:bg-yellow-200 focus:outline-none" style="font-weight: 500; line-height: 16px; padding: 0 2px; height: 16px; max-height: 16px; font-size: 11px;" id="ket_right_{{ $row }}">
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         @endfor
@@ -837,59 +844,52 @@ function updateGrandTotal() {
                 </table>
 
                 <!-- Footer Sesuai Foto -->
-                <div class="report-footer border-t-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white pt-3 px-3 pb-0 mt-0 justify-end" style="width: 297mm; max-width: 297mm; height: 100px; display: flex; flex-direction: column; padding-right: 0;">
+                <div class="report-footer border-t-2 border-black dark:border-white bg-white dark:bg-slate-800 print:bg-white pt-0 px-3 pb-0 mt-0 justify-start" style="width: 297mm; max-width: 297mm; height: 200px; display: flex; flex-direction: column; padding-right: 0; margin-top: -40px;">
                     <div class="flex items-stretch gap-0" style="width: 100%; flex: 1; height: 100%;">
                         <!-- Kiri: Signature Area -->
-                        <div class="flex-shrink-0" style="width: 20%;">
-                            <div class="flex gap-2 mb-2">
+                        <div class="flex-shrink-0" style="width: 34%;">
+                            <div class="flex gap-2 mb-0">
                                 <!-- Report by -->
                                 <div class="text-center flex-1">
-                                    <div class="text-[8px] mb-1 dark:text-white">Report by</div>
-                                    <div class="p-2" style="height: 60px;">
-                                        <img src="{{ asset('image/Signature1.png') }}" alt="Signature 1" class="w-16 h-16 mx-auto object-contain"
+                                    <div class="text-[10px] mb-0 dark:text-white">Report by</div>
+                                    <div class="p-1" style="height: 170px; overflow: visible;">
+                                        <img src="{{ asset('image/Signature1.png') }}" alt="Signature 1" class="mx-auto object-contain" style="height: 155px; width: auto;"
                                              onerror="this.style.display='none';">
                                     </div>
-                                    <div class="text-[7px] font-bold mt-1 dark:text-white">Reid Kubro Wahyudin</div>
-                                    <div class="text-[6px] dark:text-gray-300">DIREKTUR</div>
+                                    <div class="text-[10px] font-extrabold mt-0 dark:text-white">Reid Kubro Wahyudin</div>
+                                    <div class="text-[9px] dark:text-gray-300 uppercase underline">Direktur</div>
                                 </div>
                                 
                                 <!-- Approved by -->
                                 <div class="text-center flex-1">
-                                    <div class="text-[8px] mb-1 dark:text-white">Approved by</div>
-                                    <div class="p-2" style="height: 60px;">
-                                        <img src="{{ asset('image/Signature2.png') }}" alt="Signature 2" class="w-16 h-16 mx-auto object-contain"
+                                    <div class="text-[10px] mb-0 dark:text-white">Approved by</div>
+                                    <div class="p-1" style="height: 175px; overflow: visible;">
+                                        <img src="{{ asset('image/Signature2.png') }}" alt="Signature 2" class="mx-auto object-contain" style="height: 160px; width: auto;"
                                              onerror="this.style.display='none';">
                                     </div>
-                                    <div class="text-[7px] font-bold mt-1 dark:text-white">Panji Purnadi</div>
-                                    <div class="text-[6px] dark:text-gray-300">DIREKTUR UTAMA</div>
+                                    <div class="text-[10px] font-extrabold mt-0 dark:text-white">Panji Purnadi</div>
+                                    <div class="text-[9px] dark:text-gray-300 uppercase underline">Direktur Utama</div>
                                 </div>
-                            </div>
-                            
-                            <!-- Warning Text Merah -->
-                            <div class="text-center mt-2">
-                                <div class="text-[7px] text-red-600 font-bold leading-tight">JIKA ADA TOLERANSI PALLET MAKA</div>
-                                <div class="text-[7px] text-red-600 font-bold leading-tight">MAKA PERBAIKAN PALLET TOLERANSI STANDAR</div>
-                                <div class="text-[7px] text-red-600 font-bold leading-tight">DAN JIKA REPAIR TIDAK MASUK HITUNGAN !!!</div>
                             </div>
                         </div>
                         
                         <!-- Tengah Kiri: 595 PALLET -->
                         <div class="flex-shrink-0" style="width: 27%; position: relative;">
-                            <div class="border-2 border-black dark:border-white border-r-0 flex items-center justify-center gap-4" style="background-color: #D9D9D9; height: 80px; padding: 10px; width: 250px; position: absolute; right: -80px; bottom: 90px;">
-                                <div class="font-bold dark:text-gray-900" id="total_pallet_display" style="font-size: 42px; line-height: 1; font-weight: 700;">595</div>
+                            <div class="border-2 border-black dark:border-white flex items-center justify-center gap-4" style="background-color: #D9D9D9; height: 80px; padding: 10px; width: 195px; position: absolute; left: -35px; bottom: 90px;">
+                                <div class="font-bold dark:text-gray-900" id="total_pallet_display" style="font-size: 24px; line-height: 1; font-weight: 700;"></div>
                                 <div class="font-bold dark:text-gray-900" style="font-size: 24px; line-height: 1; font-weight: 700;">PALLET</div>
                             </div>
                             <!-- Box Peringatan (baru), diletakkan PERSIS di bawah box PALLET -->
-                            <div class="border-2 border-black" style="background-color:#d9d9d9; width: 250px; border-right: 0; border-bottom: 0; position: absolute; right: -80px; bottom: 0;">
-                                <div class="text-center font-extrabold text-red-600 border-b border-black" style="height:20px; line-height:20px; font-size:9px; padding:0 8px;">JIKA ADA TOLAKAN PALLET MAKA</div>
-                                <div class="text-center font-extrabold text-red-600 border-b border-black" style="height:20px; line-height:20px; font-size:9px; padding:0 8px;">MAKA PEMBAYARAN PALET TOLAKAN DITUNDA</div>
-                                <div class="text-center font-extrabold text-red-600" style="height:20px; line-height:20px; font-size:9px; padding:0 8px;">DAN JIKA REPAIR TIDAK MASUK HITUNGAN !!!</div>
+                            <div class="border-2 border-black" style="background-color:#d9d9d9; width: 195px; border-right: 0; border-bottom: 0; position: absolute; left: -35px; bottom: 0;">
+                                <div class="font-extrabold text-red-600 border-b border-black" style="height:19px; font-size:8px; letter-spacing:0.1px; padding:0 6px; display:flex; align-items:center; justify-content:center; white-space:nowrap; box-sizing:border-box;">JIKA ADA TOLAKAN PALLET MAKA</div>
+                                <div class="font-extrabold text-red-600 border-b border-black" style="height:19px; font-size:7px; letter-spacing:0.1px; padding:0 6px; display:flex; align-items:center; justify-content:center; white-space:nowrap; box-sizing:border-box;">MAKA PEMBAYARAN PALET TOLAKAN DITUNDA</div>
+                                <div class="font-extrabold text-red-600" style="height:19px; font-size:8px; letter-spacing:0.1px; padding:0 6px; display:flex; align-items:center; justify-content:center; white-space:nowrap; box-sizing:border-box;">DAN JIKA REPAIR TIDAK MASUK HITUNGAN !!!</div>
                             </div>
                         </div>
                         
                         <!-- Kanan: Box Total dengan layout vertikal -->
                         <div class="flex-1 flex flex-col" style="position: relative;">
-                            <div class="bon-box border-2 border-black dark:border-white bg-white dark:bg-slate-700" style="position: absolute; bottom: 0; right: 0; width: 84%; border-right: 0; border-bottom: 0; margin-bottom: 0;">
+                            <div class="bon-box border-2 border-black dark:border-white bg-white dark:bg-slate-700" style="position: absolute; bottom: 0; left: -140px; right: 0; width: auto; border-right: 0; border-bottom: 0; margin-bottom: 0;">
                                 <!-- BON GRUPPPP dengan baris kosong -->
                                 <table class="w-full border-collapse">
                                     <colgroup>
