@@ -7,13 +7,17 @@
     <script>
         (function(){
             try {
-                const pref = localStorage.getItem('theme');
                 const d = document.documentElement;
+                // Matikan transisi/animasi saat inisialisasi tema untuk mencegah lag/flash
+                d.classList.add('theme-switching');
+                const pref = localStorage.getItem('theme');
                 if (pref === 'dark' || (!pref && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                     d.classList.add('dark');
                 } else {
                     d.classList.remove('dark');
                 }
+                // Lepas kelas setelah frame berikutnya
+                requestAnimationFrame(() => d.classList.remove('theme-switching'));
             } catch(e) {}
         })();
     </script>
@@ -34,15 +38,30 @@
         .table-container,
         .card-container,
         .content-wrapper,
-        .bg-white,
-        .bg-gray-50,
         .rounded-xl,
         .shadow-lg,
         .border,
         .overflow-x-auto,
         .salary-table-container,
         table {
-            transition: all 0.3s ease-in-out;
+            /* Hanya transisi efek non-warna agar tidak menahan repaint saat ganti tema */
+            transition-property: box-shadow, transform;
+            transition-duration: 0.2s;
+            transition-timing-function: ease-in-out;
+        }
+
+        /* Matikan transisi SEMENTARA saat ganti tema agar navbar tidak terasa telat */
+        .no-theme-transition, .no-theme-transition * {
+            transition: none !important;
+        }
+        /* Mode global: nonaktifkan SEMUA transition & animation saat switching tema */
+        .theme-switching, .theme-switching *, .theme-switching *::before, .theme-switching *::after {
+            transition: none !important;
+            animation: none !important;
+        }
+        /* Navbar instant switch (hindari lag warna/blur) */
+        header.theme-instant, header.theme-instant * {
+            transition-property: none !important;
         }
         
         /* Ketika sidebar tersembunyi, perlebar konten */
@@ -129,6 +148,60 @@
             background-color: #D9D9D9 !important;
         }
     </style>
+    <script>
+        // Utilitas untuk menerapkan tema TANPA transisi visual (instan)
+        (function(){
+            function setTheme(theme){
+                try {
+                    const d = document.documentElement;
+                    // Matikan transisi & animasi di seluruh dokumen saat switch
+                    d.classList.add('theme-switching');
+                    d.classList.add('no-theme-transition');
+                    if (theme === 'dark') d.classList.add('dark'); else d.classList.remove('dark');
+                    localStorage.setItem('theme', theme);
+                    // Lepas penonaktifan transisi di frame berikutnya
+                    requestAnimationFrame(() => { 
+                        d.classList.remove('no-theme-transition');
+                        d.classList.remove('theme-switching');
+                    });
+                } catch(e) {}
+            }
+            // Ekspor ke window agar bisa dipakai tombol/fitur pengaturan
+            window.setTheme = setTheme;
+
+            // Sinkronkan jika ada perubahan dari tab lain atau dari kode lain yang menulis localStorage('theme')
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'theme') {
+                    setTheme(e.newValue === 'dark' ? 'dark' : 'light');
+                }
+            });
+
+            // Listener opsional: jika ada elemen dengan data-toggle-theme
+            document.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('[data-toggle-theme]');
+                if (!btn) return;
+                const current = (localStorage.getItem('theme') || (document.documentElement.classList.contains('dark') ? 'dark' : 'light'));
+                setTheme(current === 'dark' ? 'light' : 'dark');
+            });
+
+            // Fallback global: jika ada skrip lain yang menambah/menghapus class 'dark',
+            // nonaktifkan transisi sesaat agar perubahan tetap instan di seluruh halaman
+            try {
+                const d = document.documentElement;
+                let ticking = false;
+                const obs = new MutationObserver(() => {
+                    if (ticking) return;
+                    ticking = true;
+                    d.classList.add('theme-switching');
+                    requestAnimationFrame(() => {
+                        d.classList.remove('theme-switching');
+                        ticking = false;
+                    });
+                });
+                obs.observe(d, { attributes: true, attributeFilter: ['class'] });
+            } catch(e) {}
+        })();
+    </script>
     
     @stack('styles')
 </head>
@@ -267,29 +340,34 @@
                 {{-- Data Invoice --}}
             </div>
             
-            <button @click="toggleFinance()"
-                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('finance.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+            <!-- Menu Data Master (moved up to Finance position) -->
+            <button @click="toggleBarang()"
+                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('barang.*') || request()->routeIs('produk.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                 <span class="inline-flex items-center gap-3">
-                    <svg class="w-5 h-5 text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 11V3m0 8a4 4 0 100 8h4a4 4 0 100-8h-4z" />
-                    </svg>
-                    Finance
+                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Data Master
                 </span>
-                <svg x-bind:class="{ 'rotate-90': financeOpen }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
+                <svg x-bind:class="{ 'rotate-90': barangOpen }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                 </svg>
             </button>
-            <div x-show="financeOpen" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
-                <a href="{{ route('finance.income') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('finance.income') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 11V3m0 8a4 4 0 100 8h4a4 4 0 100-8h-4z"/></svg>
-                    <span>Pendapatan</span>
+            
+            <div x-show="barangOpen" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
+                <a href="{{ route('customer.index') }}"
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('customer.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zm0 2c-2.761 0-5 2.015-5 4.5V20h10v-2.5c0-2.485-2.239-4.5-5-4.5zm8 0c-.725 0-1.414.131-2.047.364 1.22.903 2.047 2.235 2.047 3.886V20h6v-2.75c0-2.351-2.239-4.25-6-4.25z"/></svg>
+                    <span>Data Customer</span>
                 </a>
-                <a href="{{ route('finance.expense') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('finance.expense') ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/></svg>
-                    <span>Pengeluaran</span>
+                <a href="{{ route('produk.index') }}"
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('produk.*') ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V7a2 2 0 00-2-2h-3V3H9v2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0H4"/></svg>
+                    <span>Data Barang</span>
+                </a>
+                <a href="{{ route('pengirim.index') }}"
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('pengirim.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18v4H3zM3 7l3 13h12l3-13"/></svg>
+                    <span>Data Pengirim</span>
                 </a>
             </div>
 
@@ -321,35 +399,30 @@
                 </a>
             </div>
 
-            <!-- Menu Barang -->
-            <button @click="toggleBarang()"
-                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('barang.*') || request()->routeIs('produk.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+            <!-- Finance (moved down to Data Master position) -->
+            <button @click="toggleFinance()"
+                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('finance.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                 <span class="inline-flex items-center gap-3">
-                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    Data Master
+                    <svg class="w-5 h-5 text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 11V3m0 8a4 4 0 100 8h4a4 4 0 100-8h-4z" />
+                    </svg>
+                    Finance
                 </span>
-                <svg x-bind:class="{ 'rotate-90': barangOpen }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
+                <svg x-bind:class="{ 'rotate-90': financeOpen }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                 </svg>
             </button>
-            
-            <div x-show="barangOpen" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
-                <a href="{{ route('customer.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('customer.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zm0 2c-2.761 0-5 2.015-5 4.5V20h10v-2.5c0-2.485-2.239-4.5-5-4.5zm8 0c-.725 0-1.414.131-2.047.364 1.22.903 2.047 2.235 2.047 3.886V20h6v-2.75c0-2.351-2.239-4.25-6-4.25z"/></svg>
-                    <span>Data Customer</span>
+            <div x-show="financeOpen" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
+                <a href="{{ route('finance.income') }}"
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('finance.income') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 11V3m0 8a4 4 0 100 8h4a4 4 0 100-8h-4z"/></svg>
+                    <span>Pendapatan</span>
                 </a>
-                <a href="{{ route('produk.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('produk.*') ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V7a2 2 0 00-2-2h-3V3H9v2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0H4"/></svg>
-                    <span>Data Barang</span>
-                </a>
-                <!-- Link Data Kendaraan dihapus sesuai permintaan -->
-                <a href="{{ route('pengirim.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('pengirim.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18v4H3zM3 7l3 13h12l3-13"/></svg>
-                    <span>Data Pengirim</span>
+                <a href="{{ route('finance.expense') }}"
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('finance.expense') ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/></svg>
+                    <span>Pengeluaran</span>
                 </a>
             </div>
 
@@ -454,7 +527,7 @@
              'md:ml-64': desktopSidebarOpen,
              'md:ml-0': !desktopSidebarOpen
          }">
-        <header class="sticky top-0 z-30 h-16 bg-white/90 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 md:px-6 flex items-center justify-between shadow-sm">
+        <header class="sticky top-0 z-30 h-16 bg-white/90 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 md:px-6 flex items-center justify-between shadow-sm theme-instant">
             <div class="flex items-center gap-3">
                 <!-- Hamburger (desktop only) to restore sidebar when hidden -->
                 <button type="button" class="hidden md:inline-flex items-center justify-center h-10 w-10 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"

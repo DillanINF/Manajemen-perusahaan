@@ -127,7 +127,7 @@
                             <i class="fa-solid fa-arrow-left"></i>
                             Kembali ke Data Invoice
                         </a>
-                        <a id="btn-next-po" href="{{ route('po.create', ['from' => 'invoice', 'po_number' => request('po_number')]) }}"
+                        <a id="btn-next-po" href="{{ route('suratjalan.index', ['po_number' => request('po_number') ?? ($po->po_number ?? null)]) }}"
                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 border border-indigo-700/70 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400">
                             <i class="fa-solid fa-arrow-right text-white"></i>
                             Lanjut ke Form Data PO
@@ -384,6 +384,25 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // Guard: hanya berlaku jika tombol mengarah ke po.create (saat diperlukan)
+    const nextBtn = document.getElementById('btn-next-po');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            try {
+                const url = new URL(nextBtn.href, window.location.origin);
+                if (url.pathname.includes('/po/create')) {
+                    const poNum = (url.searchParams.get('po_number') || '').trim();
+                    if (!poNum) {
+                        e.preventDefault();
+                        alert('Nomor urut invoice (po_number) belum tersedia. Silakan buka dari halaman Data Invoice (double click pada nomor) agar po_number terisi.');
+                    }
+                }
+            } catch (_) {
+                // Biarkan default untuk link biasa
+            }
+        });
+    }
+
     function updateClock() {
         const now = new Date();
         const dateOptions = { day: '2-digit', month: 'short', year: 'numeric' };

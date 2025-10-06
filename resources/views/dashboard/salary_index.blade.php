@@ -368,6 +368,22 @@
    font-weight: 800;
    font-size: 10px;
  }
+  /* Force Light Mode for Salary Table when dark theme is active */
+  .dark #manualSalaryTable,
+  .dark #manualSalaryTable *:not(svg):not(path) {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+    box-shadow: none !important;
+  }
+  /* Keep intended colors for specific parts */
+  .dark #manualSalaryTable .report-header { background-color: #ffffff !important; }
+  .dark #manualSalaryTable thead tr,
+  .dark #manualSalaryTable thead th { background-color: #D9D9D9 !important; color: #000 !important; }
+  .dark #manualSalaryTable tbody td,
+  .dark #manualSalaryTable tbody th,
+  .dark #manualSalaryTable tfoot td { background-color: #ffffff !important; color: #000 !important; }
+  .dark #printableArea { background: #ffffff !important; border-color: #000000 !important; }
 </style>
 @endpush
 

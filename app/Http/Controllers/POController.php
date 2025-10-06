@@ -168,7 +168,11 @@ class POController extends Controller
         }
 
         // Simpan ke database PO (header) + items dalam transaksi
-        $po = DB::transaction(function () use ($data, $customerName, $noSuratJalan, $noInvoice, $customer) {
+        // Track auto-split agar bisa membentuk pesan sukses terpadu di luar transaksi
+        $hadSplit = false; // ada sisa ke PO Belum Terkirim
+        $sisaCount = 0;    // total qty sisa (pcs/set, sesuai input)
+
+        $po = DB::transaction(function () use ($data, $customerName, $noSuratJalan, $noInvoice, $customer, &$hadSplit, &$sisaCount) {
             $rawItems = collect($data['items'])
                 ->filter(fn ($it) => !empty($it['produk_id']) && !empty($it['qty']))
                 ->values();
@@ -281,6 +285,9 @@ class POController extends Controller
                         ];
                         
                         $splitMessages[] = 'Produk "' . ($p->nama_produk ?? ('ID '.$pid)) . '": Diminta ' . $qtyReq . ', tersedia ' . $stokTersedia . ', sisa ' . $qtySisa . ' pcs masuk ke Sisa Data PO.';
+                        // Flag dan akumulasi sisa
+                        $hadSplit = true;
+                        $sisaCount += (int) $qtySisa;
                     } else {
                         // Stok cukup, tambahkan item normal
                         $adjustedItems->push($it);
@@ -310,6 +317,9 @@ class POController extends Controller
                 // Simpan pesan split ke session untuk ditampilkan sebagai notifikasi
                 if (!empty($splitMessages)) {
                     session()->flash('split_messages', $splitMessages);
+                    // Flag dan akumulasi sisa untuk kasus semua stok 0
+                    $hadSplit = true;
+                    foreach (($sisaItems ?? []) as $si) { $sisaCount += (int) ($si['qty_sisa'] ?? 0); }
                 }
 
                 // Return dari dalam transaction
@@ -578,13 +588,21 @@ class POController extends Controller
         // Selalu tetap berada di Form Input PO setelah simpan
         $from = $request->input('from', 'invoice');
         $poNumber = $request->input('po_number') ?? $po->po_number;
+        // Bentuk pesan sukses terpadu
+        $successMsg = 'Data PO berhasil disimpan! Tetap di Form Input PO untuk melanjutkan.';
+        if ($hadSplit && $sisaCount > 0) {
+            $successMsg .= ' Sebagian pesanan belum dapat diproses. Total ' . (int)$sisaCount . ' item dialihkan ke PO Belum Terkirim. Anda bisa meninjau dan melengkapi stok pada menu PO Belum Terkirim.';
+        } else {
+            $successMsg .= ' Data telah tersimpan dan siap untuk dicetak atau dilihat di Surat Jalan.';
+        }
+
         return redirect()
             ->route('po.create', [
                 'from' => $from ?: 'invoice',
                 'po_number' => $poNumber,
                 'tanggal_po' => \Carbon\Carbon::parse($po->tanggal_po)->format('Y-m-d'),
             ])
-            ->with('success', 'Data PO berhasil disimpan! Tetap di Form Input PO untuk melanjutkan.');
+            ->with('success', $successMsg);
     }
 
     /**

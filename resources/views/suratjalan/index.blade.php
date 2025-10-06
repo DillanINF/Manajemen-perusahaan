@@ -109,7 +109,10 @@
                             <i class="fa-solid fa-arrow-left mr-1.5"></i>
                             Kembali ke Data Invoice
                         </a>
-                        <a href="{{ route('po.create', ['from' => 'invoice', 'po_number' => request('po_number') ?? ($poNumber ?? null)]) }}" 
+                        <a href="{{ route('po.create', [
+                                'from' => 'invoice',
+                                'po_number' => (request('po_number') ?? ($poNumber ?? (($suratjalan->first()->po_number ?? null))))
+                            ]) }}" 
                            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-purple-700 bg-white border border-purple-300 rounded-full hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:bg-slate-800 dark:text-purple-200 dark:border-purple-600 dark:hover:bg-slate-700">
                             <i class="fa-solid fa-plus mr-1.5"></i>
                             Kembali ke Form Input PO
@@ -122,7 +125,7 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 @for($m=1;$m<=12;$m++)
                     @php($stat = isset($monthlyStats) ? ($monthlyStats[$m] ?? null) : null)
-                    @php($isActive = ((int)($bulanNow ?? now()->format('n'))) === $m)
+                    @php($isActive = ((int)($month ?? now()->format('n'))) === $m)
                     <a href="{{ route('suratjalan.index', ['month' => $m, 'year' => $tahunTerpilihLocal, 'po_number' => $poNumber]) }}" class="block focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
                         <div class="p-2 rounded-lg border text-xs sm:text-sm transition-colors hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700/40
                                     {{ $isActive ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-600' : 'bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700' }}">
@@ -271,7 +274,10 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-gray-900">Edit Data PO</h3>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('po.create', ['from' => 'invoice', 'po_number' => request('po_number') ?? ($poNumber ?? null)]) }}" class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                    <a href="{{ route('po.create', [
+                            'from' => 'invoice',
+                            'po_number' => (request('po_number') ?? ($poNumber ?? (($suratjalan->first()->po_number ?? null))))
+                        ]) }}" class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700">
                         <i class="fa-solid fa-arrow-left mr-1"></i>
                         Form Input PO
                     </a>
@@ -626,7 +632,7 @@ function closeYearModal() {
 }
 
 function selectYear(year) {
-    const currentMonth = {{ (int)($bulanNow ?? now()->format('n')) }};
+    const currentMonth = {{ (int)($month ?? now()->format('n')) }};
     
     // Redirect dengan parameter tahun yang dipilih
     const url = new URL(window.location.href);

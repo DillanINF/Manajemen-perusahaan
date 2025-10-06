@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use App\Models\JatuhTempo;
 use App\Services\DatabaseService;
+use App\Models\SisaPOItem;
 
 class SuratJalanController extends Controller
 {
@@ -65,6 +66,12 @@ class SuratJalanController extends Controller
             ->where('no_po', '!=', '-')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // Total agregat untuk tampilan (jumlah transaksi & total rupiah)
+        $totalTransaksi = $suratjalan->count();
+        $totalRupiah = (int) $suratjalan->sum(function ($r) {
+            return (int) ($r->total ?? 0);
+        });
 
         // Ambil semua produk untuk dropdown
         $produk = Produk::all();
@@ -120,6 +127,8 @@ class SuratJalanController extends Controller
             'month'           => $month,
             'year'            => $year,
             'poNumber'        => $poNumber,
+            'totalTransaksi'  => $totalTransaksi,
+            'totalRupiah'     => $totalRupiah,
         ]);
     }
 
@@ -378,6 +387,19 @@ class SuratJalanController extends Controller
                     'error' => $e->getMessage(),
                     'no_po' => $suratJalan->no_po,
                     'po_id' => $suratJalan->id,
+                ]);
+            }
+
+            // Sinkronkan Sisa Data PO: hapus entri sisa untuk no_po yang sama
+            try {
+                $noPoTrim = trim((string) $suratJalan->no_po);
+                if ($noPoTrim !== '') {
+                    SisaPOItem::where('no_po', $noPoTrim)->delete();
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('[SisaPO] Gagal menghapus entri sisa terkait saat hapus Data PO', [
+                    'error' => $e->getMessage(),
+                    'no_po' => $suratJalan->no_po,
                 ]);
             }
 
