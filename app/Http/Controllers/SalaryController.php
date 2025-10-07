@@ -186,7 +186,42 @@ class SalaryController extends Controller
     public function destroy(Salary $salary)
     {
         $salary->delete();
+        
+        // Check if request is AJAX
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Data gaji berhasil dihapus.']);
+        }
+        
         return redirect()->route('salary.index')->with('success', 'Data gaji berhasil dihapus.');
+    }
+    
+    public function storeSimple(Request $request)
+    {
+        $data = $request->validate([
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer|min:2020|max:2035',
+            'nominal_gaji_raw' => 'required|numeric|min:1'
+        ]);
+        
+        // Create salary record without employee
+        Salary::create([
+            'employee_id' => null, // No employee linked
+            'bulan' => $data['bulan'],
+            'tahun' => $data['tahun'],
+            'gaji_pokok' => $data['nominal_gaji_raw'],
+            'tunjangan' => 0,
+            'bonus' => 0,
+            'lembur' => 0,
+            'potongan_pajak' => 0,
+            'potongan_bpjs' => 0,
+            'potongan_lain' => 0,
+            'total_gaji' => $data['nominal_gaji_raw'],
+            'status_pembayaran' => 'dibayar',
+            'tanggal_bayar' => now(),
+            'keterangan' => 'Input manual'
+        ]);
+        
+        return redirect()->route('salary.index')->with('success', 'Data gaji berhasil ditambahkan.');
     }
 
     public function generatePayroll(Request $request)
@@ -231,5 +266,17 @@ class SalaryController extends Controller
         }
 
         return redirect()->route('salary.index')->with('success', "Payroll berhasil dibuat untuk {$createdCount} karyawan.");
+    }
+    
+    public function toggleStatus(Salary $salary)
+    {
+        // Toggle status pembayaran
+        $newStatus = $salary->status_pembayaran === 'dibayar' ? 'belum_dibayar' : 'dibayar';
+        $salary->update([
+            'status_pembayaran' => $newStatus,
+            'tanggal_bayar' => $newStatus === 'dibayar' ? now() : null
+        ]);
+        
+        return response()->json(['success' => true, 'status' => $newStatus]);
     }
 }

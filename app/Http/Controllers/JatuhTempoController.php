@@ -8,6 +8,7 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Mail;
 
 class JatuhTempoController extends Controller
 {
@@ -363,6 +364,82 @@ class JatuhTempoController extends Controller
             return redirect()->route('jatuh-tempo.index', $params)->with('success', 'Deadline berhasil diperbarui.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengupdate deadline: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Kirim email notifikasi untuk jatuh tempo yang sudah lewat
+     */
+    public function notify(Request $request, $id)
+    {
+        try {
+            $jt = JatuhTempo::findOrFail($id);
+
+            // Hanya boleh kirim jika sudah jatuh tempo dan belum Lunas
+            $today = Carbon::today();
+            $deadline = Carbon::parse($jt->tanggal_jatuh_tempo);
+            if (!($jt->status_pembayaran !== 'Lunas' && $deadline->lte($today))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hanya bisa mengirim email untuk tagihan yang sudah jatuh tempo dan belum Lunas.'
+                ], 400);
+            }
+
+            // Ambil email customer berdasarkan nama
+            $customer = Customer::where('name', $jt->customer)->orWhere('nama_customer', $jt->customer)->first();
+            if (!$customer || empty($customer->email)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email customer tidak ditemukan. Lengkapi email pada Data Customer.'
+                ], 400);
+            }
+
+            // Ambil pesan custom dari request
+            $customMessage = $request->input('custom_message', '');
+
+            // Kirim email dengan template yang lebih menarik
+            $subject = '🔔 Pemberitahuan Jatuh Tempo - ' . ($jt->no_invoice ?: 'Tanpa No Invoice');
+            
+            // Hitung hari terlambat
+            $daysOverdue = $today->diffInDays($deadline);
+            $overdueText = $daysOverdue > 0 ? "Terlambat {$daysOverdue} hari" : "Jatuh tempo hari ini";
+            
+            $body = "Kepada Yth. {$customer->name},\n\n" .
+                    "Kami ingin menginformasikan bahwa tagihan berikut telah jatuh tempo:\n\n" .
+                    "📋 DETAIL TAGIHAN:\n" .
+                    "• No Invoice: " . ($jt->no_invoice ?: '-') . "\n" .
+                    "• No PO/Tanggal SJ: " . ($jt->no_po ?: '-') . "\n" .
+                    "• Tanggal Jatuh Tempo: " . $deadline->format('d F Y') . "\n" .
+                    "• Status: {$overdueText}\n" .
+                    "• Jumlah Tagihan: Rp " . number_format((float)$jt->jumlah_tagihan, 0, ',', '.') . "\n\n";
+
+            // Tambahkan pesan custom jika ada
+            if (!empty($customMessage)) {
+                $body .= "💬 PESAN KHUSUS:\n" . $customMessage . "\n\n";
+            }
+
+            $body .= "Mohon segera melakukan pembayaran untuk menghindari keterlambatan lebih lanjut.\n\n" .
+                     "Untuk konfirmasi pembayaran atau informasi lebih lanjut, silakan hubungi kami.\n\n" .
+                     "Terima kasih atas perhatian dan kerjasamanya.\n\n" .
+                     "Hormat kami,\n" .
+                     "PT. CAM JAYA ABADI\n" .
+                     "📧 Email ini dikirim otomatis oleh sistem";
+
+            Mail::raw($body, function ($message) use ($customer, $subject) {
+                $message->to($customer->email)
+                        ->subject($subject)
+                        ->from(config('mail.from.address'), 'PT. CAM JAYA ABADI');
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => "📧 Email berhasil dikirim ke {$customer->email}",
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim email: ' . $e->getMessage(),
+            ], 500);
         }
     }
 

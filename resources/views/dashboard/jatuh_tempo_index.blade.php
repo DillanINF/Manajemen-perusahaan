@@ -182,10 +182,19 @@
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Tgl Invoice</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">No Invoice</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Customer</th>
+                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Email</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">No PO</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Tagihan</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Deadline</th>
                         <th class="py-1 px-1.5 text-center text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Status</th>
+                        <th class="py-1 px-1.5 text-center text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
+                                <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                                <span>Send Email</span>
+                            </div>
+                        </th>
                         <th class="py-1 px-1.5 text-center text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -196,6 +205,8 @@
                             <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $jt->tanggal_invoice->format('d/m/Y') }}</td>
                             <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $jt->no_invoice ?: '-' }}</td>
                             <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ Str::limit($jt->customer, 15) }}</td>
+                            @php($custEmail = optional(($customers ?? collect())->firstWhere('name', $jt->customer))->email)
+                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $custEmail ?: '-' }}</td>
                             <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $jt->no_po ?: '-' }}</td>
                             <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">Rp {{ number_format($jt->jumlah_tagihan, 0, ',', '.') }}</td>
                             <td class="py-1 px-1.5 text-xs">
@@ -286,20 +297,139 @@
                                 </div>
                             </td>
                             <td class="py-1 px-1.5 text-xs text-center">
-                                <x-table.action-buttons 
-                                    onEdit="editJatuhTempo({{ $jt->id }})"
-                                    deleteAction="{{ route('jatuh-tempo.destroy', ['jatuhTempo' => $jt->id, 'month' => request('month', $bulan ?? now()->format('n')), 'year' => request('year', $tahun ?? now()->format('Y')), 'status' => request('status')]) }}"
-                                    confirmText="Yakin ingin menghapus invoice {{ $jt->no_invoice ?: '-' }}?"
-                                />
+                                @php($isOverdue = \Carbon\Carbon::parse($jt->tanggal_jatuh_tempo)->lte(\Carbon\Carbon::today()))
+                                @php($hasEmail = !empty($custEmail))
+                                <div class="flex items-center justify-center">
+                                    @if($isOverdue && $jt->status_pembayaran !== 'Lunas' && $hasEmail)
+                                        <button type="button"
+                                                class="group relative inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-blue-600 transition-all duration-300 transform hover:scale-110"
+                                                onclick="flyAndOpenModal({{ $jt->id }}, '{{ $jt->customer }}', '{{ $custEmail }}', '{{ $jt->no_invoice ?: 'Tanpa No Invoice' }}', this)"
+                                                title="Kirim email pemberitahuan jatuh tempo ke {{ $custEmail }}">
+                                            <!-- Paper Plane Icon menghadap kanan -->
+                                            <svg class="w-5 h-5 transition-all duration-500 ease-out" fill="currentColor" viewBox="0 0 24 24" transform="rotate(5)">
+                                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                            </svg>
+                                        </button>
+                                    @else
+                                        <span class="text-gray-400 text-xs">-</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="py-1 px-1.5 text-xs text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <x-table.action-buttons 
+                                        onEdit="editJatuhTempo({{ $jt->id }})"
+                                        deleteAction="{{ route('jatuh-tempo.destroy', ['jatuhTempo' => $jt->id, 'month' => request('month', $bulan ?? now()->format('n')), 'year' => request('year', $tahun ?? now()->format('Y')), 'status' => request('status')]) }}"
+                                        confirmText="Yakin ingin menghapus invoice {{ $jt->no_invoice ?: '-' }}?"
+                                    />
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-4 px-6 text-center text-gray-500 dark:text-slate-400">Belum ada data jatuh tempo</td>
+                            <td colspan="10" class="py-4 px-6 text-center text-gray-500 dark:text-slate-400">Belum ada data jatuh tempo</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Email Custom -->
+<div id="emailModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg transform scale-95 opacity-0 transition-all duration-300" id="emailModalContent">
+            <!-- Header dengan gradient -->
+            <div class="bg-gradient-to-r from-red-500 to-pink-500 p-6 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Kirim Email Notifikasi</h3>
+                            <p class="text-red-100 text-sm">Pemberitahuan jatuh tempo pembayaran</p>
+                        </div>
+                    </div>
+                    <button onclick="closeEmailModal()" class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-all duration-200 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+                <!-- Info Customer -->
+                <div class="bg-gray-50 dark:bg-slate-700 rounded-lg p-4 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900 dark:text-slate-100" id="modalCustomerName">-</p>
+                            <p class="text-sm text-gray-600 dark:text-slate-400" id="modalCustomerEmail">-</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-sm text-gray-600 dark:text-slate-400">
+                        <span class="font-medium">Invoice:</span> <span id="modalInvoiceNo">-</span>
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <form id="emailForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                            </svg>
+                            Pesan Tambahan (Opsional)
+                        </label>
+                        <textarea id="customMessage" rows="4" 
+                                  class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200 resize-none"
+                                  placeholder="Tambahkan pesan khusus untuk customer (opsional)..."></textarea>
+                        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Pesan ini akan ditambahkan ke email standar</p>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
+                        <div class="flex items-start space-x-2">
+                            <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-sm text-blue-700 dark:text-blue-300">
+                                <p class="font-medium mb-1">Email akan berisi:</p>
+                                <ul class="text-xs space-y-1">
+                                    <li>• Detail tagihan yang jatuh tempo</li>
+                                    <li>• Informasi pembayaran</li>
+                                    <li>• Pesan tambahan Anda (jika ada)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 dark:bg-slate-700 rounded-b-2xl flex justify-end space-x-3">
+                <button type="button" onclick="closeEmailModal()" 
+                        class="px-4 py-2 text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-600 hover:bg-gray-100 dark:hover:bg-slate-500 border border-gray-300 dark:border-slate-500 rounded-lg font-medium transition-colors duration-200">
+                    Batal
+                </button>
+                <button type="button" onclick="sendEmailWithMessage()" id="sendEmailBtn"
+                        class="px-6 py-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 transform hover:scale-105">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    <span>Kirim Email</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -893,6 +1023,410 @@ function toggleStatus(id, currentStatus) {
         }
     });
 }
+
+// Global variables untuk modal email
+let currentEmailId = null;
+
+// Fungsi untuk animasi terbang dan buka modal
+function flyAndOpenModal(id, customerName, customerEmail, invoiceNo, buttonElement) {
+    // Animasi pesawat terbang
+    const svg = buttonElement.querySelector('svg');
+    const originalTransform = svg.style.transform;
+    
+    // Disable button sementara
+    buttonElement.disabled = true;
+    
+ 
+    
+    // Setelah animasi terbang selesai, kembalikan pesawat dan buka modal
+    setTimeout(() => {
+       
+        
+        // Enable button kembali
+        buttonElement.disabled = false;
+        
+        // Buka modal dengan efek popout
+        openEmailModalWithPopout(id, customerName, customerEmail, invoiceNo);
+    }, 600);
+}
+
+// Fungsi untuk membuka modal dengan efek popout
+function openEmailModalWithPopout(id, customerName, customerEmail, invoiceNo) {
+    currentEmailId = id;
+    
+    // Set data ke modal
+    document.getElementById('modalCustomerName').textContent = customerName;
+    document.getElementById('modalCustomerEmail').textContent = customerEmail;
+    document.getElementById('modalInvoiceNo').textContent = invoiceNo;
+    document.getElementById('customMessage').value = '';
+    
+    // Tampilkan modal dengan animasi popout
+    const modal = document.getElementById('emailModal');
+    const modalContent = document.getElementById('emailModalContent');
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Animasi popout yang lebih dramatis
+    modalContent.style.transform = 'scale(0.3) rotate(10deg)';
+    modalContent.style.opacity = '0';
+    
+    setTimeout(() => {
+        modalContent.style.transform = 'scale(1.05)';
+        modalContent.style.opacity = '1';
+        
+        // Bounce back effect
+        setTimeout(() => {
+            modalContent.style.transform = 'scale(1)';
+        }, 150);
+    }, 10);
+    
+    // Focus ke textarea setelah animasi selesai
+    setTimeout(() => {
+        document.getElementById('customMessage').focus();
+    }, 400);
+}
+
+// Fungsi untuk membuka modal email
+function openEmailModal(id, customerName, customerEmail, invoiceNo) {
+    currentEmailId = id;
+    
+    // Set data ke modal
+    document.getElementById('modalCustomerName').textContent = customerName;
+    document.getElementById('modalCustomerEmail').textContent = customerEmail;
+    document.getElementById('modalInvoiceNo').textContent = invoiceNo;
+    document.getElementById('customMessage').value = '';
+    
+    // Tampilkan modal dengan animasi
+    const modal = document.getElementById('emailModal');
+    const modalContent = document.getElementById('emailModalContent');
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Animasi masuk
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+    
+    // Focus ke textarea
+    setTimeout(() => {
+        document.getElementById('customMessage').focus();
+    }, 300);
+}
+
+// Fungsi untuk menutup modal email
+function closeEmailModal() {
+    const modal = document.getElementById('emailModal');
+    const modalContent = document.getElementById('emailModalContent');
+    
+    // Animasi keluar dengan efek shrink dan rotate
+    modalContent.style.transform = 'scale(0.8) rotate(-5deg)';
+    modalContent.style.opacity = '0';
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        currentEmailId = null;
+        
+        // Reset transform untuk next time
+        modalContent.style.transform = '';
+        modalContent.style.opacity = '';
+    }, 300);
+}
+
+// Fungsi untuk mengirim email dengan pesan custom
+async function sendEmailWithMessage() {
+    if (!currentEmailId) return;
+    
+    const customMessage = document.getElementById('customMessage').value.trim();
+    const sendBtn = document.getElementById('sendEmailBtn');
+    const originalContent = sendBtn.innerHTML;
+    
+    try {
+        // Loading state dengan animasi keren
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <div class="relative">
+                    <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </div>
+                <span>Mengirim...</span>
+            </div>
+        `;
+        
+        const response = await fetch(`/jatuh-tempo/${currentEmailId}/notify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                custom_message: customMessage
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Animasi sukses - ubah ke warna hijau
+            sendBtn.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 animate-bounce" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Email Sudah Terkirim!</span>
+                </div>
+            `;
+            sendBtn.className = 'px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium transition-all duration-200 flex items-center space-x-2';
+            
+            // Tampilkan notifikasi sukses
+            showSuccessNotification('✅ Email Terkirim!', data.message || 'Email berhasil dikirim ke customer');
+            
+            // Tutup modal setelah 1.5 detik
+            setTimeout(() => {
+                closeEmailModal();
+                
+                // Update button di tabel
+                updateTableEmailButton(currentEmailId);
+            }, 1500);
+            
+        } else {
+            // Error state
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = originalContent;
+            showAdvancedNotification('error', data.message, 'Gagal mengirim email');
+        }
+    } catch (error) {
+        console.error('Error sending email:', error);
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalContent;
+        showAdvancedNotification('error', 'Terjadi kesalahan saat mengirim email', error.message);
+    }
+}
+
+// Fungsi untuk update button di tabel setelah email terkirim
+function updateTableEmailButton(id) {
+    const button = document.querySelector(`button[onclick*="${id}"]`);
+    if (button) {
+        const originalClass = button.className;
+        
+        // Ubah ke state "terkirim" sementara
+        button.innerHTML = `
+            <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+            </svg>
+        `;
+        button.className = 'group relative inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full transition-all duration-300 transform scale-110 shadow-lg';
+        button.disabled = true;
+        
+        // Kembalikan ke state normal setelah 3 detik
+        setTimeout(() => {
+            button.innerHTML = `
+                <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                <span class="absolute inset-0 rounded-full bg-red-400 opacity-75 animate-ping"></span>
+            `;
+            button.className = originalClass;
+            button.disabled = false;
+        }, 3000);
+    }
+}
+
+// Fungsi untuk menampilkan notifikasi
+function showNotification(type, message) {
+    // Buat elemen notifikasi
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
+        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+    }`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                ${type === 'success' 
+                    ? '<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>'
+                    : '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>'
+                }
+            </svg>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animasi masuk
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Auto remove setelah 5 detik
+    setTimeout(() => {
+        removeNotification(notificationId);
+    }, 5000);
+}
+
+// Fungsi untuk menghapus notifikasi
+function removeNotification(notificationId) {
+    const notification = document.getElementById(notificationId);
+    if (notification) {
+        notification.classList.add('translate-x-full', 'opacity-0', 'scale-95');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }
+}
+
+// Close modal dengan ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEmailModal();
+    }
+});
+
+// Close modal ketika klik di luar
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('emailModal');
+    if (e.target === modal) {
+        closeEmailModal();
+    }
+});
+
+// Fungsi untuk menampilkan notifikasi sukses
+function showSuccessNotification(title, message) {
+    // Buat container notifikasi jika belum ada
+    let container = document.getElementById('notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.className = 'fixed top-4 right-4 z-[9999] space-y-2';
+        document.body.appendChild(container);
+    }
+
+    // Buat elemen notifikasi
+    const notification = document.createElement('div');
+    const notificationId = 'notification-' + Date.now();
+    notification.id = notificationId;
+    
+    notification.className = 'bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-xl shadow-2xl transform translate-x-full opacity-0 transition-all duration-500 ease-out max-w-sm';
+    notification.innerHTML = `
+        <div class="flex items-start space-x-3">
+            <div class="flex-shrink-0">
+                <svg class="w-6 h-6 animate-bounce" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold">${title}</p>
+                <p class="text-xs opacity-90 mt-1">${message}</p>
+            </div>
+            <button onclick="removeNotification('${notificationId}')" class="flex-shrink-0 ml-2 text-white/70 hover:text-white transition-colors duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Progress bar -->
+        <div class="mt-3 h-1 bg-white/20 rounded-full overflow-hidden">
+            <div class="h-full bg-white/40 rounded-full animate-progress" style="animation: progress 4s linear forwards;"></div>
+        </div>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Animasi masuk
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full', 'opacity-0');
+        notification.classList.add('translate-x-0', 'opacity-100');
+    }, 100);
+    
+    // Auto remove setelah 4 detik
+    setTimeout(() => {
+        removeNotification(notificationId);
+    }, 4000);
+}
+
+// Fungsi untuk menghapus notifikasi
+function removeNotification(notificationId) {
+    const notification = document.getElementById(notificationId);
+    if (notification) {
+        notification.classList.add('translate-x-full', 'opacity-0', 'scale-95');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }
+}
+
+// Fungsi untuk update button di tabel setelah email terkirim
+function updateTableEmailButton(emailId) {
+    // Cari button yang sesuai dengan emailId
+    const buttons = document.querySelectorAll('button[onclick*="' + emailId + '"]');
+    buttons.forEach(button => {
+        if (button.onclick && button.onclick.toString().includes('flyAndOpenModal')) {
+            // Ubah button menjadi status "Sent"
+            button.innerHTML = `
+                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+            `;
+            button.className = 'inline-flex items-center justify-center w-8 h-8 text-green-600 bg-green-100 rounded-full';
+            button.title = 'Email sudah terkirim';
+            button.disabled = true;
+        }
+    });
+}
 </script>
+
+<!-- Custom CSS untuk animasi progress bar -->
+<style>
+@keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+.animate-progress {
+    animation: progress 4s linear forwards;
+}
+
+/* Hover effects untuk email button */
+.group:hover svg {
+    animation: paper-plane-hover 0.8s ease-in-out infinite;
+}
+
+/* Paper plane hover animation */
+@keyframes paper-plane-hover {
+    0% { transform: rotate(5deg) translate(0, 0); }
+    50% { transform: rotate(5deg) translate(3px, -3px); }
+    100% { transform: rotate(5deg) translate(0, 0); }
+}
+
+/* Modal popout animation */
+@keyframes modal-popout {
+    0% { 
+        transform: scale(0.3) rotate(10deg);
+        opacity: 0;
+    }
+    70% { 
+        transform: scale(1.05) rotate(-2deg);
+        opacity: 1;
+    }
+    100% { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.modal-popout {
+    animation: modal-popout 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+</style>
+
 @endpush
 @endsection

@@ -151,12 +151,23 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [SalaryController::class, 'index'])->name('index');
         Route::get('/create', [SalaryController::class, 'create'])->name('create');
         Route::post('/', [SalaryController::class, 'store'])->name('store');
+        Route::post('/store-simple', [SalaryController::class, 'storeSimple'])->name('store-simple');
         Route::get('/{salary}/edit', [SalaryController::class, 'edit'])->name('edit');
         Route::put('/{salary}', [SalaryController::class, 'update'])->name('update');
         Route::delete('/{salary}', [SalaryController::class, 'destroy'])->name('destroy');
         Route::post('/generate-payroll', [SalaryController::class, 'generatePayroll'])->name('generate-payroll');
+        Route::post('/{salary}/toggle-status', [SalaryController::class, 'toggleStatus'])->name('toggle-status');
         Route::patch('/{salary}/payment', [SalaryController::class, 'markAsPaid'])->name('mark-paid');
     });
+
+    // Download template GAJI.xlsx (ditampilkan di landing page Salary)
+    Route::get('/salary/template/download', function () {
+        $path = storage_path('app/template/GAJI.xlsx');
+        if (!file_exists($path)) {
+            abort(404, 'Template GAJI.xlsx tidak ditemukan.');
+        }
+        return response()->download($path, 'GAJI.xlsx');
+    })->name('salary.template.download');
 
     /*
     |--------------------------------------------------------------------------
@@ -201,6 +212,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/send-reminder', [JatuhTempoController::class, 'sendReminder'])->name('send-reminder');
         Route::post('/{id}/update-status', [JatuhTempoController::class, 'updateStatus'])->name('update-status');
         Route::put('/{id}/update-deadline', [JatuhTempoController::class, 'updateDeadline'])->name('update-deadline');
+        Route::post('/{id}/notify', [JatuhTempoController::class, 'notify'])->name('notify');
         // Route hapus semua Jatuh Tempo dihapus sesuai permintaan (demi keamanan data)
     });
 

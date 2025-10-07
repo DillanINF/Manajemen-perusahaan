@@ -631,7 +631,7 @@
                 </div>
                 
                 <button id="theme-toggle" title="Toggle Tema" class="relative flex items-center w-[3.75rem] h-8 rounded-full bg-gray-200 dark:bg-gray-700 p-1 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <span class="absolute top-1 left-1 flex items-center justify-center h-6 w-6 rounded-full bg-white shadow-md transform transition-transform duration-300 dark:translate-x-7"></span>
+                    <span class="absolute top-1 left-1 flex items-center justify-center h-6 w-6 rounded-full bg-white shadow-md transform transition-transform duration-300 translate-x-7 dark:translate-x-0"></span>
                     <span class="relative z-10 w-6 h-6 flex items-center justify-center">
                         <i class="fa-solid fa-moon text-gray-400 dark:text-indigo-500"></i>
                     </span>

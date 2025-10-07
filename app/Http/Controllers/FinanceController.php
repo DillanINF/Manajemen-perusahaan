@@ -264,11 +264,15 @@ class FinanceController extends Controller
             ->where('bulan', $month)
             ->where('tahun', $year)
             ->orderBy('employee_id')
-            ->get(['id','employee_id','total_gaji']);
+            ->get(['id','employee_id','total_gaji','tanggal_bayar','bulan','tahun']);
 
         $mapped = $rows->map(function($r){
             return [
                 'id' => $r->id,
+                // tanggal_bayar dapat bernilai null, kirim sebagai string Y-m-d atau null
+                'tanggal_bayar' => $r->tanggal_bayar ? $r->tanggal_bayar->format('Y-m-d') : null,
+                'bulan' => (int) ($r->bulan ?? 0),
+                'tahun' => (int) ($r->tahun ?? 0),
                 'employee' => $r->employee->nama_karyawan ?? '-',
                 'total_gaji' => (int) $r->total_gaji,
             ];

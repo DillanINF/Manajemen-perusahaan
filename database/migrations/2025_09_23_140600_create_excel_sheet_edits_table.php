@@ -10,19 +10,21 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('excel_sheet_edits', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id')->index();
-            $table->string('sheet_name');
-            $table->unsignedSmallInteger('period_year')->nullable()->index();
-            $table->unsignedTinyInteger('period_month')->nullable()->index();
-            $table->json('cells'); // key: cell address (e.g., "A1"), value: input text
-            $table->timestamps();
-            $table->softDeletes();
+        if (!Schema::hasTable('excel_sheet_edits')) {
+            Schema::create('excel_sheet_edits', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id')->index();
+                $table->string('sheet_name');
+                $table->unsignedSmallInteger('period_year')->nullable()->index();
+                $table->unsignedTinyInteger('period_month')->nullable()->index();
+                $table->json('cells'); // key: cell address (e.g., "A1"), value: input text
+                $table->timestamps();
+                $table->softDeletes();
 
-            // Optional FK if users table exists
-            // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
+                // Optional FK if users table exists
+                // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            });
+        }
     }
 
     /**

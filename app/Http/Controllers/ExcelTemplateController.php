@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class ExcelTemplateController extends Controller
 {
@@ -47,6 +48,36 @@ class ExcelTemplateController extends Controller
             // Load Excel
             $spreadsheet = IOFactory::load($excelFile);
             $worksheet = $spreadsheet->getActiveSheet();
+            $sheetTitle = $worksheet->getTitle();
+
+            // Terapkan edits yang tersimpan (overlay) berdasarkan user + periode jika ada
+            $periodYear = $request->query('period_year');
+            $periodMonth = $request->query('period_month');
+            $userId = Auth::id();
+            if ($userId && Schema::hasTable('excel_sheet_edits')) {
+                $edits = DB::table('excel_sheet_edits')
+                    ->where('user_id', $userId)
+                    ->where('sheet_name', $sheetTitle)
+                    ->whereNull('deleted_at')
+                    ->when($periodYear, fn($q) => $q->where('period_year', (int)$periodYear))
+                    ->when($periodMonth, fn($q) => $q->where('period_month', (int)$periodMonth))
+                    ->orderByDesc('updated_at')
+                    ->first();
+
+                if ($edits && !empty($edits->cells)) {
+                    $cells = json_decode($edits->cells, true) ?? [];
+                    foreach ($cells as $cell) {
+                        $ref = $cell['ref'] ?? null;
+                        if (!$ref) continue;
+                        $val = $cell['value'] ?? '';
+                        try { 
+                            $worksheet->setCellValue($ref, $val); 
+                        } catch (\Throwable $t) { 
+                            // ignore invalid cell refs
+                        }
+                    }
+                }
+            }
             
             $highestRow = $worksheet->getHighestRow();
             $highestColumn = $worksheet->getHighestColumn();
@@ -167,9 +198,9 @@ class ExcelTemplateController extends Controller
         $html .= '<table style="border-collapse: collapse; width: 100%; min-width: 1200px; table-layout: auto; margin:0;">';
         
         // Parameter area data (berdasarkan analisis template)
-        $dataStartRow = 54; // Kembalikan ke 54, karena layout sudah diperbaiki
-        // Sel yang selalu editable meskipun berada di header
-        $alwaysEditable = ['A1', 'B1', 'C1', 'D1', 'E1']; // tambah lebih banyak sel header
+        $dataStartRow = 54; // hanya area data yang editable
+        // Tidak ada header yang editable
+        $alwaysEditable = [];
         
         // counter debug dihapus (tidak diperlukan)
 
@@ -286,16 +317,22 @@ class ExcelTemplateController extends Controller
                 // Terapkan colspan dan rowspan jika sel ini adalah master dari merge
                 $colspan = $mergeInfo['colspan'] ?? 1;
                 $rowspan = $mergeInfo['rowspan'] ?? 1;
-                $html .= '<td style="' . $cellStyle . '"' . ($colspan > 1 ? " colspan='{$colspan}'" : '') . ($rowspan > 1 ? " rowspan='{$rowspan}'" : '') . '>';
+                // Sematkan data attributes agar mudah diakses JS (selalu ada meski bukan input)
+                $html .= '<td style="' . $cellStyle . '"'
+                    . ' data-row="' . (int)$rowNum . '"'
+                    . ' data-col="' . (int)$col . '"'
+                    . ' data-cell="' . htmlspecialchars($columnLetter . (string)$rowNum) . '"'
+                    . ($colspan > 1 ? " colspan='{$colspan}'" : '')
+                    . ($rowspan > 1 ? " rowspan='{$rowspan}'" : '')
+                    . '>';
                 
                 // Cell content
                 $value = $cellData['value'];
                 
                 // Tentukan apakah sel bisa di-edit
-                // Semua sel pada area data (mulai $dataStartRow) dibuat input, tanpa pengecualian
                 // Tambahan: beberapa sel header tertentu (mis. A1) juga boleh di-edit
                 $cellRef = $columnLetter . (string)$rowNum;
-                $isEditable = ($rowNum >= $dataStartRow) || in_array($cellRef, $alwaysEditable, true);
+                $isEditable = ($rowNum >= $dataStartRow);
                 
                 if ($isEditable) {
                     // Input field untuk area data (tetap tampil walau ada nilai)
@@ -309,17 +346,21 @@ class ExcelTemplateController extends Controller
                     $html .= 'style="width: 100%; height: 100%; border: none; background: transparent; ';
                     $html .= 'font-size: inherit; font-weight: inherit; color: inherit; text-align: inherit; ';
                     $html .= 'padding: 2px; margin: 0; outline: none; cursor: text; z-index: 10; position: relative;" ';
-                    $html .= 'onfocus="this.style.backgroundColor=\'#ffffcc\';" ';
-                    $html .= 'onblur="this.style.backgroundColor=\'transparent\'" ';
+                    // Hilangkan efek warna fokus dan tooltip agar tidak bentrok dengan hover lain
                     $html .= 'onclick="this.focus();" ';
-                    $html .= 'title="Editable: ' . $cellRef . '">';
+                    $html .= '>';
                 } else {
-                    // Static content dari Excel
+                    // Static content dari Excel, bungkus dalam span agar bisa di-update via JS
+                    $html .= '<span class="excel-static-cell"'
+                        . ' data-row="' . (int)$rowNum . '"'
+                        . ' data-col="' . (int)$col . '"'
+                        . ' data-cell="' . htmlspecialchars($cellRef) . '">';
                     if (!empty($value)) {
                         $html .= htmlspecialchars($value);
                     } else {
                         $html .= '&nbsp;';
                     }
+                    $html .= '</span>';
                 }
                 
                 $html .= '</td>';

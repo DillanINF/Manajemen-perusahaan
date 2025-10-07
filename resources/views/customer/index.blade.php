@@ -100,6 +100,14 @@
                                 <span>Kode Number</span>
                             </div>
                         </th>
+                        <th class="px-3 md:px-6 py-3 md:py-4 text-left font-semibold text-xs md:text-sm min-w-[180px] border-b divider">
+                            <div class="flex items-center space-x-1 md:space-x-2">
+                                <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0z" />
+                                </svg>
+                                <span>Email</span>
+                            </div>
+                        </th>
                         <!-- Made address columns responsive with min-width -->
                         <th class="px-3 md:px-6 py-3 md:py-4 text-left font-semibold text-xs md:text-sm min-w-[120px] border-b divider">
                             <div class="flex items-center space-x-1 md:space-x-2">
@@ -148,6 +156,11 @@
                                     {{ $customer->code_number ?? '-' }}
                                 </span>
                             </td>
+                            <td class="px-3 md:px-6 py-3 md:py-4">
+                                <span class="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 md:px-3 py-1 rounded-full text-xs font-medium">
+                                    {{ $customer->email ?? '-' }}
+                                </span>
+                            </td>
                             
                             <td class="px-3 md:px-6 py-3 md:py-4">
                                 <span class="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 md:px-3 py-1 rounded-full text-xs font-medium">
@@ -161,7 +174,7 @@
                             </td>
                             <td class="px-3 md:px-6 py-3 md:py-4">
                                 <x-table.action-buttons 
-                                    onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {{ $customer->payment_terms_days ?? 30 }})"
+                                    onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {{ $customer->payment_terms_days ?? 30 }})"
                                     deleteAction="{{ route('customer.destroy', $customer->id) }}"
                                     confirmText="Yakin ingin menghapus customer ini?"
                                 />
@@ -205,11 +218,12 @@
                         <div class="mt-2 space-y-1 text-sm">
                             <div class="text-gray-700 dark:text-slate-300">Alamat 1: <span class="font-medium">{{ $customer->address_1 ?? '-' }}</span></div>
                             <div class="text-gray-700 dark:text-slate-300">Alamat 2: <span class="font-medium">{{ $customer->address_2 ?? '-' }}</span></div>
+                            <div class="text-gray-700 dark:text-slate-300">Email: <span class="font-medium">{{ $customer->email ?? '-' }}</span></div>
                         </div>
                     </div>
                     <div class="flex flex-col gap-2">
                         <x-table.action-buttons 
-                            onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {{ $customer->payment_terms_days ?? 30 }})"
+                            onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {{ $customer->payment_terms_days ?? 30 }})"
                             deleteAction="{{ route('customer.destroy', $customer->id) }}"
                             confirmText="Yakin ingin menghapus customer ini?"
                         />
@@ -257,6 +271,13 @@
                     <input type="text" id="add_name" name="name" required
                            class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
                            placeholder="Masukkan nama customer">
+                </div>
+
+                <div>
+                    <label for="add_email" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Email Perusahaan</label>
+                    <input type="email" id="add_email" name="email"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                           placeholder="contoh: finance@perusahaan.com">
                 </div>
 
                 <!-- Kode Number (3 input dengan pemisah '-' dan '/') -->
@@ -367,6 +388,13 @@
                     </div>
                     <input type="hidden" name="code_number" id="edit_code_number" value="">
                 </div>
+
+                <div class="space-y-2">
+                    <label for="edit_email" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Email Perusahaan</label>
+                    <input type="email" id="edit_email" name="email"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                           placeholder="contoh: finance@perusahaan.com">
+                </div>
                 
                 <div class="space-y-2">
                     <div>
@@ -442,7 +470,7 @@ function closeAddModal() {
     }, 300);
 }
 
-function openEditModal(id, name, address1, address2, paymentTermsDays) {
+function openEditModal(id, name, email, address1, address2, paymentTermsDays) {
     document.getElementById('editModal').classList.remove('hidden');
     document.getElementById('editModal').classList.add('flex');
     // Set action menggunakan base URL Laravel agar aman di subfolder
@@ -454,6 +482,8 @@ function openEditModal(id, name, address1, address2, paymentTermsDays) {
     form.action = "{{ url('/customer') }}/" + id;
     const nameEl = document.getElementById('edit_name');
     if (nameEl) nameEl.value = name;
+    const emailEl = document.getElementById('edit_email');
+    if (emailEl) emailEl.value = email || '';
     const addr2El = document.getElementById('edit_address_2');
     if (addr2El) addr2El.value = address2 || '';
     if (nameEl) nameEl.focus();

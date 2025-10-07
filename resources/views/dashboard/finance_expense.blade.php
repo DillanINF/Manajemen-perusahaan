@@ -2,6 +2,24 @@
 
 @section('title', 'Laporan Pengeluaran')
 
+@push('styles')
+<style>
+/* Sembunyikan panah native agar tidak muncul dobel di beberapa browser */
+.no-native-arrow {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+}
+.no-native-arrow::-ms-expand { display: none; }
+
+/* Dark mode: jadikan icon kalender (picker indicator) putih */
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.6);
+}
+</style>
+@endpush
+
 @section('content')
 <div x-data="expensePage({{ json_encode(['month' => $bulanNow ?? now()->month, 'year' => $tahunNow ?? now()->year]) }}, @js($salaryByEmployee ?? []), @js($otherExpensesMonthly ?? []), @js($monthlySalaryTotal ?? 0), @js($monthlyOtherExpenseTotal ?? 0), @js($salaryByMonth ?? []), @js($expensesByMonth ?? []))" x-init="init()" class="min-h-[70vh]">
     <!-- Filters -->
@@ -13,7 +31,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <div class="relative">
-                    <select x-model="filters.month" @change="onFilterChange" class="no-arrow appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-lg pl-9 pr-9 py-2 shadow-sm hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:border-blue-400 dark:focus:ring-blue-400">
+                    <select x-model="filters.month" @change="onFilterChange" class="no-native-arrow no-arrow appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-lg pl-9 pr-9 py-2 shadow-sm hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:border-blue-400 dark:focus:ring-blue-400">
                         <template x-for="(m, idx) in months" :key="idx">
                             <option :value="String(idx+1)" :selected="String(idx+1)===filters.month" x-text="m"></option>
                         </template>
@@ -156,7 +174,9 @@
                         <table class="min-w-full text-sm">
                             <thead class="bg-slate-50 text-slate-600 uppercase text-xs dark:bg-gray-900/40 dark:text-gray-300">
                                 <tr x-show="detailType==='salary'">
-                                    <th class="text-left px-3 py-2">Karyawan</th>
+                                    <th class="text-left px-3 py-2">Tanggal</th>
+                                    <th class="text-left px-3 py-2">Bulan</th>
+                                    <th class="text-left px-3 py-2">Tahun</th>
                                     <th class="text-right px-3 py-2">Total Gaji</th>
                                 </tr>
                                 <tr x-show="detailType==='other'">
@@ -170,12 +190,14 @@
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-700" x-show="detailType==='salary'">
                                 <template x-if="!detailRows.length">
                                     <tr>
-                                        <td colspan="2" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
+                                        <td colspan="4" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
                                     </tr>
                                 </template>
                                 <template x-for="(r, i) in detailRows" :key="i">
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        <td class="px-3 py-2 dark:text-gray-300" x-text="r.employee"></td>
+                                        <td class="px-3 py-2 dark:text-gray-300" x-text="(() => { const d = r.tanggal_bayar ? new Date(r.tanggal_bayar) : null; return d ? String(d.getDate()).padStart(2,'0') : '-' })()"></td>
+                                        <td class="px-3 py-2 dark:text-gray-300" x-text="(() => { const d = r.tanggal_bayar ? new Date(r.tanggal_bayar) : null; return d ? months[d.getMonth()] : months[Number(filters.month)-1] })()"></td>
+                                        <td class="px-3 py-2 dark:text-gray-300" x-text="(() => { const d = r.tanggal_bayar ? new Date(r.tanggal_bayar) : null; return d ? d.getFullYear() : Number(filters.year) })()"></td>
                                         <td class="px-3 py-2 text-right dark:text-gray-200" x-text="formatCurrency(r.total_gaji)"></td>
                                     </tr>
                                 </template>
@@ -299,7 +321,7 @@
                         </label>
                         <div class="relative">
                             <select x-model="expenseForm.jenis" required 
-                                    class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200 appearance-none">
+                                    class="no-native-arrow w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200 appearance-none">
                                 <option value="">Pilih Jenis Pengeluaran</option>
                                 <option value="Operasional">🏢 Operasional</option>
                                 <option value="Pemeliharaan">🔧 Pemeliharaan</option>
