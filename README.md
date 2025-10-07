@@ -32,17 +32,6 @@ php artisan migrate
 npm run dev
 php artisan serve
 ```
-
-## .env Contoh (ringkas)
-```env
-APP_NAME="Manajemen Perusahaan"
-APP_ENV=local
-{{ ... }}
-DB_PORT=3306
-DB_DATABASE=manajemen_perusahaan
-DB_USERNAME=root
-DB_PASSWORD=
-```
 ## Modul & Rute (ringkas)
 - Dashboard: /dashboard
 - PO: /po
