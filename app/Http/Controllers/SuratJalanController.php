@@ -129,6 +129,8 @@ class SuratJalanController extends Controller
             'poNumber'        => $poNumber,
             'totalTransaksi'  => $totalTransaksi,
             'totalRupiah'     => $totalRupiah,
+            'monthlyStats'    => $monthlyStats,
+            'tahunNow'        => $year,
         ]);
     }
 

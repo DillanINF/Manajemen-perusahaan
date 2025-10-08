@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JatuhTempo;
 use App\Models\Invoice;
 use App\Models\Customer;
+use App\Models\PO;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
@@ -436,6 +437,73 @@ class JatuhTempoController extends Controller
                 'message' => "📧 Email berhasil dikirim ke {$customer->email}",
             ]);
         } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim email: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Kirim email detail invoice dengan daftar barang ke customer
+     */
+    public function sendInvoiceDetail(Request $request, $id)
+    {
+        try {
+            $jatuhTempo = JatuhTempo::findOrFail($id);
+            
+            // Resolusi email customer yang kuat:
+            // 1) Cari PO berdasarkan no_po untuk mendapatkan customer_id
+            // 2) Fallback: cari berdasarkan nama jika customer_id tidak ditemukan
+            $customer = null;
+            if (!empty($jatuhTempo->no_po)) {
+                $poHeader = PO::where('no_po', $jatuhTempo->no_po)->orderByDesc('id')->first();
+                if ($poHeader && $poHeader->customer_id) {
+                    $customer = Customer::find($poHeader->customer_id);
+                }
+            }
+            if (!$customer) {
+                $customer = Customer::where('name', $jatuhTempo->customer)
+                    ->orWhere('nama_customer', $jatuhTempo->customer)
+                    ->first();
+            }
+
+            if (!$customer || empty($customer->email)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email customer tidak ditemukan. Lengkapi email pada Data Customer.',
+                ], 400);
+            }
+
+            // Ambil data barang dari PO berdasarkan no_po
+            $items = \App\Models\PO::where('no_po', $jatuhTempo->no_po)
+                ->with('produkRel')
+                ->get();
+
+            // Debug: Log jumlah items
+            \Log::info('Items count for no_po ' . $jatuhTempo->no_po . ': ' . $items->count());
+            if ($items->count() > 0) {
+                foreach ($items as $item) {
+                    \Log::info('Item: ' . ($item->produkRel->nama_produk ?? 'No product') . ' - Qty: ' . $item->qty . ' ' . $item->qty_jenis);
+                }
+            }
+
+            // Ambil data admin yang sedang login
+            $admin = auth()->user();
+            $adminEmail = $admin->email;
+            $adminName = $admin->name;
+
+            // Kirim email dengan template detail invoice
+            Mail::to($customer->email)->send(
+                new \App\Mail\InvoiceDetailMail($jatuhTempo, $items, $adminEmail, $adminName)
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "📧 Email detail invoice berhasil dikirim ke {$customer->email}",
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Send invoice detail email error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengirim email: ' . $e->getMessage(),

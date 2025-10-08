@@ -242,8 +242,8 @@
             <div style="width:170px; margin-left:auto; text-align:center;">
                 <!-- Tanggal dekat ke tabel dan center -->
                 <p style="margin: -55px 0 0 0; text-align:center; font-size:10px; font-family: DejaVu Sans, Arial, sans-serif;"><strong>Bekasi, {{ $invoiceDetails['date_location'] ?? ($invoiceDetails['invoice_date'] ?? '') }}</strong></p>
-                <!-- Nama center di bawah tanggal dalam lebar yang sama (diturunkan sedikit) -->
-                <div style="text-align:center; width:170px; margin:55px 0 0 0;">
+                <!-- Nama center di bawah tanggal dalam lebar yang sama (diturunkan lebih ke bawah) -->
+                <div style="text-align:center; width:170px; margin:85px 0 0 0;">
                     <p style="margin:0; font-size:9.5px;">
                         <strong><u>NANIK PURWATI</u></strong><br>
                         <span style="font-size:8px;">DIREKTUR UTAMA</span>

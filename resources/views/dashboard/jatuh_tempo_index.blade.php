@@ -300,13 +300,13 @@
                                 @php($isOverdue = \Carbon\Carbon::parse($jt->tanggal_jatuh_tempo)->lte(\Carbon\Carbon::today()))
                                 @php($hasEmail = !empty($custEmail))
                                 <div class="flex items-center justify-center">
-                                    @if($isOverdue && $jt->status_pembayaran !== 'Lunas' && $hasEmail)
+                                    @if($hasEmail)
                                         <button type="button"
-                                                class="group relative inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-blue-600 transition-all duration-300 transform hover:scale-110"
-                                                onclick="flyAndOpenModal({{ $jt->id }}, '{{ $jt->customer }}', '{{ $custEmail }}', '{{ $jt->no_invoice ?: 'Tanpa No Invoice' }}', this)"
-                                                title="Kirim email pemberitahuan jatuh tempo ke {{ $custEmail }}">
+                                                class="group relative inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-red-600 transition-all duration-300 transform hover:scale-110"
+                                                onclick="sendInvoiceDetailEmail({{ $jt->id }}, '{{ $jt->customer }}', '{{ $custEmail }}')"
+                                                title="Kirim email detail invoice ke {{ $custEmail }}">
                                             <!-- Paper Plane Icon menghadap kanan -->
-                                            <svg class="w-5 h-5 transition-all duration-500 ease-out" fill="currentColor" viewBox="0 0 24 24" transform="rotate(5)">
+                                            <svg class="w-5 h-5 transition-all duration-500 ease-out" fill="currentColor" viewBox="0 0 24 24" transform="rotate(0)">
                                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                                             </svg>
                                         </button>
@@ -1380,6 +1380,35 @@ function updateTableEmailButton(emailId) {
             button.disabled = true;
         }
     });
+}
+
+// Fungsi untuk kirim email detail invoice dengan daftar barang
+async function sendInvoiceDetailEmail(jatuhTempoId, customerName, customerEmail) {
+    if (!confirm(`Kirim email detail invoice ke ${customerName} (${customerEmail})?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/jatuh-tempo/${jatuhTempoId}/send-invoice-detail`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showNotification('success', data.message || 'Email berhasil dikirim!');
+        } else {
+            showNotification('error', data.message || 'Gagal mengirim email');
+        }
+    } catch (error) {
+        console.error('Error sending email:', error);
+        showNotification('error', 'Terjadi kesalahan saat mengirim email');
+    }
 }
 </script>
 

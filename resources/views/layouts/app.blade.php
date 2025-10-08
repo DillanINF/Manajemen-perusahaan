@@ -709,6 +709,18 @@
                     setInterval(() => {
                         this.fetchNotifications();
                     }, 300000);
+                    // Listen for global refresh event
+                    document.addEventListener('refresh-notifications', () => {
+                        this.fetchNotifications();
+                    });
+                    // Expose global helper once
+                    if (!window.refreshNotifications) {
+                        window.refreshNotifications = () => {
+                            try {
+                                document.dispatchEvent(new CustomEvent('refresh-notifications'));
+                            } catch (e) { /* ignore */ }
+                        };
+                    }
                 },
 
                 toggleDropdown() {
@@ -717,7 +729,8 @@
 
                 async fetchNotifications() {
                     try {
-                        const response = await fetch('/api/jatuh-tempo/notifications');
+                        const url = `/api/jatuh-tempo/notifications?t=${Date.now()}`;
+                        const response = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
                         const data = await response.json();
                         
                         this.overdueItems = data.overdue || [];

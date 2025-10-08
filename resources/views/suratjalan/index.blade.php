@@ -50,14 +50,34 @@
                         </div>
                     </div>
                     
-                    <div class="relative group">
-                        <button id="invoiceBtn" type="button"
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" type="button"
                                 class="p-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 rounded-lg">
                             <i class="fas fa-file-invoice text-3xl"></i>
                         </button>
-                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                            Invoice
-                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        <!-- Dropdown Menu -->
+                        <div x-show="open" 
+                             @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                             style="display: none;">
+                            <div class="py-1">
+                                <button @click="generateInvoice(); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2">
+                                    <i class="fas fa-eye text-blue-600"></i>
+                                    Lihat Invoice
+                                </button>
+                                <button @click="generateAndPrintInvoice(); open = false" 
+                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2">
+                                    <i class="fas fa-print text-blue-600"></i>
+                                    Print Invoice
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -415,43 +435,109 @@
 <!-- Print-only rules: pastikan Ctrl+P hanya mencetak invoice frame A4 -->
 <style>
 @media print {
-  /* Sembunyikan semua elemen halaman kecuali frame A4 invoice */
-  body * { visibility: hidden !important; }
-  .a4-page, .a4-page * { visibility: visible !important; }
-
-  /* Posisikan frame A4 di pojok kiri-atas halaman cetak */
-  .a4-page {
-    position: absolute !important;
-    left: 0; top: 0;
+  /* Atur ukuran halaman A4 portrait dengan margin minimal */
+  @page { 
+    size: A4 portrait; 
+    margin: 10mm 10mm 10mm 10mm; 
+  }
+  
+  /* Reset body untuk print */
+  html, body {
     width: 210mm !important;
-    min-height: 297mm !important;
+    height: 297mm !important;
     margin: 0 !important;
-    padding: 6mm !important; /* ruang konten lebih besar */
-    box-shadow: 0 0 0 1px #9ca3af !important; /* outline tipis sebagai penanda area cetak */
-    background: #fff !important;
+    padding: 0 !important;
+  }
+  
+  /* Sembunyikan semua elemen halaman kecuali modal invoice */
+  body > *:not(#invoiceModal) { display: none !important; }
+  
+  /* Tampilkan modal invoice dan hilangkan overlay */
+  #invoiceModal {
+    display: block !important;
+    position: static !important;
+    background: white !important;
+    overflow: visible !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Hilangkan wrapper modal dan tampilkan langsung konten */
+  #invoiceModal > div {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+  
+  #invoiceModal > div > div {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Sembunyikan tombol close dan print di modal */
+  #invoiceModal button,
+  #invoiceModal .flex.items-center.justify-between { display: none !important; }
+
+  /* Frame A4 memenuhi halaman */
+  .a4-page {
+    position: static !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 auto !important;
+    padding: 10mm 15mm !important;
+    box-shadow: none !important;
+    background: white !important;
     overflow: visible !important;
   }
 
-  /* Konten invoice tetap 190mm dan ditengah */
+  /* Konten invoice memenuhi lebar kertas */
   #invoiceContent {
-    width: 180mm !important; /* sangat aman dari cut-off kanan/kiri */
-    margin-left: 0 !important;  /* lebih condong ke kiri sesuai permintaan */
-    margin-right: auto !important;
+    width: 100% !important;
+    max-width: 180mm !important;
+    margin: 0 auto !important;
     padding: 0 !important;
-    background: #fff !important;
+    background: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    font-size: 11px !important;
+  }
+  
+  /* Perbesar font untuk tabel */
+  #invoiceContent table {
+    font-size: 10px !important;
+  }
+  
+  #invoiceContent thead th {
+    font-size: 11px !important;
+    padding: 6px 4px !important;
+  }
+  
+  #invoiceContent tbody td {
+    font-size: 10px !important;
+    padding: 5px 4px !important;
+  }
+  
+  #invoiceContent tfoot td {
+    font-size: 10px !important;
+    padding: 5px 4px !important;
   }
 
   /* Hindari kepotong di tengah halaman untuk baris dan sel tabel */
-  table { page-break-inside: auto !important; }
+  table { 
+    page-break-inside: auto !important;
+    width: 100% !important;
+  }
   thead { display: table-header-group; }
   tfoot { display: table-footer-group; }
   tr, td, th { page-break-inside: avoid !important; }
-
-  /* Atur ukuran halaman dan margin lebih lega, khususnya kanan */
-  /* Margin cetak: kurangi bottom agar tidak ada ruang kosong berlebih */
-  @page { size: A4 portrait; margin: 16mm 20mm 10mm 10mm; }
 }
 </style>
 <div id="invoiceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
@@ -568,8 +654,8 @@
                         <!-- Wadah tetap agar signature center terhadap teks tanggal -->
                         <div style="width:170px; align-self:flex-end;">
                             <p style="margin: 8px 0 0 0; text-align:right;"><strong>Bekasi, <span id="invoiceDateLocation"></span></strong></p>
-                            <!-- Spacer tetap untuk area tanda tangan agar simetris -->
-                            <div style="height: 52px;"></div>
+                            <!-- Spacer tetap untuk area tanda tangan agar simetris (diperbesar) -->
+                            <div style="height: 80px;"></div>
                             <div class="signature-stamp" style="display:none; margin: 0 auto; width: 130px; margin-bottom: 20px;">
                                 <!-- Logo perusahaan di area tanda tangan disembunyikan sesuai permintaan -->
                                 <img src="{{ asset('image/LOGO.png') }}" alt="Company Stamp" style="width: 130px; height: 90px; object-fit: contain; opacity: 0.9;">
@@ -976,37 +1062,44 @@ function closeInvoiceModal() {
 }
 
 function printInvoice() {
-    const a4 = document.querySelector('.a4-page');
-    const outer = a4 ? a4.outerHTML : `<div class="a4-page"><div id=\"invoiceContent\">${document.getElementById('invoiceContent').innerHTML}</div></div>`;
-    const html = `
-        <html>
-        <head>
-            <meta charset="utf-8" />
-            <title>Print Invoice</title>
-            <style>
-                /* Samakan aturan dengan preview agar identik */
-                @page { size: A4 portrait; margin: 16mm 20mm 16mm 10mm; }
-                html, body { margin: 0; padding: 0; background:#fff; }
-                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                .a4-page { width:210mm; min-height:297mm; margin:0 auto; padding:6mm; box-shadow: 0 0 0 1px #999; background:#fff; }
-                #invoiceContent { width: 180mm; margin-left:0; margin-right:auto; padding:0; font-family: DejaVu Sans, Arial, sans-serif; font-size:12px; line-height:1.22; color:#000; }
-                #invoiceContent table { width:100%; table-layout:fixed; border-collapse:collapse; }
-                #invoiceContent thead th { border:1px solid #000; padding:4px; text-align:center; font-size:10px; font-weight:600; line-height:1.05; }
-                #invoiceContent tbody td { border:1px solid #000; padding:4px; font-size:10px; line-height:1.05; }
-                #invoiceContent tfoot td { border:1px solid #000; padding:4px 6px; font-size:10px; line-height:1.05; }
-                #invoiceContent .info-row td { padding:0; border:0; }
-                /* Hindari kepotongan antar baris */
-                thead { display: table-header-group; }
-                tfoot { display: table-footer-group; }
-                tr, td, th { page-break-inside: avoid; }
-            </style>
-        </head>
-        <body onload="window.print(); window.onafterprint = function(){ window.close(); }">${outer}</body>
-        </html>`;
-    const w = window.open('', '_blank');
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
+    // Langsung trigger print dialog browser (Ctrl+P) tanpa membuka window baru
+    window.print();
+}
+
+// Generate invoice dan langsung print tanpa menampilkan modal
+function generateAndPrintInvoice() {
+    const selectedChecks = Array.from(document.querySelectorAll('.row-radio:checked'));
+    if (selectedChecks.length === 0) {
+        alert('Pilih minimal 1 data untuk Print Invoice');
+        return;
+    }
+    const selectedIds = selectedChecks.map(el => el.value);
+
+    fetch("{{ route('suratjalan.invoice.data') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({ ids: selectedIds })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.data && res.data.length > 0) {
+            // Populate invoice data tanpa menampilkan modal
+            populateInvoice(res.data);
+            // Tunggu sebentar agar data ter-render, lalu print
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        } else {
+            alert('Data tidak ditemukan');
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        alert('Terjadi kesalahan saat memuat data invoice');
+    });
 }
 
 // Trigger server-side PDF generation for selected Surat Jalan
@@ -1068,16 +1161,14 @@ window.addEventListener('keydown', function(e) {
 // Expose functions to global scope for inline onclick buttons
 window.exportSelected = typeof exportSelected === 'function' ? exportSelected : window.exportSelected;
 window.generateInvoice = typeof generateInvoice === 'function' ? generateInvoice : window.generateInvoice;
+window.generateAndPrintInvoice = typeof generateAndPrintInvoice === 'function' ? generateAndPrintInvoice : window.generateAndPrintInvoice;
 window.downloadInvoicePDF = typeof downloadInvoicePDF === 'function' ? downloadInvoicePDF : window.downloadInvoicePDF;
 window.printInvoice = typeof printInvoice === 'function' ? printInvoice : window.printInvoice;
 
 // Defensive: also bind click handlers so buttons work even if inline events are blocked
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const invBtn = document.getElementById('invoiceBtn');
-    if (invBtn) {
-      invBtn.addEventListener('click', (e) => { e.preventDefault(); if (typeof window.generateInvoice === 'function') window.generateInvoice(); });
-    }
+    // invoiceBtn sekarang menggunakan dropdown Alpine.js, tidak perlu event listener
     const pdfBtn = document.getElementById('pdfBtn');
     if (pdfBtn) {
       pdfBtn.addEventListener('click', (e) => { e.preventDefault(); if (typeof window.downloadInvoicePDF === 'function') window.downloadInvoicePDF(); });

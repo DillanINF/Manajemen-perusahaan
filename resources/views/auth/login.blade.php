@@ -1,4 +1,12 @@
 <x-guest-layout>
+    <script>
+        // Force light theme on login page only
+        document.addEventListener('DOMContentLoaded', function () {
+            const root = document.documentElement;
+            // Remove global dark class so any `dark:` utilities won't apply here
+            root.classList.remove('dark');
+        });
+    </script>
     <div class="min-h-screen flex items-center px-4 md:px-6 py-6 px-safe pt-safe pb-safe bg-gradient-to-br from-indigo-50 via-white to-rose-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <div class="mx-auto w-full max-w-6xl grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 items-center">
 
@@ -31,7 +39,7 @@
             </div>
 
             <!-- Kartu Login / Sisi Kanan -->
-            <div class="justify-self-center w-full max-w-md bg-white/80 dark:bg-gray-900/60 backdrop-blur rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-6 sm:p-7 md:p-8" x-data="{ locked: true, open: false, clickFx: false, ripple: 0 }">
+            <div class="justify-self-center w-full max-w-md bg-white backdrop-blur rounded-2xl shadow-xl border border-gray-200 p-6 sm:p-7 md:p-8" x-data="{ locked: true, open: false, clickFx: false, ripple: 0 }">
                 <div class="max-w-sm mx-auto w-full">
                     <!-- Session Status -->
                     <x-auth-session-status class="mb-4" :status="session('status')" />

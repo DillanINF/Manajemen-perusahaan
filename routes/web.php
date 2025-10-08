@@ -213,6 +213,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/update-status', [JatuhTempoController::class, 'updateStatus'])->name('update-status');
         Route::put('/{id}/update-deadline', [JatuhTempoController::class, 'updateDeadline'])->name('update-deadline');
         Route::post('/{id}/notify', [JatuhTempoController::class, 'notify'])->name('notify');
+        Route::post('/{id}/send-invoice-detail', [JatuhTempoController::class, 'sendInvoiceDetail'])->name('send-invoice-detail');
         // Route hapus semua Jatuh Tempo dihapus sesuai permintaan (demi keamanan data)
     });
 

@@ -290,10 +290,11 @@
                                         Qty
                                     </div>
                                 </th>
+                                
                                 <th class="px-4 py-4 pr-40 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-money-bill-wave text-emerald-500"></i>
-                                        Harga Total
+                                        Total Pembayaran
                                     </div>
                                 </th>
                                 <th class="px-6 py-4 pl-16 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider" style="width: 120px;">
@@ -319,12 +320,25 @@
                                     $first = $rows->first();
                                     $sumQty = (int) collect($rows)->sum(function($r){ return (int) ($r->qty ?? 0); });
                                     $sumTotal = (int) collect($rows)->sum(function($r){ return (int) ($r->total ?? 0); });
+                                    $transaksiCount = (int) ($rows->count());
                                     $isMulti = $rows->count() > 1;
                                     $rowIdForDblClick = $first->id; // gunakan id pertama untuk open form
+                                @endphp
+                                @php
+                                    // Safely prepare due date (Y-m-d) for data attribute
+                                    $jtRaw = data_get($first, 'tanggal_jatuh_tempo');
+                                    if ($jtRaw instanceof \Carbon\Carbon) {
+                                        $jtAttr = $jtRaw->format('Y-m-d');
+                                    } elseif (is_string($jtRaw) && $jtRaw !== '') {
+                                        try { $jtAttr = \Carbon\Carbon::parse($jtRaw)->format('Y-m-d'); } catch (\Throwable $e) { $jtAttr = ''; }
+                                    } else { $jtAttr = ''; }
+                                    $invAttr = (string) ($first->no_invoice ?? ($noUrut ?: '-'));
                                 @endphp
                                 <tr class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-slate-700 transition-all duration-200 cursor-pointer group" 
                                     data-id="{{ $rowIdForDblClick }}" 
                                     data-po-number="{{ (int)($noUrut ?? 0) }}"
+                                    data-invoice-no="{{ $invAttr }}"
+                                    data-due-date="{{ $jtAttr }}"
                                     ondblclick="openEditForm({{ $rowIdForDblClick }}, {{ (int)($noUrut ?? 0) }})">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-3">
@@ -379,6 +393,7 @@
                                             {{ $sumQty }} pcs
                                         </span>
                                     </td>
+                                    
                                     <td class="px-4 py-4 pr-40 whitespace-nowrap">
                                         <div class="flex items-center gap-2">
                                             <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900/50 rounded">
@@ -403,7 +418,22 @@
                                         <div class="flex items-center justify-center" x-data="{
                                                 status: '{{ trim($currentStatus) }}',
                                                 loading: false,
+                                                dueDate: '',
+                                                invNo: '-',
+                                                init() {
+                                                    try {
+                                                        const row = this.$el.closest('tr');
+                                                        this.dueDate = row?.dataset?.dueDate || '';
+                                                        this.invNo = row?.dataset?.invoiceNo || '-';
+                                                    } catch(e) { /* ignore */ }
+                                                },
                                                 isAccept() { return (this.status ?? '').toString().trim().toLowerCase() === 'accept'; },
+                                                isOverdue() {
+                                                    if (!this.dueDate) return false;
+                                                    const today = new Date(); today.setHours(0,0,0,0);
+                                                    const d = new Date(this.dueDate + 'T00:00:00');
+                                                    return !isNaN(d) && d.getTime() <= today.getTime();
+                                                },
                                                 async toggle() {
                                                     if (this.loading) return;
                                                     this.loading = true;
@@ -436,6 +466,27 @@
                                                             throw new Error('Toggle gagal');
                                                         }
                                                         this.status = (data.status ?? data.status_approval ?? '').toString().trim();
+                                                        // Refresh global notification bell count
+                                                        if (window && typeof window.refreshNotifications === 'function') {
+                                                            try { window.refreshNotifications(); } catch(_) {}
+                                                        }
+                                                        // Show overdue notice instantly without refresh
+                                                        if (this.isOverdue()) {
+                                                            if (this.isAccept()) {
+                                                                if (window && typeof window.showOverdueToast === 'function') {
+                                                                    window.showOverdueToast(this.invNo, this.dueDate);
+                                                                } else {
+                                                                    alert(`Invoice ${this.invNo} sudah jatuh tempo per ${this.dueDate}`);
+                                                                }
+                                                            } else {
+                                                                // toggled to Pending while overdue
+                                                                if (window && typeof window.showOverdueToast === 'function') {
+                                                                    window.showOverdueToast(this.invNo, this.dueDate);
+                                                                } else {
+                                                                    alert(`Status invoice ${this.invNo} kini Pending. (Jatuh tempo: ${this.dueDate})`);
+                                                                }
+                                                            }
+                                                        }
                                                     } catch (e) {
                                                         alert('Gagal mengubah status. Silakan coba lagi.');
                                                     } finally {
