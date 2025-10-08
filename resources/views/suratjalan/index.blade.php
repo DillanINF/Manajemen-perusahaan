@@ -242,7 +242,23 @@
                         </td>
                         <td class="py-3 px-4 text-sm font-medium text-center border-b border-gray-200 dark:border-slate-700">
                             <x-table.action-buttons 
-                                onEdit="window.editSuratJalan({{ $pos->id }}, {!! json_encode($pos->tanggal_po) !!}, {!! json_encode($pos->customer) !!}, {!! json_encode($pos->alamat_1) !!}, {!! json_encode($pos->alamat_2) !!}, {!! json_encode($pos->no_surat_jalan) !!}, {!! json_encode($pos->no_po) !!}, {!! json_encode($pos->kendaraan) !!}, {!! json_encode($pos->no_polisi) !!}, {{ $pos->qty ?? 'null' }}, {!! json_encode($pos->qty_jenis) !!}, {!! json_encode($pos->produk_id) !!}, {{ $pos->total ?? 'null' }}, {!! json_encode($pos->pengirim) !!})"
+                                onEdit="window.handleEditClick(this)"
+                                :editPayload="[
+                                    'id' => $pos->id,
+                                    'tanggal' => ($pos->tanggal_po ? \Carbon\Carbon::parse($pos->tanggal_po)->format('Y-m-d') : now()->format('Y-m-d')),
+                                    'customer' => $pos->customer,
+                                    'alamat1' => $pos->alamat_1,
+                                    'alamat2' => $pos->alamat_2,
+                                    'noSuratJalan' => $pos->no_surat_jalan,
+                                    'noPo' => $pos->no_po,
+                                    'kendaraan' => $pos->kendaraan,
+                                    'noPolisi' => $pos->no_polisi,
+                                    'qty' => $pos->qty,
+                                    'jenis' => $pos->qty_jenis,
+                                    'produkId' => $pos->produk_id,
+                                    'total' => $pos->total,
+                                    'pengirim' => $pos->pengirim
+                                ]"
                                 deleteAction="{{ route('suratjalan.destroy', $pos->id) }}"
                                 confirmText="Apakah Anda yakin ingin menghapus Data PO ini?"
                                 :useMenu="true"
@@ -294,13 +310,6 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-gray-900">Edit Data PO</h3>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('po.create', [
-                            'from' => 'invoice',
-                            'po_number' => (request('po_number') ?? ($poNumber ?? (($suratjalan->first()->po_number ?? null))))
-                        ]) }}" class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-                        <i class="fa-solid fa-arrow-left mr-1"></i>
-                        Form Input PO
-                    </a>
                     <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -309,13 +318,19 @@
                 </div>
             </div>
             
-            <form id="editForm" method="POST">
+            <form id="editForm" method="POST" action="">
                 @csrf
                 @method('PUT')
+                
+                <!-- Hidden inputs untuk preserve filter saat redirect -->
+                <input type="hidden" name="month" value="{{ request('month') ?? $month ?? '' }}">
+                <input type="hidden" name="year" value="{{ request('year') ?? $year ?? '' }}">
+                <input type="hidden" name="po_number" value="{{ request('po_number') ?? $poNumber ?? '' }}">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal PO</label>
+                        <p class="text-xs text-gray-500 mb-1">Diisi otomatis dari waktu input PO, boleh diubah.</p>
                         <input type="date" id="edit_tanggal_po" name="tanggal_po" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500">
                     </div>
@@ -409,7 +424,7 @@
                             class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
                         Batal
                     </button>
-                    <button type="submit"
+                    <button type="submit" id="editSubmitBtn"
                             class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors">
                         Update
                     </button>
@@ -805,11 +820,21 @@ function exportSelected(type = 'surat_jalan') {
 
 // Updated editSuratJalan function to handle pengirim parameter
 function editSuratJalan(id, tanggal, customer, alamat1, alamat2, noSuratJalan, noPo, kendaraan, noPolisi, qty, jenis, produkId, total, pengirim) {
-    // Set form action
-    document.getElementById('editForm').action = "{{ url('/suratjalan') }}/" + id;
+    try { console.debug('editSuratJalan()', {id, tanggal}); } catch (_) {}
+    // Set form action dan method dengan force - GUNAKAN PREFIX YANG BENAR: data-po
+    const formEl = document.getElementById('editForm');
+    const actionUrl = "{{ url('/data-po') }}/" + id;
+    formEl.setAttribute('action', actionUrl);
+    formEl.setAttribute('method', 'POST');
     
     // Fill form fields
-    document.getElementById('edit_tanggal_po').value = tanggal;
+    // Normalisasi tanggal ke format YYYY-MM-DD agar cocok dengan input type=date
+    try {
+        const normalized = (tanggal || '').toString().substring(0, 10);
+        document.getElementById('edit_tanggal_po').value = normalized;
+    } catch (_) {
+        document.getElementById('edit_tanggal_po').value = '';
+    }
     document.getElementById('edit_customer').value = customer;
     document.getElementById('edit_alamat_1').value = alamat1 || '';
     document.getElementById('edit_alamat_2').value = alamat2 || '';
@@ -825,8 +850,14 @@ function editSuratJalan(id, tanggal, customer, alamat1, alamat2, noSuratJalan, n
     }, 100);
     document.getElementById('edit_total').value = total;
     
-    // Show modal
-    document.getElementById('editModal').classList.remove('hidden');
+    // Show modal (robust)
+    const modal = document.getElementById('editModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    } else {
+        console.error('Edit modal not found');
+        alert('Gagal membuka form edit. Muat ulang halaman dan coba lagi.');
+    }
 }
 
 // Pastikan fungsi tersedia di global scope untuk dipanggil dari inline handler/komponen
@@ -839,6 +870,45 @@ function closeEditModal() {
 document.getElementById('editModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeEditModal();
+    }
+});
+
+// Safe handler for action-buttons component to avoid inline JS syntax issues
+window.handleEditClick = function(el) {
+    try {
+        // prefer data-edit payload if available
+        const raw = el?.dataset?.edit;
+        if (raw) {
+            const p = JSON.parse(raw);
+            return editSuratJalan(
+                p.id, p.tanggal, p.customer, p.alamat1, p.alamat2,
+                p.noSuratJalan, p.noPo, p.kendaraan, p.noPolisi,
+                p.qty, p.jenis, p.produkId, p.total, p.pengirim
+            );
+        }
+    } catch (err) {
+        console.error('handleEditClick payload error:', err);
+    }
+    // fallback: if no payload (should not happen), do nothing
+};
+
+// Intercept form submit to ensure correct method and action
+document.addEventListener('DOMContentLoaded', function() {
+    const editForm = document.getElementById('editForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            console.log('Form submit intercepted:', {
+                method: this.method,
+                action: this.action
+            });
+            
+            // Pastikan form method adalah POST dan action tidak kosong
+            if (this.method.toUpperCase() !== 'POST' || !this.action || this.action.endsWith('/data-po/')) {
+                e.preventDefault();
+                alert('Form belum siap. Pastikan Anda klik Edit terlebih dahulu.');
+                return false;
+            }
+        });
     }
 });
 

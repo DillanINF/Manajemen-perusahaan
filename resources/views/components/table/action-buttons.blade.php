@@ -1,6 +1,8 @@
 @props([
     // JS expression to run for Edit, e.g. "editSalary({...})"
     'onEdit' => null,
+    // Optional payload (array/object) that will be attached to the edit button as data-edit JSON
+    'editPayload' => null,
     // Delete form action URL, e.g. route('salary.destroy', $salary)
     'deleteAction' => null,
     // Confirmation text for delete
@@ -17,7 +19,9 @@
     <div class="hidden sm:flex items-center justify-center gap-1.5">
         @if($onEdit)
             <!-- Edit button -->
-            <button type="button" onclick='{!! $onEdit !!}'
+            <button type="button"
+                    @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!}; return false;" @endif
+                    @if($editPayload) data-edit='@json($editPayload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)' @endif
                     class="js-edit-btn group relative z-10 pointer-events-auto cursor-pointer inline-flex items-center justify-center w-9 h-9 aspect-square min-w-[36px] min-h-[36px] rounded-full bg-[#2563EB] text-white shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-blue-300"
                     aria-label="Edit">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
@@ -53,7 +57,9 @@
     @if($forceFull || !$useMenu)
         <div class="flex items-stretch justify-center gap-2 @unless($forceFull) sm:hidden @endunless">
             @if($onEdit)
-                <button type="button" onclick='{!! $onEdit !!}'
+                <button type="button"
+                        @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!}; return false;" @endif
+                        @if($editPayload) data-edit='@json($editPayload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)' @endif
                         class="js-edit-btn relative z-10 pointer-events-auto cursor-pointer flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#2563EB] text-white shadow-sm hover:shadow-md transition-all duration-200 active:scale-[.99]"
                         aria-label="Edit">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
@@ -96,7 +102,10 @@
                  class="fixed z-50 bottom-4 left-1/2 -translate-x-1/2 w-[92vw] max-w-xs rounded-2xl bg-white border border-gray-200 shadow-2xl overflow-hidden">
                 <div class="py-1">
                     @if($onEdit)
-                        <button type="button" @click='open=false; {!! $onEdit !!}' class="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 flex items-center gap-2">
+                        <button type="button" @click='open=false'
+                                @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!}; return false;" @endif
+                                @if($editPayload) data-edit='@json($editPayload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)' @endif
+                                class="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#2563EB]">
                                 <path d="M12 20h9"/>
                                 <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>

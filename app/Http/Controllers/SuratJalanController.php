@@ -337,8 +337,16 @@ class SuratJalanController extends Controller
             \Log::warning('SJ Sync JatuhTempo (update) gagal: ' . $e->getMessage());
         }
 
-        return redirect()->route('suratjalan.index')
-            ->with('success', 'Surat jalan berhasil diupdate');
+        // Redirect dengan parameter yang sama (month, year, po_number) agar tetap di halaman yang sama
+        $month = $request->input('month') ?: ($suratJalan->tanggal_po ? date('n', strtotime($suratJalan->tanggal_po)) : null);
+        $year = $request->input('year') ?: ($suratJalan->tanggal_po ? date('Y', strtotime($suratJalan->tanggal_po)) : null);
+        $poNumber = $request->input('po_number') ?: $suratJalan->po_number;
+        
+        return redirect()->route('suratjalan.index', [
+            'month' => $month,
+            'year' => $year,
+            'po_number' => $poNumber
+        ])->with('success', 'Data PO berhasil diupdate');
     }
 
     /**

@@ -101,39 +101,15 @@
         </div>
 
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 text-white">
+        <div class="mb-6">
+            <div class="bg-gradient-to-r from-yellow-400 to-orange-400 dark:from-yellow-600 dark:to-orange-600 rounded-xl p-6 shadow-lg">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-yellow-100 text-sm font-medium">Total Items</p>
-                        <p class="text-2xl font-bold">{{ $sisaData->total() }}</p>
+                        <p class="text-gray-800 dark:text-white text-sm font-medium mb-1">Total Items</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $sisaData->total() }}</p>
                     </div>
-                    <div class="bg-white/20 rounded-full p-3">
-                        <i class="fas fa-exclamation-triangle text-xl"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-r from-red-500 to-pink-500 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-red-100 text-sm font-medium">Total Sisa Qty</p>
-                        <p class="text-2xl font-bold">{{ number_format($sisaData->sum('sisa_belum_terinput')) }}</p>
-                    </div>
-                    <div class="bg-white/20 rounded-full p-3">
-                        <i class="fas fa-chart-line text-xl"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-blue-100 text-sm font-medium">No PO Unik</p>
-                        <p class="text-2xl font-bold">{{ $sisaData->pluck('no_po')->unique()->count() }}</p>
-                    </div>
-                    <div class="bg-white/20 rounded-full p-3">
-                        <i class="fas fa-file-alt text-xl"></i>
+                    <div class="bg-white/30 dark:bg-white/20 rounded-full p-4">
+                        <i class="fas fa-exclamation-triangle text-2xl text-gray-800 dark:text-white"></i>
                     </div>
                 </div>
             </div>
@@ -145,7 +121,7 @@
                 <!-- Desktop Table -->
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-gray-50 dark:bg-gray-800/50">
+                        <thead class="bg-gray-100 dark:bg-gray-800/80">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Produk</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No PO</th>
