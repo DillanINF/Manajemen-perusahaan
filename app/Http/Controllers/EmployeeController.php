@@ -16,7 +16,7 @@ class EmployeeController extends Controller
         $totalGaji = Employee::aktif()->sum('gaji_pokok');
         $rataRataGaji = Employee::aktif()->count() > 0 ? $totalGaji / Employee::aktif()->count() : 0;
 
-        return view('dashboard.employee_index', compact(
+        return view('employees.index', compact(
             'employees', 
             'totalKaryawan', 
             'karyawanAktif', 
@@ -27,7 +27,7 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        return view('dashboard.employee_create');
+        return view('employees.create');
     }
 
    public function store(Request $request)
@@ -60,7 +60,7 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         $employees = Employee::latest()->get();
-        return view('dashboard.employee_index', compact('employee', 'employees'));
+        return view('employees.index', compact('employee', 'employees'));
     }
 
     public function update(Request $request, Employee $employee)

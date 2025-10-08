@@ -73,7 +73,7 @@ class JatuhTempoController extends Controller
         // Get customers for dropdown
         $customers = Customer::orderBy('name')->get();
 
-        return view('dashboard.jatuh_tempo_index', compact(
+        return view('jatuh-tempo.index', compact(
             'jatuhTempos', 'totalTagihanPending', 'totalTerbayar', 'totalCustomerPending', 'totalCustomerAccept',
             'bulan', 'tahun', 'statusPembayaran', 'monthlyStats', 'customers'
         ));
@@ -82,7 +82,7 @@ class JatuhTempoController extends Controller
     public function create()
     {
         $invoices = Invoice::all();
-        return view('dashboard.jatuh_tempo_create', compact('invoices'));
+        return view('jatuh-tempo.create', compact('invoices'));
     }
 
     public function store(Request $request)
@@ -182,7 +182,7 @@ class JatuhTempoController extends Controller
             $totalOverdue = $jatuhTempos->where('is_overdue', true)->sum('sisa_tagihan');
             $countOverdue = $jatuhTempos->where('is_overdue', true)->count();
 
-            return view('dashboard.jatuh_tempo_index', compact('jatuhTempo', 'jatuhTempos', 'invoices', 'totalTagihan', 'totalTerbayar', 'totalOverdue', 'countOverdue'));
+            return view('jatuh-tempo.index', compact('jatuhTempo', 'jatuhTempos', 'invoices', 'totalTagihan', 'totalTerbayar', 'totalOverdue', 'countOverdue'));
         } catch (\Exception $e) {
             if (request()->expectsJson()) {
                 return response()->json([

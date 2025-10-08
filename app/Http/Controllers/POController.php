@@ -36,7 +36,7 @@ class POController extends Controller
             ->orderBy('nama', 'asc')
             ->get();
 
-        return view('dashboard.po_index', compact('pos', 'produks', 'customers', 'pengirims'));
+        return view('po.index', compact('pos', 'produks', 'customers', 'pengirims'));
     }
 
     public function create()
@@ -112,7 +112,7 @@ class POController extends Controller
 
         // Kirim draft sebagai $po agar binding form (customer_id, dsb) otomatis terpilih
         $po = $draft;
-        return view('dashboard.po_index', compact('pos', 'produks', 'customers', 'pengirims', 'prefillTanggal', 'po', 'sjCodeParts', 'sjNomor', 'sjPt', 'sjTahun'));
+        return view('po.index', compact('pos', 'produks', 'customers', 'pengirims', 'prefillTanggal', 'po', 'sjCodeParts', 'sjNomor', 'sjPt', 'sjTahun'));
     }
 
     public function store(Request $request)
@@ -686,7 +686,7 @@ class POController extends Controller
             ->orderBy('nama', 'asc')
             ->get();
 
-        return view('dashboard.po_index', compact('po', 'pos', 'produks', 'customers', 'pengirims'));
+        return view('po.index', compact('po', 'pos', 'produks', 'customers', 'pengirims'));
     }
 
     public function update(Request $request, PO $po)
@@ -1158,7 +1158,7 @@ class POController extends Controller
             });
 
         $customers = Customer::all();
-        return view('dashboard.po_invoice_index', compact('invoices', 'customers'));
+        return view('po.invoice_index', compact('invoices', 'customers'));
     }
 
     /**

@@ -30,7 +30,7 @@ class SalaryController extends Controller
         $gajiXlsxError = null;
         $gajiXlsxHtml = null;
 
-        return view('dashboard.salary_index', compact(
+        return view('salary.index', compact(
             'salaries', 
             'employees',
             'totalGajiDibayar',
@@ -48,7 +48,7 @@ class SalaryController extends Controller
     public function create()
     {
         $employees = Employee::aktif()->get();
-        return view('dashboard.salary_create', compact('employees'));
+        return view('salary.create', compact('employees'));
     }
 
     public function store(Request $request)
@@ -117,7 +117,7 @@ class SalaryController extends Controller
     {
         $employees = Employee::aktif()->get();
         $salaries = Salary::with('employee')->latest()->get();
-        return view('dashboard.salary_index', compact('salary', 'salaries', 'employees'));
+        return view('salary.index', compact('salary', 'salaries', 'employees'));
     }
 
     public function update(Request $request, Salary $salary)

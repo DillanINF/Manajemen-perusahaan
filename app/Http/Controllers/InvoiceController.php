@@ -20,7 +20,7 @@ class InvoiceController extends Controller
         $produks = Produk::all();
         $customers = Customer::all();
 
-        return view('dashboard.invoice_index', compact('invoices', 'pos', 'produks', 'customers'));
+        return view('invoice.index', compact('invoices', 'pos', 'produks', 'customers'));
     }
 
     public function create()
@@ -29,7 +29,7 @@ class InvoiceController extends Controller
         $produks = Produk::all();
         $customers = Customer::all();
 
-        return view('dashboard.invoice_create', compact('pos', 'produks', 'customers'));
+        return view('invoice.create', compact('pos', 'produks', 'customers'));
     }
 
     public function store(Request $request)
@@ -66,7 +66,7 @@ class InvoiceController extends Controller
         $produks = Produk::all();
         $customers = Customer::all();
 
-        return view('dashboard.invoice_index', compact('invoice', 'invoices', 'pos', 'produks', 'customers'));
+        return view('invoice.index', compact('invoice', 'invoices', 'pos', 'produks', 'customers'));
     }
 
     public function update(Request $request, Invoice $invoice)

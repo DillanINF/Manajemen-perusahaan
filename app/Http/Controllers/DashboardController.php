@@ -8,7 +8,6 @@ use App\Models\POItem;
 use App\Models\Expense;
 use App\Models\Salary;
 use App\Models\SuratJalan;
-use App\Models\Kendaraan;
 use App\Models\Setting;
 use App\Services\DatabaseService;
 use App\Models\BarangMasuk;

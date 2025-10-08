@@ -8,7 +8,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use App\Models\PO;
-use App\Models\Kendaraan;
 use Carbon\Carbon;
 use App\Models\JatuhTempo;
 use Illuminate\Support\Facades\Storage;
@@ -274,18 +273,9 @@ class POExportController extends Controller
             // Ambil nama kendaraan dari relasi; jika kosong, coba query langsung berdasarkan ID di kolom `kendaraan`;
             // jika tetap tidak ada, pakai nilai mentah di kolom `kendaraan` (bisa jadi sudah berupa nama)
             $kendaraanName = $po->kendaraanRel->nama
-                ?? (function($id){
-                        if (empty($id)) return null;
-                        $k = Kendaraan::find($id);
-                        return $k->nama ?? null;
-                   })($po->kendaraan)
                 ?? (is_scalar($po->kendaraan) ? (string)$po->kendaraan : '');
             $sheet->setCellValue('L10', $kendaraanName);
-            $noPolisi = $po->no_polisi ?: ($po->kendaraanRel->no_polisi ?? (function($id){
-                if (empty($id)) return '';
-                $k = Kendaraan::find($id);
-                return $k->no_polisi ?? '';
-            })($po->kendaraan));
+            $noPolisi = $po->no_polisi ?: ($po->kendaraanRel->no_polisi ?? '');
             $sheet->setCellValue('K12', $noPolisi);
 
             // Tambahan alamat

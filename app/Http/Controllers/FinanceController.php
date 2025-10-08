@@ -88,7 +88,7 @@ class FinanceController extends Controller
             ];
         }
 
-        return view('dashboard.finance_index', compact(
+        return view('finance.index', compact(
             'incMonth', 'incYear', 'allYears',
             'monthlySubtotal', 'monthlyPpn', 'monthlyRevenue',
             'revenueNetByMonth', 'revenueByCustomer', 'revenueByCustomerByMonth'
@@ -160,7 +160,7 @@ class FinanceController extends Controller
         $combinedMonthlyExpense = (int) ($monthlySalaryTotal + $monthlyOtherExpenseTotal);
         $combinedYearlyExpenseTotal = (int) ($yearlySalaryTotal + $yearlyOtherExpenseTotal);
 
-        return view('dashboard.finance_expense', compact(
+        return view('finance.expense', compact(
             'bulanNow','tahunNow','allYears',
             'salaryByEmployee','monthlySalaryTotal','salaryByMonth','yearlySalaryTotal',
             'otherExpensesMonthly','monthlyOtherExpenseTotal','expensesByMonth','yearlyOtherExpenseTotal',

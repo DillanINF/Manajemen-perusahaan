@@ -42,7 +42,7 @@ class SisaDataPOController extends Controller
             ->orderBy('customer')
             ->pluck('customer');
 
-        return view('dashboard.sisa_data_po', compact('sisaData', 'produks', 'noPo', 'produkId', 'customer', 'customers'));
+        return view('po.sisa_data', compact('sisaData', 'produks', 'noPo', 'produkId', 'customer', 'customers'));
     }
     
     /**
@@ -164,7 +164,7 @@ class SisaDataPOController extends Controller
         $sisaItem = SisaPOItem::with('produk')->findOrFail($id);
         $produks = Produk::orderBy('nama_produk')->get();
         
-        return view('dashboard.sisa_data_po_edit', compact('sisaItem', 'produks'));
+        return view('po.sisa_data_edit', compact('sisaItem', 'produks'));
     }
 
     /**
