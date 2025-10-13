@@ -576,7 +576,7 @@ window.openEditForm = function(id, noUrut) {
 <div id="modal-set-nomor" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl w-full max-w-lg rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden">
+        <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl w-full rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden" style="max-width: 28rem !important;">
             <!-- Header -->
             <div class="px-6 py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
                 <div class="flex items-center gap-3">
@@ -595,7 +595,7 @@ window.openEditForm = function(id, noUrut) {
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-4 mb-6">
                     <div class="flex items-start gap-3">
                         <div class="p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg">
-                            <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
+                            <i class="fas fa-info-circle text-amber-600 dark:text-amber-400"></i>
                         </div>
                         <div>
                             <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Informasi Penting</h4>
@@ -609,7 +609,7 @@ window.openEditForm = function(id, noUrut) {
                 <div class="space-y-4">
                     <div>
                         <label for="next-number" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fas fa-hashtag text-indigo-500 mr-1"></i>
+                            <i class="fas fa-hashtag text-amber-500 mr-1"></i>
                             Nomor Urut Berikutnya
                         </label>
                         <div class="relative">
@@ -653,10 +653,10 @@ window.openEditForm = function(id, noUrut) {
 <div id="modal-pilih-customer" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl w-full max-w-md rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden">
-            <div class="px-6 py-5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
+        <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl w-full rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden" style="max-width: 28rem !important;">
+            <div id="header-pilih-customer" class="px-6 py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
                 <h3 class="text-lg font-bold" id="title-pilih-customer">Pilih Customer</h3>
-                <p class="text-indigo-100 text-sm">Customer wajib dipilih sebelum melanjutkan</p>
+                <p id="subtitle-pilih-customer" class="text-amber-100 text-sm">Customer wajib dipilih sebelum melanjutkan</p>
             </div>
             <div class="p-6 space-y-4">
                 @php
@@ -664,7 +664,7 @@ window.openEditForm = function(id, noUrut) {
                     $allCustomers = isset($customers) ? collect($customers)->map(fn($c) => ['id' => $c->id, 'name' => $c->name]) : collect([]);
                 @endphp
                 <label for="select-pilih-customer" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Customer</label>
-                <select id="select-pilih-customer" class="w-full h-11 px-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <select id="select-pilih-customer" class="w-full h-11 px-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
                     <option value="">-- Pilih Customer --</option>
                     @foreach($allCustomers as $cust)
                         <option value="{{ $cust['id'] }}" data-name="{{ $cust['name'] }}">{{ $cust['name'] }}</option>
@@ -677,11 +677,11 @@ window.openEditForm = function(id, noUrut) {
                 <!-- No Invoice Berikutnya (hanya untuk mode ATUR) -->
                 <div id="wrap-next-number" class="hidden">
                     <label for="next-number" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        <i class="fas fa-hashtag text-indigo-500 mr-1"></i>
+                        <i class="fas fa-hashtag text-amber-500 mr-1"></i>
                         No Invoice Berikutnya
                     </label>
                     <div class="relative">
-                        <input type="number" id="next-number-pick" min="1" placeholder="1000" class="w-full h-11 px-3 pl-10 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                        <input type="number" id="next-number-pick" min="1" placeholder="1000" class="w-full h-11 px-3 pl-10 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-amber-500 focus:border-amber-500" />
                         <span class="absolute left-3 inset-y-0 flex items-center text-gray-400 font-bold">#</span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Contoh: 1000, 2000, 5000</p>
@@ -689,7 +689,7 @@ window.openEditForm = function(id, noUrut) {
             </div>
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 flex items-center justify-end gap-3">
                 <button type="button" id="btn-cancel-pilih-customer" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">Batal</button>
-                <button type="button" id="btn-confirm-pilih-customer" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white">Lanjut</button>
+                <button type="button" id="btn-confirm-pilih-customer" class="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white">Lanjut</button>
             </div>
         </div>
     </div>
@@ -804,7 +804,28 @@ document.addEventListener('DOMContentLoaded', function() {
         selectPilihCustomer.value = '';
         pickedCustomerId = '';
         pickedCustomerName = '';
-        document.getElementById('title-pilih-customer').textContent = mode === 'atur' ? 'Pilih Customer untuk Atur No Invoice' : 'Pilih Customer untuk Tambah No Invoice';
+        const titleEl = document.getElementById('title-pilih-customer');
+        const headerEl = document.getElementById('header-pilih-customer');
+        const subtitleEl = document.getElementById('subtitle-pilih-customer');
+        const confirmBtn = document.getElementById('btn-confirm-pilih-customer');
+        const selectEl = document.getElementById('select-pilih-customer');
+        titleEl.textContent = mode === 'atur' ? 'Pilih Customer untuk Atur No Invoice' : 'Pilih Customer untuk Tambah No Invoice';
+        // Toggle theme: biru utk tambah, oranye utk atur
+        if (mode === 'tambah') {
+            headerEl.className = 'px-6 py-5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white';
+            subtitleEl.className = 'text-indigo-100 text-sm';
+            confirmBtn.className = 'px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white';
+            // focus ring biru
+            selectEl.classList.remove('focus:ring-amber-500','focus:border-amber-500');
+            selectEl.classList.add('focus:ring-indigo-500','focus:border-indigo-500');
+        } else {
+            headerEl.className = 'px-6 py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white';
+            subtitleEl.className = 'text-amber-100 text-sm';
+            confirmBtn.className = 'px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white';
+            // focus ring oranye
+            selectEl.classList.remove('focus:ring-indigo-500','focus:border-indigo-500');
+            selectEl.classList.add('focus:ring-amber-500','focus:border-amber-500');
+        }
         // toggle input nomor
         const wrapNum = document.getElementById('wrap-next-number');
         if (wrapNum) wrapNum.classList.toggle('hidden', mode !== 'atur');

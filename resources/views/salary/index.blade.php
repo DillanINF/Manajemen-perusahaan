@@ -25,120 +25,175 @@
 @section('content')
 <div class="min-h-screen py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header Section -->
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Manajemen Gaji Karyawan</h1>
-                <p class="text-gray-600 dark:text-slate-400 mt-1">Kelola data gaji dan pengeluaran karyawan</p>
-            </div>
-            <button onclick="openInputGajiModal()" 
-                    class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                </svg>
-                Input Gaji
-            </button>
-        </div>
-
-        <!-- Filter & Controls -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Bulan</label>
-                    <select id="filterMonth" onchange="filterByMonthYear()" 
-                            class="px-3 py-2 pr-8 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
-                        @for($i = 1; $i <= 12; $i++)
-                            <option value="{{ $i }}" {{ $i == date('n') ? 'selected' : '' }}>
-                                {{ DateTime::createFromFormat('!m', $i)->format('F') }}
-                            </option>
-                        @endfor
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-slate-300 mt-6">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        
+        <!-- Header Section - Like Screenshot -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                         </svg>
                     </div>
-                </div>
-                <div class="relative">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Tahun</label>
-                    <select id="filterYear" onchange="filterByMonthYear()" 
-                            class="px-3 py-2 pr-8 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
-                        @for($y = 2020; $y <= 2035; $y++)
-                            <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-slate-300 mt-6">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Data Gaji Karyawan</h1>
+                        <p class="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Kelola data gaji karyawan perusahaan</p>
                     </div>
                 </div>
-            </div>
-            <div class="text-right">
-                <p class="text-sm text-gray-600 dark:text-slate-400">Total Gaji Bulan Ini</p>
-                <p id="totalHariIni" class="text-2xl font-bold text-green-600 dark:text-green-400">Rp 0</p>
+                <button onclick="openInputGajiModal()" 
+                        class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Tambah Gaji
+                </button>
             </div>
         </div>
 
-        <!-- Tabel Gaji -->
+        <!-- Filter Bar -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-5 mb-8">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Bulan</label>
+                        <select id="filterMonth" onchange="filterByMonthYear()" 
+                                class="px-3 py-2 pr-8 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                            @for($i = 1; $i <= 12; $i++)
+                                <option value="{{ $i }}" {{ $i == date('n') ? 'selected' : '' }}>
+                                    {{ DateTime::createFromFormat('!m', $i)->format('F') }}
+                                </option>
+                            @endfor
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-slate-300 mt-6">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Tahun</label>
+                        <select id="filterYear" onchange="filterByMonthYear()" 
+                                class="px-3 py-2 pr-8 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                            @for($y = 2020; $y <= 2035; $y++)
+                                <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>{{ $y }}</option>
+                            @endfor
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-slate-300 mt-6">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-700/50 rounded-lg border border-gray-200 dark:border-slate-600">
+                    <span class="text-sm text-gray-500 dark:text-slate-400">Total:</span>
+                    <span id="totalHariIni" class="text-base font-bold text-gray-900 dark:text-slate-100">Rp 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Gaji - Clean & Simple -->
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100">Data Gaji Karyawan</h3>
-            </div>
-            
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">No</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Total Gaji</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
+                        <tr class="border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50">
+                            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider w-20"># No</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    Bulan/Tahun
+                                </div>
+                            </th>
+                            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                    </svg>
+                                    Nominal
+                                </div>
+                            </th>
+                            <th class="px-6 py-3.5 text-center text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider">
+                                <div class="flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Status
+                                </div>
+                            </th>
+                            <th class="px-6 py-3.5 text-center text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider w-32">
+                                <div class="flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                                    </svg>
+                                    Aksi
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody id="salaryTableBody" class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                    <tbody id="salaryTableBody" class="divide-y divide-gray-100 dark:divide-slate-700">
                         @forelse($salaries ?? [] as $index => $salary)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200" data-date="{{ $salary->tanggal_bayar }}" data-month="{{ $salary->bulan }}" data-year="{{ $salary->tahun }}">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-200">{{ $index + 1 }}</td>
-                            <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-200">
-                                @if($salary->tanggal_bayar)
-                                    {{ $salary->tanggal_bayar->format('d/') . strtolower($salary->tanggal_bayar->format('M')) . $salary->tanggal_bayar->format('/Y') }}
-                                @else
-                                    -
-                                @endif
+                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors" data-month="{{ $salary->bulan }}" data-year="{{ $salary->tahun }}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">{{ $index + 1 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                    {{ DateTime::createFromFormat('!m', $salary->bulan)->format('F') }} {{ $salary->tahun }}
+                                </span>
                             </td>
-                            <td class="px-3 py-4 whitespace-nowrap text-right" data-total>
+                            <td class="px-6 py-4 whitespace-nowrap" data-total>
                                 <div class="text-sm font-bold text-gray-900 dark:text-slate-200">Rp {{ number_format($salary->total_gaji, 0, ',', '.') }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-4 py-4 whitespace-nowrap text-center">
                                 @if($salary->status_pembayaran === 'dibayar')
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                         Dibayar
                                     </span>
                                 @else
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Belum Dibayar
+                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                        Pending
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-center">
-                                <x-table.action-buttons 
-                                    onEdit="window.location.href='{{ route('salary.edit', $salary->id) }}'"
-                                    deleteAction="{{ route('salary.destroy', $salary->id) }}"
-                                    confirmText="Yakin ingin menghapus data gaji ini?"
-                                />
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <!-- Edit Button - Blue Circle -->
+                                    <button onclick="window.location.href='{{ route('salary.edit', $salary->id) }}'"
+                                            class="w-9 h-9 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors shadow-sm"
+                                            title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    
+                                    <!-- Delete Button - Red Circle -->
+                                    <form action="{{ route('salary.destroy', $salary->id) }}" method="POST" class="inline"
+                                          onsubmit="return confirm('Yakin ingin menghapus data gaji ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="w-9 h-9 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors shadow-sm"
+                                                title="Hapus">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-slate-400">
+                            <td colspan="5" class="px-6 py-16 text-center">
                                 <div class="flex flex-col items-center">
-                                    <svg class="w-12 h-12 text-gray-300 dark:text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                    <p class="text-lg font-medium dark:text-slate-300">Belum ada data gaji</p>
-                                    <p class="text-sm">Klik "Input Gaji" untuk menambah data baru</p>
+                                    <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                                        <svg class="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-base font-medium text-gray-900 dark:text-slate-300 mb-1">Belum ada data gaji</p>
+                                    <p class="text-sm text-gray-500 dark:text-slate-400">Klik tombol "Tambah Gaji" untuk menambah data baru</p>
                                 </div>
                             </td>
                         </tr>
@@ -150,70 +205,73 @@
     </div>
 </div>
 
-<!-- Modal Input Gaji - Dropdown dengan styling yang sama -->
-<div id="inputGajiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full">
-        <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+<!-- Modal Input Gaji - Compact & Minimal -->
+<div id="inputGajiModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full overflow-hidden border border-gray-200 dark:border-slate-700" style="max-width: 28rem !important;">
+        <!-- Modal Header - Gradient Blue -->
+        <div class="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
             <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100">Input Gaji</h2>
-                <button onclick="closeInputGajiModal()" class="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200">
-                    <svg class="w-5 h-5 text-gray-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div>
+                    <h2 class="text-lg font-bold">Input Gaji</h2>
+                    <p class="text-blue-100 text-xs">Lengkapi data gaji karyawan</p>
+                </div>
+                <button onclick="closeInputGajiModal()" class="text-white/80 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
         </div>
 
-        <!-- Modal Body -->
+        <!-- Modal Body - Compact -->
         <form id="inputGajiForm" action="{{ route('salary.store-simple') }}" method="POST" class="p-6 space-y-4">
             @csrf
             
-            <!-- Bulan -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Bulan</label>
-                <select name="bulan" required
-                        class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200">
-                    @for($i = 1; $i <= 12; $i++)
-                        <option value="{{ $i }}" {{ $i == date('n') ? 'selected' : '' }}>
-                            {{ DateTime::createFromFormat('!m', $i)->format('F') }}
-                        </option>
-                    @endfor
-                </select>
+            <!-- Bulan & Tahun dalam 1 baris -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Bulan</label>
+                    <select name="bulan" required
+                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400">
+                        @for($i = 1; $i <= 12; $i++)
+                            <option value="{{ $i }}" {{ $i == date('n') ? 'selected' : '' }}>
+                                {{ DateTime::createFromFormat('!m', $i)->format('F') }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Tahun</label>
+                    <select name="tahun" required
+                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400">
+                        @for($y = 2020; $y <= 2035; $y++)
+                            <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
             </div>
             
-            <!-- Tahun -->
+            <!-- Nominal Gaji - Compact -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Tahun</label>
-                <select name="tahun" required
-                        class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200">
-                    @for($y = 2020; $y <= 2035; $y++)
-                        <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>{{ $y }}</option>
-                    @endfor
-                </select>
-            </div>
-            
-            <!-- Nominal Gaji -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Nominal Gaji</label>
+                <label class="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1.5">Nominal Gaji</label>
                 <div class="relative">
-                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-slate-400 text-sm font-medium">Rp</span>
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-slate-400 text-sm">Rp</span>
                     <input type="text" name="nominal_gaji" inputmode="numeric" autocomplete="off" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                           class="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400"
                            placeholder="0" oninput="formatNominal(this)" onkeyup="formatNominal(this)">
                     <input type="hidden" name="nominal_gaji_raw" id="nominalGajiRaw">
                 </div>
-                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Masukkan total gaji yang akan dibayarkan</p>
             </div>
 
-            <!-- Modal Footer -->
-            <div class="flex items-center justify-end space-x-3 pt-4">
+            <!-- Modal Footer - Compact -->
+            <div class="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-slate-700 mt-4">
                 <button type="button" onclick="closeInputGajiModal()" 
-                        class="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 font-medium transition-colors duration-200">
+                        class="px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
                     Batal
                 </button>
                 <button type="submit" 
-                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors duration-200 shadow-sm">
+                        class="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors shadow-sm">
                     Simpan
                 </button>
             </div>

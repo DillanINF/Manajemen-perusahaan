@@ -150,13 +150,28 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             @for($m=1;$m<=12;$m++)
                 @php($isActive = $bulanDipilih === $m)
+                @php($hasOverdueMonth = (bool)($monthlyStats[$m]->has_overdue ?? false))
                 <a href="{{ route('jatuh-tempo.index', ['month' => $m, 'year' => $tahunTerpilihLocal, 'status' => request('status')]) }}" class="block focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
                     <div class="p-2 rounded-lg border text-xs sm:text-sm transition-colors hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700/40
-                                {{ $isActive ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-600' : 'bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700' }}">
+                                {{ $hasOverdueMonth
+                                    ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700'
+                                    : ($isActive
+                                        ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-600'
+                                        : 'bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700') }}">
                         <div class="flex items-center justify-between">
-                            <span class="font-semibold text-gray-700 dark:text-slate-200">{{ $namaBulanFull[$m-1] }}</span>
-                            @if($isActive)
+                            <span class="font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1">
+                                {{ $namaBulanFull[$m-1] }}
+                                @if($hasOverdueMonth)
+                                    <span class="relative inline-flex h-2.5 w-2.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                    </span>
+                                @endif
+                            </span>
+                            @if($isActive && !$hasOverdueMonth)
                                 <span class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">Bulan dipilih</span>
+                            @elseif($isActive && $hasOverdueMonth)
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">Lewat tempo</span>
                             @endif
                         </div>
                         <div class="mt-1 flex items-center justify-between">

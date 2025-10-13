@@ -50,10 +50,22 @@ class JatuhTempoController extends Controller
                 ->whereMonth('tanggal_invoice', $i)
                 ->selectRaw('COUNT(*) as total_count, COALESCE(SUM(jumlah_tagihan), 0) as total_sum')
                 ->first();
-                
+            
+            // Overdue indicator diselaraskan dengan bulan INVOICE (bukan bulan deadline):
+            // ambil item dengan bulan `tanggal_invoice` = $i (tahun aktif), status bukan Lunas,
+            // dan `tanggal_jatuh_tempo` sudah lewat atau hari ini.
+            $overdueCount = JatuhTempo::query()
+                ->whereYear('tanggal_invoice', $tahun)
+                ->whereMonth('tanggal_invoice', $i)
+                ->where('status_pembayaran', '!=', 'Lunas')
+                ->whereDate('tanggal_jatuh_tempo', '<=', Carbon::today())
+                ->count();
+
             $monthlyStats[$i] = (object) [
                 'total_count' => (int) ($monthData->total_count ?? 0),
                 'total_sum' => (float) ($monthData->total_sum ?? 0),
+                'overdue_count' => (int) $overdueCount,
+                'has_overdue' => $overdueCount > 0,
             ];
         }
 

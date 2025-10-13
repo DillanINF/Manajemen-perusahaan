@@ -115,7 +115,6 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:text-gray-300">Karyawan</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kontak</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Posisi</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Departemen</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Gaji Pokok</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
@@ -138,14 +137,10 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900 dark:text-gray-100">{{ $employee->email }}</div>
                             <div class="text-sm text-gray-500 dark:text-gray-400">{{ $employee->no_telepon ?? '-' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $employee->posisi }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900 dark:text-gray-100">{{ $employee->departemen }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900 font-medium dark:text-gray-100">Rp {{ number_format($employee->gaji_pokok, 0, ',', '.') }}</div>
@@ -165,7 +160,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
+                        <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-400 mb-4 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -184,7 +179,7 @@
 
 <!-- Modal Tambah Karyawan -->
 <div id="tambahModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/80 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 transition-all duration-300 opacity-0">
-    <div class="modal-employee relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700 transform scale-95 translate-y-4 transition-all duration-300">
+    <div class="modal-employee relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700 transform scale-95 translate-y-4 transition-all duration-300" style="max-width: 28rem !important;">
         <!-- Header dengan gradient -->
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-6">
             <div class="flex justify-between items-center">
@@ -205,17 +200,17 @@
         </div>
         
         <!-- Form Content -->
-        <div class="p-8 bg-gray-50 dark:bg-slate-800">
-            <form method="POST" action="{{ route('employee.store') }}" class="space-y-8">
+        <div class="p-6 bg-gray-50 dark:bg-slate-800">
+            <form method="POST" action="{{ route('employee.store') }}" class="space-y-6">
                 @csrf
                 
                 <!-- Personal Information Section -->
-                <div class="space-y-6">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                <div class="space-y-3">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
                         <i class="fa-solid fa-user text-blue-500 mr-3 text-lg"></i>
                         Informasi Personal
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div class="space-y-2">
                             <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 <i class="fa-solid fa-id-card text-indigo-500 mr-2"></i>
@@ -223,16 +218,7 @@
                             </label>
                             <input type="text" name="nama_karyawan" required 
                                    class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200"
-                                   placeholder="Masukkan nama lengkap">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                <i class="fa-solid fa-envelope text-green-500 mr-2"></i>
-                                Email *
-                            </label>
-                            <input type="email" name="email" required 
-                                   class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200"
-                                   placeholder="nama@email.com">
+                                   placeholder="Masukkan nama">
                         </div>
                         <div class="space-y-2">
                             <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -248,7 +234,7 @@
                                 <i class="fa-solid fa-map-marker-alt text-red-500 mr-2"></i>
                                 Alamat *
                             </label>
-                            <textarea name="alamat" required rows="3" 
+                            <textarea name="alamat" required rows="2" 
                                       class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200 resize-none"
                                       placeholder="Alamat lengkap karyawan"></textarea>
                         </div>
@@ -256,12 +242,12 @@
                 </div>
                 
                 <!-- Job Information Section -->
-                <div class="space-y-6">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                <div class="space-y-3">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
                         <i class="fa-solid fa-briefcase text-green-500 mr-3 text-lg"></i>
                         Informasi Pekerjaan
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div class="space-y-2">
                             <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 <i class="fa-solid fa-user-tie text-blue-500 mr-2"></i>

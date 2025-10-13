@@ -147,6 +147,8 @@
         .bon-box table tr td:nth-child(3) { /* kolom kanan */
             background-color: #D9D9D9 !important;
         }
+        /* Hapus semua batasan max-width dari utilitas Tailwind (max-w-*) di seluruh halaman */
+        [class*="max-w-"] { max-width: none !important; }
     </style>
     <script>
         // Utilitas untuk menerapkan tema TANPA transisi visual (instan)
@@ -544,7 +546,48 @@
                 </button>
                 <h1 class="text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-100">@yield('title', 'Dashboard')</h1>
             </div>
-            <div class="flex items-center gap-1 md:gap-2">
+            <div class="flex items-center gap-2 md:gap-3">
+                @php(
+                    $userRoleLabel = (auth()->user()?->is_admin ?? false) ? 'Admin' : 'User'
+                )
+                @php(
+                    $routeName = optional(request()->route())->getName()
+                )
+                @php(
+                    $firstSegment = $routeName ? explode('.', $routeName)[0] : ''
+                )
+                @php(
+                    $labelMap = [
+                        'dashboard' => 'Dashboard',
+                        'invoice' => 'Invoice',
+                        'sisa-data-po' => 'PO Belum Terkirim',
+                        'po' => 'Purchase Order',
+                        'suratjalan' => 'Surat Jalan',
+                        'customer' => 'Customer',
+                        'produk' => 'Barang',
+                        'pengirim' => 'Pengirim',
+                        'employee' => 'Karyawan',
+                        'salary' => 'Gaji Karyawan',
+                        'finance' => 'Finance',
+                        'users' => 'Users',
+                        'jatuh-tempo' => 'Jatuh Tempo',
+                    ]
+                )
+                @php(
+                    $sectionLabel = $labelMap[$firstSegment] ?? ($firstSegment ? ucwords(str_replace('-', ' ', $firstSegment)) : null)
+                )
+                @php(
+                    $showSection = $sectionLabel && $sectionLabel !== 'Dashboard'
+                )
+                <nav class="hidden sm:flex text-xs md:text-sm text-gray-600 dark:text-gray-300 items-center gap-1 md:gap-2 mr-2">
+                    <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $userRoleLabel }}</span>
+                    <span class="opacity-40">/</span>
+                    <a href="{{ route('dashboard') }}" class="font-semibold hover:text-indigo-600 dark:hover:text-indigo-400">Dashboard</a>
+                    @if($showSection)
+                        <span class="opacity-40">/</span>
+                        <span>{{ $sectionLabel }}</span>
+                    @endif
+                </nav>
                 <!-- Notification Bell -->
                 <div x-data="notificationBell()" x-init="init()" class="relative">
                     <button @click="toggleDropdown()" 

@@ -279,7 +279,8 @@
              x-transition:leave="transition ease-in duration-200 transform" 
              x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
              x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-             class="relative z-10 pointer-events-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
+             class="relative z-10 pointer-events-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full border border-gray-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto"
+             style="max-width: 28rem !important;">
             
             <!-- Header dengan gradient -->
             <div class="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-6">

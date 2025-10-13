@@ -243,7 +243,7 @@
 
 <!-- Add Customer Modal - Responsive -->
 <div id="addModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/80 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 transition-all duration-300 opacity-0">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700 transform scale-95 translate-y-4 transition-all duration-300">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700 transform scale-95 translate-y-4 transition-all duration-300" style="max-width: 28rem !important;">
         <!-- Header dengan gradient -->
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-6">
             <div class="flex justify-between items-center">
@@ -269,14 +269,14 @@
                 <div>
                     <label for="add_name" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Nama Customer</label>
                     <input type="text" id="add_name" name="name" required
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
                            placeholder="Masukkan nama customer">
                 </div>
 
                 <div>
                     <label for="add_email" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Email Perusahaan</label>
                     <input type="email" id="add_email" name="email"
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
                            placeholder="contoh: finance@perusahaan.com">
                 </div>
 
@@ -301,7 +301,7 @@
                     <label for="add_payment_terms_days" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Terms Pembayaran (Hari)</label>
                     <div class="relative">
                         <input type="number" id="add_payment_terms_days" name="payment_terms_days" min="1" max="365" value="30"
-                               class="w-full px-3 py-2 pr-12 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                               class="w-full px-3 py-2 pr-12 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
                                placeholder="30">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                             <span class="text-gray-500 dark:text-slate-400 text-sm">hari</span>
@@ -314,14 +314,14 @@
                     <div>
                         <label for="add_address_1" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Alamat 1</label>
                         <input type="text" id="add_address_1" name="address_1"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
                                placeholder="Masukkan alamat 1">
                     </div>
 
                     <div>
                         <label for="add_address_2" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Alamat 2</label>
                         <input type="text" id="add_address_2" name="address_2"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
                                placeholder="Masukkan alamat 2">
                     </div>
                 </div>
