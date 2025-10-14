@@ -306,19 +306,17 @@
             }">
 
             <a href="{{ route('dashboard') }}"
-               class="group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+               class="group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('dashboard') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                 <svg class="w-5 h-5 text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" />
                 </svg>
-                <span>Dashboard</span>
+                Dashboard
             </a>
 
             <button @click="togglePO()"
-                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('po') || request()->routeIs('po.*') || request()->routeIs('suratjalan.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                <span class="inline-flex items-center gap-3">
-                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18"/></svg>
-                    Purchase Order
-                </span>
+                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('po') || request()->routeIs('po.*') || request()->routeIs('suratjalan.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18"/></svg>
+                Purchase Order
                 <svg x-bind:class="{ 'rotate-90': open }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -328,14 +326,14 @@
       
             <div x-show="open" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
                 <a href="{{ route('invoice.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('invoice.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('invoice.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l2 2 4-4M7 7h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z"/></svg>
-                    <span>Data Invoice</span>
+                    Data Invoice
                 </a>
                 <a href="{{ route('sisa-data-po.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('sisa-data-po.*') ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>PO Belum Terkirim</span>
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('sisa-data-po.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 0118 0 9 9 0 018 0z"/></svg>
+                    PO Belum Terkirim
                 </a>
                 {{-- Link Input PO di-nonaktifkan: akses form hanya lewat double click Data Invoice --}}
                 {{-- Link Data PO dihapus: akses Surat Jalan hanya dari alur Data Invoice --}}
@@ -344,11 +342,9 @@
             
             <!-- Menu Data Master (moved up to Finance position) -->
             <button @click="toggleBarang()"
-                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('barang.*') || request()->routeIs('produk.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                <span class="inline-flex items-center gap-3">
-                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    Data Master
-                </span>
+                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('barang.*') || request()->routeIs('produk.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                Data Master
                 <svg x-bind:class="{ 'rotate-90': barangOpen }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -357,30 +353,28 @@
             
             <div x-show="barangOpen" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
                 <a href="{{ route('customer.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('customer.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('customer.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zm0 2c-2.761 0-5 2.015-5 4.5V20h10v-2.5c0-2.485-2.239-4.5-5-4.5zm8 0c-.725 0-1.414.131-2.047.364 1.22.903 2.047 2.235 2.047 3.886V20h6v-2.75c0-2.351-2.239-4.25-6-4.25z"/></svg>
-                    <span>Data Customer</span>
+                    Data Customer
                 </a>
                 <a href="{{ route('produk.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('produk.*') ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('produk.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V7a2 2 0 00-2-2h-3V3H9v2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0H4"/></svg>
-                    <span>Data Barang</span>
+                    Data Barang
                 </a>
                 <a href="{{ route('pengirim.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('pengirim.*') ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('pengirim.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18v4H3zM3 7l3 13h12l3-13"/></svg>
-                    <span>Data Pengirim</span>
+                    Data Pengirim
                 </a>
             </div>
 
             <button @click="toggleEmployee()"
-                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('employee.*') || request()->routeIs('salary.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                <span class="inline-flex items-center gap-3">
-                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zm0 2c-2.761 0-5 2.015-5 4.5V20h10v-2.5c0-2.485-2.239-4.5-5-4.5zm8 0c-.725 0-1.414.131-2.047.364 1.22.903 2.047 2.235 2.047 3.886V20h6v-2.75c0-2.351-2.239-4.25-6-4.25z"/>
-                    </svg>
-                    Karyawan
-                </span>
+                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('employee.*') || request()->routeIs('salary.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zm0 2c-2.761 0-5 2.015-5 4.5V20h10v-2.5c0-2.485-2.239-4.5-5-4.5zm8 0c-.725 0-1.414.131-2.047.364 1.22.903 2.047 2.235 2.047 3.886V20h6v-2.75c0-2.351-2.239-4.25-6-4.25z"/>
+                </svg>
+                Karyawan
                 <svg x-bind:class="{ 'rotate-90': employeeOpen }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -389,27 +383,25 @@
 
             <div x-show="employeeOpen" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
                 <a href="{{ route('employee.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('employee.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('employee.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    <span>Data Karyawan</span>
+                    Data Karyawan
                 </a>
 
                 <a href="{{ route('salary.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('salary.*') ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('salary.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-3.866 0-7 2.015-7 4.5S8.134 17 12 17s7-2.015 7-4.5S15.866 8 12 8zm0 0V5m0 12v2"/></svg>
-                    <span>Gaji Karyawan</span>
+                    Gaji Karyawan
                 </a>
             </div>
 
             <!-- Finance (moved down to Data Master position) -->
             <button @click="toggleFinance()"
-                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('finance.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                <span class="inline-flex items-center gap-3">
-                    <svg class="w-5 h-5 text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 11V3m0 8a4 4 0 100 8h4a4 4 0 100-8h-4z" />
-                    </svg>
-                    Finance
-                </span>
+                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('finance.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                <svg class="w-5 h-5 text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 11V3m0 8a4 4 0 100 8h4a4 4 0 100-8h-4z" />
+                </svg>
+                Finance
                 <svg x-bind:class="{ 'rotate-90': financeOpen }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -417,14 +409,14 @@
             </button>
             <div x-show="financeOpen" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
                 <a href="{{ route('finance.income') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('finance.income') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('finance.income') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 11V3m0 8a4 4 0 100 8h4a4 4 0 100-8h-4z"/></svg>
-                    <span>Pendapatan</span>
+                    Pendapatan
                 </a>
                 <a href="{{ route('finance.expense') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('finance.expense') ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('finance.expense') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/></svg>
-                    <span>Pengeluaran</span>
+                    Pengeluaran
                 </a>
             </div>
 
@@ -432,37 +424,35 @@
             
             <!-- Manajemen Pengguna -->
             <button @click="toggleUser()"
-                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('users.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                <span class="inline-flex items-center gap-3">
-                    <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 19a7 7 0 0114 0"/>
-                    </svg>
-                    Manajemen Pengguna
-                </span>
+                    class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('users.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 19a7 7 0 0114 0"/>
+                </svg>
+                Manajemen Pengguna
                 <svg x-bind:class="{ 'rotate-90': userOpen }" class="w-4 h-4 min-w-[1rem] min-h-[1rem] transition-transform duration-300 transform shrink-0 flex-none"
                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                    </svg>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
                 </button>
                 <div id="user-section" x-show="userOpen" x-transition.duration.300ms class="ml-6 pl-2 border-l border-gray-300 dark:border-gray-700 space-y-1 text-base overflow-hidden">
                     <a href="{{ Route::has('users.create') ? route('users.create') : url('/users/create') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('users.create') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('users.create') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 19a7 7 0 0114 0"/>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 8v6m3-3h-6"/>
                     </svg>
-                    <span>Tambah User</span>
+                    Tambah User
                 </a>
 
                 @if(auth()->user()?->is_admin)
                 <a href="{{ route('users.index') }}"
-                class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('users.index') ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('users.index') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                 <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V9H2v11h5M7 9V7a5 5 0 0110 0v2"/>
                 </svg>
-                <span>Daftar User</span>
+                Daftar User
             </a>
             @endif
         </div>
@@ -474,9 +464,9 @@
             
 
             <a href="{{ route('jatuh-tempo.index') }}"
-               class="group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('jatuh-tempo.*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+               class="group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('jatuh-tempo.*') ? 'text-red-700 dark:text-red-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                 <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3M12 3a9 9 0 100 18 9 9 0 000-18z"/></svg>
-                <span>Jatuh Tempo</span>
+                Jatuh Tempo
             </a>
 
             
