@@ -433,8 +433,8 @@ function showNotification(message, type = 'success') {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    // Initial filter
-    filterByMonthYear();
+    // Initial filter - DINONAKTIFKAN agar semua data tampil
+    // filterByMonthYear();
     
     // Close modal dengan ESC key
     document.addEventListener('keydown', function(e) {

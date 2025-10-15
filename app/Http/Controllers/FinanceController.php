@@ -311,4 +311,42 @@ class FinanceController extends Controller
             'message' => 'Pengeluaran berhasil ditambahkan'
         ]);
     }
+
+    // Update expense
+    public function updateExpense(Request $request, $id)
+    {
+        $request->validate([
+            'tanggal' => 'required|date',
+            'jenis' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $expense = Expense::findOrFail($id);
+        
+        $expense->update([
+            'tanggal' => $request->tanggal,
+            'jenis' => $request->jenis,
+            'deskripsi' => $request->deskripsi,
+            'description' => $request->deskripsi,
+            'amount' => $request->amount,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengeluaran berhasil diperbarui'
+        ]);
+    }
+
+    // Delete expense
+    public function deleteExpense($id)
+    {
+        $expense = Expense::findOrFail($id);
+        $expense->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengeluaran berhasil dihapus'
+        ]);
+    }
 }

@@ -184,6 +184,7 @@
                                     <th class="text-left px-3 py-2">Jenis</th>
                                     <th class="text-left px-3 py-2">Deskripsi</th>
                                     <th class="text-right px-3 py-2">Jumlah</th>
+                                    <th class="text-center px-3 py-2">Aksi</th>
                                 </tr>
                             </thead>
                             <!-- Tabel body untuk tipe salary -->
@@ -206,7 +207,7 @@
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-700" x-show="detailType==='other'">
                                 <template x-if="!detailRows.length">
                                     <tr>
-                                        <td colspan="4" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
+                                        <td colspan="5" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
                                     </tr>
                                 </template>
                                 <template x-for="(r, i) in detailRows" :key="i">
@@ -215,6 +216,20 @@
                                         <td class="px-3 py-2 dark:text-gray-300" x-text="r.jenis"></td>
                                         <td class="px-3 py-2 dark:text-gray-300" x-text="r.deskripsi"></td>
                                         <td class="px-3 py-2 text-right dark:text-gray-200" x-text="formatCurrency(r.amount)"></td>
+                                        <td class="px-3 py-2 text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button @click="editExpense(r)" 
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-all duration-200"
+                                                        title="Edit">
+                                                    <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                                </button>
+                                                <button @click="deleteExpense(r.id)" 
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-all duration-200"
+                                                        title="Hapus">
+                                                    <i class="fa-solid fa-trash text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -290,8 +305,8 @@
                             <i class="fa-solid fa-receipt text-white text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="text-xl font-bold text-white">Tambah Pengeluaran</h3>
-                            <p class="text-blue-100 text-sm">Catat pengeluaran baru</p>
+                            <h3 class="text-xl font-bold text-white" x-text="expenseForm.id ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'"></h3>
+                            <p class="text-blue-100 text-sm" x-text="expenseForm.id ? 'Perbarui data pengeluaran' : 'Catat pengeluaran baru'"></p>
                         </div>
                     </div>
                     <button @click="closeAddExpenseModal()" 
@@ -481,7 +496,14 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
                 formData.append('amount', this.expenseForm.amount);
                 formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
                 
-                const response = await fetch('{{ route("finance.expense.store") }}', {
+                // Jika ada ID, berarti ini adalah update
+                let url = '{{ route("finance.expense.store") }}';
+                if (this.expenseForm.id) {
+                    url = `/finance/expense/${this.expenseForm.id}`;
+                    formData.append('_method', 'PUT');
+                }
+                
+                const response = await fetch(url, {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -502,6 +524,50 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
                 alert('Terjadi kesalahan saat menyimpan pengeluaran');
             } finally {
                 this.submitting = false;
+            }
+        },
+        // Edit expense
+        editExpense(expense){
+            this.expenseForm = {
+                id: expense.id,
+                tanggal: expense.tanggal,
+                jenis: expense.jenis,
+                deskripsi: expense.deskripsi,
+                amount: expense.amount,
+                amount_display: new Intl.NumberFormat('id-ID').format(expense.amount)
+            };
+            this.closeDetail();
+            this.addExpenseModalOpen = true;
+        },
+        // Delete expense
+        async deleteExpense(id){
+            if (!confirm('Apakah Anda yakin ingin menghapus pengeluaran ini?')) {
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                formData.append('_method', 'DELETE');
+                
+                const response = await fetch(`/finance/expense/${id}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Refresh page to show updated data
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + (errorData.message || 'Gagal menghapus pengeluaran'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus pengeluaran');
             }
         }
     }

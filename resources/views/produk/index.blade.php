@@ -204,11 +204,8 @@
                                             </svg>
                                         </div>
                                         <div class="text-center">
-                                            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-slate-200 mb-2">Belum ada produk</h3>
-                                            <p class="text-gray-500 dark:text-slate-400 mb-3 sm:mb-4 text-sm sm:text-base">Mulai dengan menambahkan produk pertama Anda.</p>
-                                            <button onclick="openAddModal()" class="bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-400 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base">
-                                                Tambah Barang
-                                            </button>
+                                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-200 mb-2" style="font-style: normal;">Belum ada produk</h3>
+                                            <p class="text-gray-500 dark:text-slate-400 text-sm sm:text-base" style="font-style: normal;">Mulai dengan menambahkan produk pertama Anda.</p>
                                         </div>
                                     </div>
                                 </td>

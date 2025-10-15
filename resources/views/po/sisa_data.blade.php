@@ -273,14 +273,10 @@
                     <div class="bg-green-100 dark:bg-green-900/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-check-circle text-2xl text-green-600 dark:text-green-400"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Tidak Ada Sisa Data</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2" style="font-style: normal;">Tidak Ada Sisa Data</h3>
+                    <p class="text-gray-600 dark:text-gray-400" style="font-style: normal;">
                         Semua barang dalam PO sudah terinput dengan lengkap atau stok mencukupi.
                     </p>
-                    <a href="{{ route('invoice.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-arrow-left"></i>
-                        Kembali ke Data Invoice
-                    </a>
                 </div>
             @endif
         </div>

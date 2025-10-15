@@ -11,7 +11,7 @@ class SalaryController extends Controller
 {
     public function index()
     {
-        $salaries = Salary::with('employee')->latest()->get();
+        $salaries = Salary::latest()->get();
         $employees = Employee::aktif()->get();
         
         // Daftar tahun untuk modal (dari 2020 sampai 2035)
@@ -20,7 +20,7 @@ class SalaryController extends Controller
         // Statistik
         $totalGajiDibayar = Salary::dibayar()->sum('total_gaji');
         $totalGajiBelumDibayar = Salary::belumDibayar()->sum('total_gaji');
-        $jumlahKaryawanDibayar = Salary::dibayar()->distinct('employee_id')->count();
+        $jumlahKaryawanDibayar = Salary::dibayar()->count();
         $rataRataGaji = Salary::dibayar()->avg('total_gaji') ?? 0;
 
         // DINONAKTIFKAN PERMANENT: Excel rendering terlalu lambat (5-10 detik loading)
@@ -116,7 +116,7 @@ class SalaryController extends Controller
     public function edit(Salary $salary)
     {
         $employees = Employee::aktif()->get();
-        $salaries = Salary::with('employee')->latest()->get();
+        $salaries = Salary::latest()->get();
         return view('salary.index', compact('salary', 'salaries', 'employees'));
     }
 
@@ -203,22 +203,13 @@ class SalaryController extends Controller
             'nominal_gaji_raw' => 'required|numeric|min:1'
         ]);
         
-        // Create salary record without employee
+        // Create salary record - simple version
         Salary::create([
-            'employee_id' => null, // No employee linked
             'bulan' => $data['bulan'],
             'tahun' => $data['tahun'],
             'gaji_pokok' => $data['nominal_gaji_raw'],
-            'tunjangan' => 0,
-            'bonus' => 0,
-            'lembur' => 0,
-            'potongan_pajak' => 0,
-            'potongan_bpjs' => 0,
-            'potongan_lain' => 0,
             'total_gaji' => $data['nominal_gaji_raw'],
-            'status_pembayaran' => 'dibayar',
-            'tanggal_bayar' => now(),
-            'keterangan' => 'Input manual'
+            'status_pembayaran' => 'dibayar'
         ]);
         
         return redirect()->route('salary.index')->with('success', 'Data gaji berhasil ditambahkan.');

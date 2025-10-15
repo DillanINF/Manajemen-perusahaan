@@ -20,8 +20,7 @@ use App\Http\Controllers\{
     UserController,
     BarangMasukController,
     BarangKeluarController,
-    SisaDataPOController,
-    ExcelTemplateController
+    SisaDataPOController
 };
 
 /*
@@ -76,6 +75,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/finance/pendapatan/detail', [FinanceController::class, 'incomeDetail'])->name('finance.income.detail');
     Route::get('/finance/pengeluaran/detail', [FinanceController::class, 'expenseDetail'])->name('finance.expense.detail');
     Route::post('/finance/pengeluaran/store', [FinanceController::class, 'storeExpense'])->name('finance.expense.store');
+    Route::put('/finance/expense/{id}', [FinanceController::class, 'updateExpense'])->name('finance.expense.update');
+    Route::delete('/finance/expense/{id}', [FinanceController::class, 'deleteExpense'])->name('finance.expense.delete');
 
     /*
     |--------------------------------------------------------------------------
@@ -168,14 +169,6 @@ Route::middleware(['auth'])->group(function () {
         }
         return response()->download($path, 'GAJI.xlsx');
     })->name('salary.template.download');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Excel Template Generator
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/excel/generate', [ExcelTemplateController::class, 'generateFromExcel'])->name('excel.generate');
-    Route::post('/excel/save', [ExcelTemplateController::class, 'saveEdits'])->name('excel.save');
 
     /*
     |--------------------------------------------------------------------------

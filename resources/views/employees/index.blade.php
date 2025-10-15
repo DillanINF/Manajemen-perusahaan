@@ -85,95 +85,89 @@
         </div>
     </div>
 
-    <!-- Header dan Tombol Tambah -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Data Karyawan</h1>
-            <p class="text-gray-600 mt-1 dark:text-gray-300">Kelola informasi karyawan perusahaan</p>
+    <!-- Header Section - Like Salary Page -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Data Karyawan</h1>
+                    <p class="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Kelola informasi karyawan perusahaan</p>
+                </div>
+            </div>
+            <button onclick="openModal('tambahModal')" 
+                    class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Tambah Karyawan
+            </button>
         </div>
-        <button onclick="openModal('tambahModal')" 
-                class="group relative inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 hover:scale-105"
-                title="Tambah Karyawan">
-            <i class="fa-solid fa-plus text-lg group-hover:rotate-90 transition-all duration-300"></i>
-        </button>
     </div>
 
-    <!-- Tabel Karyawan -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:bg-slate-900/40 dark:border-white/10">
-        <div class="sm:hidden bg-gray-50 dark:bg-slate-800 px-4 py-2 text-xs text-gray-500 dark:text-slate-400 border-b dark:border-slate-700">
-            <div class="flex items-center space-x-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path>
-                </svg>
-                <span>Geser tabel ke samping untuk melihat kolom lain</span>
+    <!-- Cards Grid - Like Salary Page -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @forelse($employees ?? [] as $employee)
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center border-2 border-blue-200 dark:from-blue-500/30 dark:to-blue-400/30 dark:border-blue-300/20">
+                        <span class="text-white font-semibold text-sm dark:text-blue-100">
+                            {{ strtoupper(substr($employee->nama_karyawan, 0, 2)) }}
+                        </span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-slate-100">{{ $employee->nama_karyawan }}</h3>
+                        <p class="text-xs text-gray-500 dark:text-slate-400">ID: {{ $employee->id }}</p>
+                    </div>
+                </div>
+                <span class="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full {{ $employee->status === 'aktif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-200' }}">
+                    {{ ucfirst($employee->status) }}
+                </span>
+            </div>
+            <div class="space-y-2 mb-4">
+                <div class="flex items-center gap-2 text-sm">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                    <span class="text-gray-600 dark:text-slate-300">{{ $employee->no_telepon ?? '-' }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="text-gray-600 dark:text-slate-300">{{ $employee->posisi }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="font-medium text-gray-900 dark:text-slate-100">Rp {{ number_format($employee->gaji_pokok, 0, ',', '.') }}</span>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-3 border-t border-gray-100 dark:border-slate-700">
+                <x-table.action-buttons 
+                    onEdit="editEmployee({{ json_encode($employee) }})"
+                    deleteAction="{{ route('employee.destroy', $employee) }}"
+                    confirmText="Yakin ingin menghapus karyawan {{ $employee->nama_karyawan }}?"
+                />
             </div>
         </div>
-        <div class="overflow-x-auto responsive-scroll">
-            <table class="min-w-full min-w-[900px] divide-y divide-gray-200 dark:divide-white/10">
-                <thead class="bg-gray-50 dark:bg-slate-800/60">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:text-gray-300">Karyawan</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kontak</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Posisi</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Gaji Pokok</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200 dark:bg-transparent dark:divide-white/10">
-                    @forelse($employees ?? [] as $employee)
-                    <tr class="hover:bg-gray-50 transition-colors duration-150 dark:hover:bg-white/5">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center border-2 border-blue-200 dark:from-blue-500/30 dark:to-blue-400/30 dark:border-blue-300/20">
-                                    <span class="text-white font-semibold text-sm dark:text-blue-100">
-                                        {{ strtoupper(substr($employee->nama_karyawan, 0, 2)) }}
-                                    </span>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $employee->nama_karyawan }}</div>
-                                    <div class="text-sm text-gray-500 dark:text-gray-400">ID: {{ $employee->id }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ $employee->no_telepon ?? '-' }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $employee->posisi }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900 font-medium dark:text-gray-100">Rp {{ number_format($employee->gaji_pokok, 0, ',', '.') }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ $employee->status === 'aktif' ? 'bg-green-100 text-green-800 border border-green-200 dark:bg-green-500/20 dark:text-green-200 dark:border-transparent' : 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-500/20 dark:text-red-200 dark:border-transparent' }}">
-                                {{ ucfirst($employee->status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <x-table.action-buttons 
-                                onEdit="editEmployee({{ json_encode($employee) }})"
-                                deleteAction="{{ route('employee.destroy', $employee) }}"
-                                confirmText="Yakin ingin menghapus karyawan {{ $employee->nama_karyawan }}?"
-                            />
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center">
-                                <svg class="w-12 h-12 text-gray-400 mb-4 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                </svg>
-                                <p class="text-gray-500 text-lg font-medium dark:text-gray-300">Belum ada data karyawan</p>
-                                <p class="text-gray-400 text-sm mt-1 dark:text-gray-400">Klik tombol "Tambah Karyawan" untuk menambah data pertama</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        @empty
+        <div class="col-span-full">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-12 text-center">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <p class="text-gray-500 text-lg font-medium dark:text-gray-300" style="font-style: normal;">Belum ada data karyawan</p>
+                <p class="text-gray-400 text-sm mt-1 dark:text-gray-400" style="font-style: normal;">Klik tombol "Tambah Karyawan" untuk menambah data pertama</p>
+            </div>
         </div>
+        @endforelse
     </div>
 </div>
 
@@ -247,7 +241,7 @@
                         <i class="fa-solid fa-briefcase text-green-500 mr-3 text-lg"></i>
                         Informasi Pekerjaan
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="space-y-3">
                         <div class="space-y-2">
                             <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 <i class="fa-solid fa-user-tie text-blue-500 mr-2"></i>
@@ -258,15 +252,6 @@
                                    placeholder="Manager, Staff, dll">
                         </div>
                         <div class="space-y-2">
-                            <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                <i class="fa-solid fa-building text-indigo-500 mr-2"></i>
-                                Departemen *
-                            </label>
-                            <input type="text" name="departemen" required 
-                                   class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200"
-                                   placeholder="IT, HR, Finance, dll">
-                        </div>
-                        <div class="space-y-2 md:col-span-2">
                             <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 <i class="fa-solid fa-toggle-on text-green-500 mr-2"></i>
                                 Status *
@@ -284,27 +269,6 @@
                     </div>
                 </div>
                 
-                <!-- Salary Information Section -->
-                <div class="space-y-6">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                        <i class="fa-solid fa-money-bill-wave text-yellow-500 mr-3 text-lg"></i>
-                        Informasi Gaji
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                <i class="fa-solid fa-coins text-amber-500 mr-2"></i>
-                                Gaji Pokok (Rp) *
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">Rp</span>
-                                <input type="number" name="gaji_pokok" required min="0" 
-                                       class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200"
-                                       placeholder="5000000">
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- Action Buttons -->
                 <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-slate-600">

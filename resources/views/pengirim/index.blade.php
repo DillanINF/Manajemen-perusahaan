@@ -142,7 +142,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="3" class="px-6 py-12 text-center">
+                        <td colspan="5" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center space-y-4">
                                 <div class="bg-gray-100 dark:bg-slate-700 p-6 rounded-full">
                                     <svg class="w-12 h-12 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,9 +150,8 @@
                                     </svg>
                                 </div>
                                 <div class="text-center">
-                                    <h3 class="text-lg font-medium text-gray-900 dark:text-slate-200 mb-2">Belum ada data pengirim</h3>
-                                    <p class="text-gray-500 dark:text-slate-400 mb-4">Mulai dengan menambahkan pengirim pertama Anda.</p>
-                                    <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">Tambah Pengirim</button>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-2" style="font-style: normal;">Belum ada data pengirim</h3>
+                                    <p class="text-gray-500 dark:text-slate-400" style="font-style: normal;">Mulai dengan menambahkan pengirim pertama Anda.</p>
                                 </div>
                             </div>
                         </td>
@@ -184,8 +183,7 @@
             </div>
         @empty
             <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-sm p-6 text-center">
-                <p class="text-gray-600 dark:text-slate-300">Belum ada data pengirim</p>
-                <button onclick="openAddModal()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">Tambah Pengirim</button>
+                <p class="text-gray-600 dark:text-slate-300" style="font-style: normal;">Belum ada data pengirim</p>
             </div>
         @endforelse
     </div>
