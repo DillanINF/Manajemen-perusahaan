@@ -10,6 +10,7 @@ class Salary extends Model
     use HasFactory;
 
     protected $fillable = [
+        'employee_id',
         'bulan',
         'tahun',
         'gaji_pokok',
@@ -40,5 +41,11 @@ class Salary extends Model
     public function scopeBulanTahun($query, $bulan, $tahun)
     {
         return $query->where('bulan', $bulan)->where('tahun', $tahun);
+    }
+
+    // Relasi ke Employee
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
     }
 }
