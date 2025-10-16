@@ -399,7 +399,7 @@ class JatuhTempoController extends Controller
             }
 
             // Ambil email customer berdasarkan nama
-            $customer = Customer::where('name', $jt->customer)->orWhere('nama_customer', $jt->customer)->first();
+            $customer = Customer::where('name', $jt->customer)->first();
             if (!$customer || empty($customer->email)) {
                 return response()->json([
                     'success' => false,
@@ -475,9 +475,7 @@ class JatuhTempoController extends Controller
                 }
             }
             if (!$customer) {
-                $customer = Customer::where('name', $jatuhTempo->customer)
-                    ->orWhere('nama_customer', $jatuhTempo->customer)
-                    ->first();
+                $customer = Customer::where('name', $jatuhTempo->customer)->first();
             }
 
             if (!$customer || empty($customer->email)) {

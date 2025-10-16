@@ -63,8 +63,6 @@ class CustomerController extends Controller
         }
         unset($validated['invoice_nomor'], $validated['invoice_pt'], $validated['invoice_tahun']);
 
-        // Add nama_customer field with same value as name
-        $validated['nama_customer'] = $validated['name'];
         // code_number akan tersimpan jika dikirim dari form
         
         Customer::create($validated);
@@ -88,56 +86,15 @@ class CustomerController extends Controller
 
     public function update(Request $request, Customer $customer)
     {
+        // Validasi hanya field yang dikirim dari form edit
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'code_number' => 'nullable|string|max:100',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
             'address_1' => 'nullable|string|max:500',
             'address_2' => 'nullable|string|max:500',
-            'address_3' => 'nullable|string|max:500',
-            'payment_terms_days' => 'nullable|integer|min:1|max:365',
-            'delivery_note_nomor' => 'nullable|string|max:50',
-            'delivery_note_pt' => 'nullable|string|max:50',
-            'delivery_note_tahun' => 'nullable|string|max:10',
-            'invoice_nomor' => 'nullable|string|max:50',
-            'invoice_pt' => 'nullable|string|max:50',
-            'invoice_tahun' => 'nullable|string|max:10',
         ]);
 
-        $deliveryNoteParts = [
-            $validated['delivery_note_nomor'] ?? '',
-            $validated['delivery_note_pt'] ?? '',
-            $validated['delivery_note_tahun'] ?? ''
-        ];
-        
-        // Only set delivery_note_number if at least one part has value
-        if (array_filter($deliveryNoteParts)) {
-            $validated['delivery_note_number'] = implode('/', $deliveryNoteParts);
-        } else {
-            $validated['delivery_note_number'] = null;
-        }
-
-        // Remove individual delivery note fields as they're not in database
-        unset($validated['delivery_note_nomor'], $validated['delivery_note_pt'], $validated['delivery_note_tahun']);
-
-        // Handle invoice number
-        $invoiceParts = [
-            $validated['invoice_nomor'] ?? '',
-            $validated['invoice_pt'] ?? '',
-            $validated['invoice_tahun'] ?? ''
-        ];
-        if (array_filter($invoiceParts)) {
-            $validated['invoice_number'] = implode('/', $invoiceParts);
-        } else {
-            $validated['invoice_number'] = null;
-        }
-        unset($validated['invoice_nomor'], $validated['invoice_pt'], $validated['invoice_tahun']);
-
-        // Add nama_customer field with same value as name for update too
-        $validated['nama_customer'] = $validated['name'];
-        // code_number akan ikut diupdate jika dikirim
-        
         $customer->update($validated);
 
         if ($request->ajax()) {

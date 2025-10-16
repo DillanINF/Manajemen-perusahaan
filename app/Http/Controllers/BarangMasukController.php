@@ -69,10 +69,29 @@ class BarangMasukController extends Controller
     {
         $data = $request->validate([
             'produk_id' => ['required','exists:produks,id'],
+            'nama_produk' => ['required','string','max:255'],
             'qty' => ['required','integer','min:1'],
             'tanggal' => ['required','date'],
             'keterangan' => ['nullable','string'],
         ]);
+
+        // Jika nama produk diubah, cari apakah sudah ada produk lain dengan nama itu
+        $targetName = trim($data['nama_produk']);
+        $currentProduk = \App\Models\Produk::find($data['produk_id']);
+        $existing = \App\Models\Produk::where('nama_produk', $targetName)->first();
+
+        if ($existing) {
+            // Relink ke produk yang sudah ada
+            $data['produk_id'] = $existing->id;
+        } else {
+            // Update nama pada produk saat ini
+            if ($currentProduk && $currentProduk->nama_produk !== $targetName) {
+                $currentProduk->nama_produk = $targetName;
+                $currentProduk->save();
+            }
+        }
+
+        unset($data['nama_produk']);
 
         $masuk->update($data);
 

@@ -174,7 +174,7 @@
                             </td>
                             <td class="px-3 md:px-6 py-3 md:py-4">
                                 <x-table.action-buttons 
-                                    onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {{ $customer->payment_terms_days ?? 30 }})"
+                                    onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!}, {{ $customer->payment_terms_days ?? 30 }})"
                                     deleteAction="{{ route('customer.destroy', $customer->id) }}"
                                     confirmText="Yakin ingin menghapus customer ini?"
                                 />
@@ -220,7 +220,7 @@
                     </div>
                     <div class="flex flex-col gap-2">
                         <x-table.action-buttons 
-                            onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {{ $customer->payment_terms_days ?? 30 }})"
+                            onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!}, {{ $customer->payment_terms_days ?? 30 }})"
                             deleteAction="{{ route('customer.destroy', $customer->id) }}"
                             confirmText="Yakin ingin menghapus customer ini?"
                         />
@@ -346,7 +346,8 @@
 
 <!-- Edit Customer Modal - Responsive -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md sm:max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full mx-auto max-h-[90vh] overflow-y-auto"
+         style="max-width: 560px;">
         <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
             <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center space-x-2">
                 <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -356,6 +357,9 @@
             </h3>
             <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors duration-200">
                 <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
         
         <form id="editCustomerForm" method="POST" class="p-6">
@@ -393,6 +397,12 @@
                 </div>
                 
                 <div class="space-y-2">
+                    <div>
+                        <label for="edit_address_1" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Alamat 1</label>
+                        <input type="text" id="edit_address_1" name="address_1"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                               placeholder="Masukkan alamat 1">
+                    </div>
                     <div>
                         <label for="edit_address_2" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Alamat 2</label>
                         <input type="text" id="edit_address_2" name="address_2"
@@ -466,7 +476,7 @@ function closeAddModal() {
     }, 300);
 }
 
-function openEditModal(id, name, email, address1, address2, paymentTermsDays) {
+function openEditModal(id, name, email, address1, address2, codeNumber, paymentTermsDays) {
     document.getElementById('editModal').classList.remove('hidden');
     document.getElementById('editModal').classList.add('flex');
     // Set action menggunakan base URL Laravel agar aman di subfolder
@@ -480,8 +490,31 @@ function openEditModal(id, name, email, address1, address2, paymentTermsDays) {
     if (nameEl) nameEl.value = name;
     const emailEl = document.getElementById('edit_email');
     if (emailEl) emailEl.value = email || '';
+    const addr1El = document.getElementById('edit_address_1');
+    if (addr1El) addr1El.value = address1 || '';
     const addr2El = document.getElementById('edit_address_2');
     if (addr2El) addr2El.value = address2 || '';
+    // Prefill Kode Number jika ada (format: PART1-PART2/PART3)
+    try {
+        const ec1 = document.getElementById('edit_code_1');
+        const ec2 = document.getElementById('edit_code_2');
+        const ec3 = document.getElementById('edit_code_3');
+        const hidden = document.getElementById('edit_code_number');
+        const str = (codeNumber || '').toString();
+        if (str) {
+            const [left, part3 = ''] = str.split('/');
+            const [part1 = '', part2 = ''] = (left || '').split('-');
+            if (ec1) ec1.value = part1 || '';
+            if (ec2) ec2.value = part2 || '';
+            if (ec3) ec3.value = part3 || '';
+            if (hidden) hidden.value = str;
+        } else {
+            if (ec1) ec1.value = '';
+            if (ec2) ec2.value = '';
+            if (ec3) ec3.value = '';
+            if (hidden) hidden.value = '';
+        }
+    } catch (e) { console.warn('Gagal set kode number:', e); }
     if (nameEl) nameEl.focus();
 }
 

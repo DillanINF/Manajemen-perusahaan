@@ -133,10 +133,22 @@
                         </td>
                         <td class="px-3 md:px-6 py-3 md:py-4">
                             <div class="flex justify-center gap-2">
-                                <x-table.action-buttons 
-                                    onEdit="openEditModal({{ $item->id }}, {!! json_encode($item->nama) !!})"
-                                    deleteAction="{{ route('pengirim.destroy', $item->id) }}"
-                                    confirmText="Yakin ingin menghapus pengirim ini?" />
+                                <button type="button" 
+                                        onclick="window.openEditModal({{ $item->id }}, '{{ addslashes($item->nama) }}', '{{ addslashes($item->kendaraan ?? '') }}', '{{ addslashes($item->no_polisi ?? '') }}'); return false;"
+                                        class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 text-white shadow hover:bg-blue-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                                <form method="POST" action="{{ route('pengirim.destroy', $item->id) }}" class="inline" onsubmit="return confirm('Yakin ingin menghapus pengirim ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-600 text-white shadow hover:bg-red-700">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -174,10 +186,24 @@
                         </div>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <x-table.action-buttons 
-                            onEdit="openEditModal({{ $item->id }}, {!! json_encode($item->nama) !!}, {!! json_encode($item->kendaraan) !!}, {!! json_encode($item->no_polisi) !!})"
-                            deleteAction="{{ route('pengirim.destroy', $item->id) }}"
-                            confirmText="Yakin ingin menghapus pengirim ini?" />
+                        <button type="button" 
+                                onclick="window.openEditModal({{ $item->id }}, '{{ addslashes($item->nama) }}', '{{ addslashes($item->kendaraan ?? '') }}', '{{ addslashes($item->no_polisi ?? '') }}'); return false;"
+                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            <span>Edit</span>
+                        </button>
+                        <form method="POST" action="{{ route('pengirim.destroy', $item->id) }}" onsubmit="return confirm('Yakin ingin menghapus pengirim ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                <span>Hapus</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -273,51 +299,68 @@
     </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- Edit Modal - Style sama seperti Customer -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100">Edit Pengirim</h2>
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full mx-auto max-h-[90vh] overflow-y-auto"
+         style="max-width: 560px;">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
+            <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center space-x-2">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                <span>Edit Pengirim</span>
+            </h3>
             <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors duration-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
-        <form id="editForm" method="POST">
+        
+        <form id="editForm" method="POST" class="p-6">
             @csrf
             @method('PUT')
             <input type="hidden" id="oldNama" name="old_nama">
-            <div class="space-y-4">
+            <div class="space-y-6">
                 <div class="space-y-2">
-                    <label for="add_nama" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Nama Pengirim</label>
-                    <input type="text" id="add_nama" name="nama" required
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                    <label for="editNama" class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-slate-300">
+                        <i class="fa-solid fa-user text-blue-500"></i>
+                        <span>Nama Pengirim</span>
+                    </label>
+                    <input type="text" id="editNama" name="nama" required
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200"
                            placeholder="Masukkan nama pengirim">
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kendaraan</label>
-                        <input type="text" id="editKendaraan" name="kendaraan" class="w-full px-4 py-3 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">No Polisi</label>
-                        <input type="text" id="editNoPolisi" name="no_polisi" class="w-full px-4 py-3 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
-                    </div>
+
+                <div class="space-y-2">
+                    <label for="editKendaraan" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Kendaraan</label>
+                    <input type="text" id="editKendaraan" name="kendaraan" 
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
+                           placeholder="Masukkan kendaraan">
+                </div>
+
+                <div class="space-y-2">
+                    <label for="editNoPolisi" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">No Polisi</label>
+                    <input type="text" id="editNoPolisi" name="no_polisi" 
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
+                           placeholder="Masukkan no polisi">
                 </div>
             </div>
-            <div class="flex justify-end space-x-3 mt-6">
+            
+            <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-4 pt-3 border-t border-gray-200 dark:border-slate-700">
                 <button type="button" onclick="closeEditModal()" 
-                        class="px-6 py-3 text-gray-600 dark:text-slate-200 bg-gray-100 dark:bg-slate-700 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:focus:ring-slate-400 focus:ring-opacity-50">
+                        class="px-4 py-2 text-gray-700 dark:text-slate-200 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg font-medium transition-colors duration-200 text-sm order-2 sm:order-1">
                     Batal
                 </button>
                 <button type="submit" id="editSubmitBtn"
-                        class="px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-xl hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-opacity-50 flex items-center">
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2 text-sm order-1 sm:order-2 focus:outline-none focus:ring-2 focus:ring-blue-200">
                     <span id="editBtnText">Update</span>
-                    <svg id="editLoading" class="animate-spin ml-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                    </svg>
+                    <div id="editLoading" class="hidden">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
                 </button>
             </div>
         </form>

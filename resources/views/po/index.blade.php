@@ -185,33 +185,13 @@
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <i class="fas fa-file-invoice text-green-500 mr-1"></i>No PO
                         </label>
-                        <div class="flex gap-2 items-center">
-                            <!-- Bagian 1: Nomor -->
-                            <input type="text" 
-                                   id="no_po_part1" 
-                                   placeholder="425" 
-                                   class="w-24 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 sm:py-3 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" 
-                                   required>
-                            <span class="text-gray-500 dark:text-gray-400 font-bold">/</span>
-                            
-                            <!-- Bagian 2: Kode -->
-                            <input type="text" 
-                                   id="no_po_part2" 
-                                   placeholder="CAM-JX" 
-                                   class="flex-1 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 sm:py-3 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" 
-                                   required>
-                            <span class="text-gray-500 dark:text-gray-400 font-bold">/</span>
-                            
-                            <!-- Bagian 3: Tahun -->
-                            <input type="text" 
-                                   id="no_po_part3" 
-                                   placeholder="2025" 
-                                   value="{{ date('Y') }}"
-                                   class="w-24 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 sm:py-3 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" 
-                                   required>
-                        </div>
-                        <!-- Hidden input untuk menyimpan No PO lengkap -->
-                        <input type="hidden" name="no_po" id="no_po_combined" value="{{ old('no_po', (isset($po) && ($po->no_po ?? '') === '-') ? '' : ($po->no_po ?? '')) }}">
+                        <input type="text"
+                               name="no_po"
+                               id="no_po"
+                               placeholder="PO.123456789"
+                               value="{{ old('no_po', (isset($po) && ($po->no_po ?? '') === '-') ? '' : ($po->no_po ?? '')) }}"
+                               class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 sm:py-3 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200"
+                               required>
                     </div>
 
                     <!-- Tanggal PO -->
@@ -733,42 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 // Validasi front-end sederhana sebelum submit untuk mencegah kegagalan yang tidak terlihat
 document.addEventListener('DOMContentLoaded', () => {
-    // ===== No PO 3 Bagian =====
-    const part1 = document.getElementById('no_po_part1');
-    const part2 = document.getElementById('no_po_part2');
-    const part3 = document.getElementById('no_po_part3');
-    const combined = document.getElementById('no_po_combined');
-
-    // Fungsi untuk menggabungkan 3 bagian
-    function combineNoPO() {
-        if (part1 && part2 && part3 && combined) {
-            const p1 = part1.value.trim();
-            const p2 = part2.value.trim();
-            const p3 = part3.value.trim();
-            combined.value = p1 && p2 && p3 ? `${p1}/${p2}/${p3}` : '';
-        }
-    }
-
-    // Split No PO saat edit (jika ada value)
-    if (combined && combined.value && combined.value !== '-') {
-        const parts = combined.value.split('/');
-        if (parts.length === 3) {
-            if (part1) part1.value = parts[0];
-            if (part2) part2.value = parts[1];
-            if (part3) part3.value = parts[2];
-        }
-    }
-
-    // Update combined saat user mengetik
-    [part1, part2, part3].forEach(input => {
-        if (input) {
-            input.addEventListener('input', combineNoPO);
-            input.addEventListener('blur', combineNoPO);
-        }
-    });
-
-    // Update saat page load
-    combineNoPO();
+    // No PO sudah menjadi satu input (name="no_po"), tidak perlu penggabungan bagian
 
     // Update link Data PO (Surat Jalan) mengikuti tanggal_po
     const tanggalInput = document.querySelector('input[name="tanggal_po"]');

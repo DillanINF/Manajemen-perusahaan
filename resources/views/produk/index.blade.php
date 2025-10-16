@@ -185,11 +185,23 @@
                                     </span>
                                 </td>
                                 <td class="px-3 sm:px-6 py-3 sm:py-4">
-                                    <div class="flex justify-center">
-                                        <x-table.action-buttons 
-                                            onEdit="openEditModal({{ $produk->id }}, {!! json_encode($produk->nama_produk) !!}, {{ $produk->harga_pcs ?? 0 }}, {{ $produk->harga_set ?? 0 }})"
-                                            deleteAction="{{ route('produk.destroy', $produk->id) }}"
-                                            confirmText="Yakin ingin menghapus produk ini?" />
+                                    <div class="flex justify-center gap-2">
+                                        <button type="button" 
+                                                onclick="window.openEditModal({{ $produk->id }}, '{{ addslashes($produk->nama_produk) }}', {{ $produk->harga_pcs ?? 0 }}, {{ $produk->harga_set ?? 0 }}); return false;"
+                                                class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 text-white shadow hover:bg-blue-700">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                        <form method="POST" action="{{ route('produk.destroy', $produk->id) }}" class="inline" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-600 text-white shadow hover:bg-red-700">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -302,59 +314,63 @@
     </div>
 </div>
 
-<!-- Edit Produk Modal -->
+<!-- Edit Produk Modal - Style sama seperti Customer -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-sm sm:max-w-md mx-auto max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-slate-700">
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center space-x-2">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full mx-auto max-h-[90vh] overflow-y-auto"
+         style="max-width: 560px;">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
+            <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center space-x-2">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
                 <span>Edit Produk</span>
             </h3>
-            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors duration-200 p-1">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors duration-200">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
         
-        <form id="editProdukForm" method="POST" class="p-4 sm:p-6">
+        <form id="editProdukForm" method="POST" class="p-6">
             @csrf
             @method('PUT')
-            <div class="space-y-4">
-                <div>
-                    <label for="edit_nama_produk" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Nama Barang</label>
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <label for="edit_nama_produk" class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-slate-300">
+                        <i class="fa-solid fa-box text-blue-500"></i>
+                        <span>Nama Barang</span>
+                    </label>
                     <input type="text" id="edit_nama_produk" name="nama_produk" required
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400 focus:border-red-500 transition-colors duration-200 text-sm sm:text-base"
-                           placeholder="Masukkan nama Barang">
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200"
+                           placeholder="Masukkan nama barang">
                 </div>
                 
                 <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Tipe Harga</label>
-                    <select id="edit_price_type" onchange="handleEditPriceTypeChange()" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Tipe Harga</label>
+                    <select id="edit_price_type" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm">
                         <option value="pcs">Harga PCS</option>
                         <option value="set">Harga SET</option>
                     </select>
                 </div>
-                <!-- Satu input harga dinamis -->
-                <div class="space-y-2" id="wrap_edit_harga">
-                    <label for="edit_harga" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+
+                <div class="space-y-2">
+                    <label for="edit_harga" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                         <span id="edit_harga_label">Harga (PCS)</span>
                     </label>
                     <input type="number" id="edit_harga" name="harga_pcs"
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400 focus:border-red-500 transition-colors duration-200 text-sm sm:text-base"
-                           placeholder="Masukkan harga per PCS" min="0" required>
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
+                           placeholder="Masukkan harga" min="0" required>
                 </div>
             </div>
             
-            <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-slate-700">
+            <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-4 pt-3 border-t border-gray-200 dark:border-slate-700">
                 <button type="button" onclick="closeEditModal()" 
-                        class="w-full sm:w-auto px-4 py-2 text-gray-700 dark:text-slate-200 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base">
+                        class="px-4 py-2 text-gray-700 dark:text-slate-200 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg font-medium transition-colors duration-200 text-sm order-2 sm:order-1">
                     Batal
                 </button>
                 <button type="submit" id="editSubmitBtn"
-                        class="w-full sm:w-auto px-6 py-2 bg-yellow-500 dark:bg-yellow-500 hover:bg-yellow-600 dark:hover:bg-yellow-400 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400">
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2 text-sm order-1 sm:order-2 focus:outline-none focus:ring-2 focus:ring-blue-200">
                     <span>Update</span>
                     <div id="editLoading" class="hidden">
                         <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
