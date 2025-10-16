@@ -10,7 +10,7 @@
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-gray-800">Edit Data PO</h1>
                 <div class="flex space-x-2">
-                    <a href="{{ route('po.create', ['from' => 'invoice', 'po_number' => request('po_number')]) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    <a href="{{ route('po.create', ['from' => 'invoice', 'po_number' => request('po_number'), 'reset_fields' => '1']) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                         Kembali ke Form Input PO
                     </a>
                     <a href="{{ route('suratjalan.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">

@@ -563,6 +563,7 @@ window.openEditForm = function(id, noUrut) {
         if (Number.isFinite(Number(noUrut)) && Number(noUrut) > 0) {
             params.set('po_number', String(noUrut));
         }
+        params.set('reset_fields', '1'); // Reset field saat buka dari Data Invoice
         // Arahkan ke form PO
         window.location.href = base + '?' + params.toString();
     } catch (e) {

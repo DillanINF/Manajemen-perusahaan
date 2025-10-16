@@ -131,7 +131,8 @@
                         </a>
                         <a href="{{ route('po.create', [
                                 'from' => 'invoice',
-                                'po_number' => (request('po_number') ?? ($poNumber ?? (($suratjalan->first()->po_number ?? null))))
+                                'po_number' => (request('po_number') ?? ($poNumber ?? (($suratjalan->first()->po_number ?? null)))),
+                                'reset_fields' => '1'
                             ]) }}" 
                            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-purple-700 bg-white border border-purple-300 rounded-full hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:bg-slate-800 dark:text-purple-200 dark:border-purple-600 dark:hover:bg-slate-700">
                             <i class="fa-solid fa-plus mr-1.5"></i>
@@ -363,32 +364,12 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">No PO</label>
-                        <div class="flex gap-2 items-center">
-                            <!-- Bagian 1: Nomor -->
-                            <input type="text" 
-                                   id="edit_no_po_part1" 
-                                   placeholder="425" 
-                                   class="w-20 px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" 
-                                   required>
-                            <span class="text-gray-500 font-bold">/</span>
-                            
-                            <!-- Bagian 2: Kode -->
-                            <input type="text" 
-                                   id="edit_no_po_part2" 
-                                   placeholder="CAM-JX" 
-                                   class="flex-1 px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" 
-                                   required>
-                            <span class="text-gray-500 font-bold">/</span>
-                            
-                            <!-- Bagian 3: Tahun -->
-                            <input type="text" 
-                                   id="edit_no_po_part3" 
-                                   placeholder="2025" 
-                                   class="w-20 px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" 
-                                   required>
-                        </div>
-                        <!-- Hidden input untuk menyimpan No PO lengkap -->
-                        <input type="hidden" id="edit_no_po" name="no_po">
+                        <input type="text" 
+                               id="edit_no_po" 
+                               name="no_po"
+                               placeholder="PO.123456789" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" 
+                               required>
                     </div>
                     
                     <div>
@@ -807,13 +788,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function exportSelected(type = 'surat_jalan') {
-    const selected = document.querySelector('.row-radio:checked');
-    // Wajib pilih satu data seperti tombol Invoice dan PDF
-    if (!selected) {
-        alert(type === 'tanda_terima' ? 'Pilih satu data untuk export Tanda Terima' : 'Pilih satu data untuk export Surat Jalan');
+    const selectedChecks = Array.from(document.querySelectorAll('.row-radio:checked'));
+    // Wajib pilih minimal satu data
+    if (selectedChecks.length === 0) {
+        alert(type === 'tanda_terima' ? 'Pilih minimal 1 data untuk export Tanda Terima' : 'Pilih minimal 1 data untuk export Surat Jalan');
         return;
     }
-    const selectedIds = [selected.value];
+    const selectedIds = selectedChecks.map(el => el.value);
     const exportForm = document.getElementById('exportForm');
     const selectedIdsInput = document.getElementById('selectedIds');
     const exportTypeInput = document.getElementById('exportType');
@@ -864,16 +845,8 @@ function editSuratJalan(id, tanggal, customer, alamat1, alamat2, noSuratJalan, n
     document.getElementById('edit_alamat_2').value = alamat2 || '';
     document.getElementById('edit_no_surat_jalan').value = noSuratJalan;
     
-    // Split No PO menjadi 3 bagian
-    document.getElementById('edit_no_po').value = noPo;
-    if (noPo && noPo !== '-') {
-        const parts = noPo.split('/');
-        if (parts.length === 3) {
-            document.getElementById('edit_no_po_part1').value = parts[0];
-            document.getElementById('edit_no_po_part2').value = parts[1];
-            document.getElementById('edit_no_po_part3').value = parts[2];
-        }
-    }
+    // Set No PO langsung tanpa split
+    document.getElementById('edit_no_po').value = noPo || '';
     
     document.getElementById('edit_kendaraan').value = kendaraan;
     document.getElementById('edit_no_polisi').value = noPolisi;
@@ -1288,36 +1261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } catch (_) {}
   
-  // ===== Event listener untuk No PO 3 Bagian di Modal Edit =====
-  const editPart1 = document.getElementById('edit_no_po_part1');
-  const editPart2 = document.getElementById('edit_no_po_part2');
-  const editPart3 = document.getElementById('edit_no_po_part3');
-  const editCombined = document.getElementById('edit_no_po');
-
-  function combineEditNoPO() {
-      if (editPart1 && editPart2 && editPart3 && editCombined) {
-          const p1 = editPart1.value.trim();
-          const p2 = editPart2.value.trim();
-          const p3 = editPart3.value.trim();
-          editCombined.value = p1 && p2 && p3 ? `${p1}/${p2}/${p3}` : '';
-      }
-  }
-
-  // Update combined saat user mengetik
-  [editPart1, editPart2, editPart3].forEach(input => {
-      if (input) {
-          input.addEventListener('input', combineEditNoPO);
-          input.addEventListener('blur', combineEditNoPO);
-      }
-  });
-
-  // Pastikan No PO digabungkan sebelum submit form edit
-  const editForm = document.getElementById('editForm');
-  if (editForm) {
-      editForm.addEventListener('submit', function(e) {
-          combineEditNoPO();
-      });
-  }
+  // No PO sudah menggunakan 1 input saja, tidak perlu event listener untuk menggabungkan
 });
 
 </script>

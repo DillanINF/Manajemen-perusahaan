@@ -235,9 +235,9 @@
                                 }
                             @endphp
                             <div class="flex gap-2 items-center w-full">
-                                <input type="text" name="no_surat_jalan_nomor" id="delivery_nomor" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="Nomor" value="{{ old('no_surat_jalan_nomor', $noSuratJalanParts[0] ?? '') }}" required readonly>
+                                <input type="number" name="no_surat_jalan_nomor" id="delivery_nomor" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100" placeholder="Nomor" value="{{ old('no_surat_jalan_nomor', $noSuratJalanParts[0] ?? '') }}" required>
                                 <span class="text-gray-400 font-bold text-sm sm:text-base">/</span>
-                                <input type="text" name="no_surat_jalan_pt" id="delivery_pt" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[2] basis-1/2 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="PT" value="{{ old('no_surat_jalan_pt', $noSuratJalanParts[1] ?? '') }}" required readonly>
+                                <input type="text" name="no_surat_jalan_pt" id="delivery_pt" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[2] basis-1/2 min-w-0 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="PT" value="{{ old('no_surat_jalan_pt', $noSuratJalanParts[1] ?? 'CAM-WPB') }}" required readonly>
                                 <span class="text-gray-400 font-bold text-sm sm:text-base">/</span>
                                 <input type="number" name="no_surat_jalan_tahun" id="delivery_tahun" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="Tahun" value="{{ old('no_surat_jalan_tahun', $noSuratJalanParts[2] ?? '') }}" required readonly>
                             </div>
@@ -447,17 +447,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const custEl = customerSelect; // hidden input with data-sj-*
             if (!custEl) return;
             const sjNomor = custEl.dataset.sjNomor || '';
-            const sjPt    = custEl.dataset.sjPt || '';
             const sjTahun = custEl.dataset.sjTahun || '';
-            if (deliveryNomorInput && !deliveryNomorInput.value && sjNomor) deliveryNomorInput.value = sjNomor;
-            if (deliveryPtInput && !deliveryPtInput.value && sjPt) deliveryPtInput.value = sjPt;
+            // PT selalu CAM-WPB (fixed)
+            if (deliveryPtInput) deliveryPtInput.value = 'CAM-WPB';
+            // Nomor bisa diisi manual (tidak auto-fill)
             if (deliveryTahunInput && !deliveryTahunInput.value && sjTahun) deliveryTahunInput.value = sjTahun;
         } catch (e) { /* ignore */ }
     }
     // Jalankan segera setelah load, sebelum fallback dari tanggal PO
     prefillSJFromCustomer();
 
-    // Batasi input hanya angka untuk field tahun
+    // Batasi input hanya angka untuk field nomor dan tahun
     function enforceDigitOnly(el) {
         if (!el) return;
         el.addEventListener('input', () => {
@@ -466,7 +466,8 @@ document.addEventListener('DOMContentLoaded', () => {
         el.setAttribute('inputmode', 'numeric');
         el.setAttribute('pattern', '[0-9]*');
     }
-    // Tahun wajib angka
+    // Nomor dan Tahun wajib angka
+    enforceDigitOnly(deliveryNomorInput);
     enforceDigitOnly(deliveryTahunInput);
 
     // Autofill Kendaraan & No Polisi berdasarkan pilihan Pengirim (field kendaraan sekarang readonly input)
@@ -642,15 +643,15 @@ document.addEventListener('DOMContentLoaded', () => {
             addAutoFillEffect(address2Input);
 
             // Auto-fill delivery & invoice parts (jangan override jika user sudah isi)
-            if (deliveryNomorInput && !deliveryNomorInput.value) deliveryNomorInput.value = deliveryNomor;
-            if (deliveryPtInput && !deliveryPtInput.value) deliveryPtInput.value = deliveryPt;
+            // PT selalu CAM-WPB (fixed)
+            if (deliveryPtInput) deliveryPtInput.value = 'CAM-WPB';
             if (deliveryTahunInput && !deliveryTahunInput.value) deliveryTahunInput.value = deliveryTahun;
 
             if (address1Input) { address1Input.value = address1; if (address1) addAutoFillEffect(address1Input); address1Input.readOnly = true; }
             if (address2Input) { address2Input.value = address2; if (address2) addAutoFillEffect(address2Input); address2Input.readOnly = true; }
             // Biarkan NOMOR diisi manual oleh pengguna -> kosongkan dan jangan readonly
             if (deliveryNomorInput) { deliveryNomorInput.value = ''; deliveryNomorInput.placeholder = 'Nomor'; deliveryNomorInput.readOnly = false; }
-            if (deliveryPtInput) { deliveryPtInput.readOnly = false; }
+            if (deliveryPtInput) { deliveryPtInput.value = 'CAM-WPB'; deliveryPtInput.readOnly = true; }
             // Tahun (Surat Jalan) bisa diisi manual: hanya prefill jika kosong, dan tetap editable
             if (deliveryTahunInput) {
                 if (!deliveryTahunInput.value && deliveryTahun) {
@@ -689,11 +690,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Prefill No Surat Jalan jika #customer bukan SELECT
     if (customerSelect && customerSelect.tagName !== 'SELECT') {
         try {
-            const n = customerSelect.dataset.sjNomor || '';
-            const p = customerSelect.dataset.sjPt || '';
             const t = customerSelect.dataset.sjTahun || '';
-            if (deliveryNomorInput && !deliveryNomorInput.value && n) deliveryNomorInput.value = n;
-            if (deliveryPtInput && !deliveryPtInput.value && p) deliveryPtInput.value = p;
+            // PT selalu CAM-WPB (fixed)
+            if (deliveryPtInput) deliveryPtInput.value = 'CAM-WPB';
+            // Nomor diisi manual (tidak auto-fill)
             if (deliveryTahunInput && !deliveryTahunInput.value && t) deliveryTahunInput.value = t;
         } catch (e) { /* ignore */ }
     } else {
@@ -713,6 +713,105 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 // Validasi front-end sederhana sebelum submit untuk mencegah kegagalan yang tidak terlihat
 document.addEventListener('DOMContentLoaded', () => {
+    // Reset field tertentu HANYA jika ada parameter reset_fields=1
+    // Parameter ini ditambahkan saat:
+    // 1. Klik "Kembali ke Form Input PO" dari Data PO
+    // 2. Double-click nomor urut di Data Invoice
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasResetParam = urlParams.get('reset_fields') === '1';
+    
+    console.log('URL:', window.location.href);
+    console.log('Reset parameter:', hasResetParam);
+    
+    if (hasResetParam) {
+        console.log('⚡ Starting reset process...');
+        // Gunakan setTimeout untuk memastikan semua field sudah ter-load
+        setTimeout(() => {
+            // Reset No PO
+            const noPo = document.getElementById('no_po');
+            if (noPo) {
+                noPo.value = '';
+                console.log('Reset No PO');
+            }
+            
+            // Reset No Surat Jalan Nomor (yang bisa diinput saja)
+            const deliveryNomor = document.getElementById('delivery_nomor');
+            if (deliveryNomor) {
+                deliveryNomor.value = '';
+                console.log('Reset Delivery Nomor');
+            }
+            
+            // Reset Pengiriman (pengirim, kendaraan, no polisi)
+            const pengirim = document.getElementById('pengirim');
+            if (pengirim) {
+                pengirim.selectedIndex = 0; // Set ke option pertama (-- Pilih Pengirim --)
+                console.log('Reset Pengirim');
+            }
+            
+            const kendaraan = document.getElementById('kendaraan');
+            if (kendaraan) {
+                kendaraan.value = '';
+                console.log('Reset Kendaraan');
+            }
+            
+            const noPolisi = document.getElementById('no_polisi');
+            if (noPolisi) {
+                noPolisi.value = '';
+                console.log('Reset No Polisi');
+            }
+            
+            // Reset Item Rows - hapus semua row kecuali yang pertama
+            const itemsContainer = document.getElementById('items-container');
+            if (itemsContainer) {
+                const rows = itemsContainer.querySelectorAll('.item-row');
+                console.log('Total rows:', rows.length);
+                
+                // Hapus semua row kecuali yang pertama
+                rows.forEach((row, index) => {
+                    if (index > 0) {
+                        row.remove();
+                        console.log('Removed row', index);
+                    }
+                });
+                
+                // Reset field di row pertama
+                if (rows[0]) {
+                    const firstRow = rows[0];
+                    const produkSelect = firstRow.querySelector('.produk-select');
+                    const qtyInput = firstRow.querySelector('.item-qty');
+                    const hargaInput = firstRow.querySelector('.item-harga');
+                    const totalInput = firstRow.querySelector('.item-total');
+                    
+                    if (produkSelect) {
+                        produkSelect.selectedIndex = 0;
+                        console.log('Reset Produk Select');
+                    }
+                    if (qtyInput) {
+                        qtyInput.value = '';
+                        console.log('Reset Qty');
+                    }
+                    if (hargaInput) {
+                        hargaInput.value = '';
+                        console.log('Reset Harga');
+                    }
+                    if (totalInput) {
+                        totalInput.value = '';
+                        console.log('Reset Total');
+                    }
+                }
+                
+                // Reset grand total
+                const grandTotal = document.getElementById('grand_total');
+                if (grandTotal) {
+                    grandTotal.value = '0';
+                    console.log('Reset Grand Total');
+                }
+            }
+            
+            console.log('✅ Fields reset completed: No PO, No SJ Nomor, Pengiriman, Items');
+        }, 100); // Delay 100ms untuk memastikan semua field ter-load
+    }
+    
     // No PO sudah menjadi satu input (name="no_po"), tidak perlu penggabungan bagian
 
     // Update link Data PO (Surat Jalan) mengikuti tanggal_po
