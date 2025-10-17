@@ -580,6 +580,17 @@
                     $sectionLabel = $labelMap[$firstSegment] ?? ($firstSegment ? ucwords(str_replace('-', ' ', $firstSegment)) : null)
                 )
                 @php(
+                    $pathOverrideMap = [
+                        'data-po' => 'Data Purchase Order',
+                    ]
+                )
+                @php(
+                    $currentPathSegment = request()->segment(1)
+                )
+                @php(
+                    $sectionLabel = $pathOverrideMap[$currentPathSegment] ?? $sectionLabel
+                )
+                @php(
                     $showSection = $sectionLabel && $sectionLabel !== 'Dashboard'
                 )
                 <nav class="hidden sm:flex text-xs md:text-sm text-gray-600 dark:text-gray-300 items-center gap-1 md:gap-2 mr-2">
