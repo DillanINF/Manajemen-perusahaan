@@ -554,22 +554,7 @@
 
 @push('scripts')
 <script>
-// Fungsi untuk membuka Form Input PO dari Data Invoice (double click baris)
-window.openEditForm = function(id, noUrut) {
-    try {
-        const base = "{{ route('po.create') }}";
-        const params = new URLSearchParams();
-        params.set('from', 'invoice');
-        if (Number.isFinite(Number(noUrut)) && Number(noUrut) > 0) {
-            params.set('po_number', String(noUrut));
-        }
-        params.set('reset_fields', '1'); // Reset field saat buka dari Data Invoice
-        // Arahkan ke form PO
-        window.location.href = base + '?' + params.toString();
-    } catch (e) {
-        console.error('Gagal membuka Form Input PO:', e);
-    }
-}
+// Script untuk Data Invoice - fungsi openEditForm didefinisikan di bawah (line ~740)
 </script>
 @endpush
 
@@ -753,6 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams();
             params.set('from', 'invoice');
             if (poNum) params.set('po_number', poNum);
+            params.set('reset_fields', '1'); // Reset field saat buka dari Data Invoice
             const url = createUrl + (createUrl.includes('?') ? '&' : '?') + params.toString();
             window.location.href = url;
         }, 800);

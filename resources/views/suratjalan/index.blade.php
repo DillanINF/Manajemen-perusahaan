@@ -176,8 +176,10 @@
             <table class="w-full table-auto text-[11px] sm:text-xs break-words min-w-[720px] border border-gray-200 dark:border-slate-700">
                 <thead class="bg-gray-100 dark:bg-slate-700">
                     <tr>
-                        <th class="py-3 px-4 text-center text-sm font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700 w-20">
-                            <span class="sr-only">Pilih</span>
+                        <th class="py-3 px-4 text-center align-middle text-sm font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700 w-20">
+                            <div class="flex items-center justify-center">
+                                <input type="checkbox" id="selectAll" class="border-gray-300 dark:border-slate-600 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400 w-4 h-4 rounded cursor-pointer">
+                            </div>
                         </th>
                         <th class="py-1.5 px-1.5 text-left text-xs font-medium text-gray-600 dark:text-slate-200 uppercase tracking-tight border-r border-gray-200 dark:border-slate-700">
                             <div class="flex items-center space-x-1">
@@ -218,8 +220,10 @@
                     @forelse($suratjalan as $index => $pos)
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
                         <!-- Made all table cells much more compact with minimal padding -->
-                        <td class="py-3 px-4 whitespace-nowrap text-sm border-r border-b border-gray-200 dark:border-slate-700">
-                            <input type="checkbox" name="selected_ids[]" value="{{ $pos->id }}" class="row-radio border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-200 focus:ring-gray-500 dark:focus:ring-slate-500 w-4 h-4 bg-white dark:bg-slate-800">
+                        <td class="py-3 px-4 text-center align-middle border-r border-b border-gray-200 dark:border-slate-700 w-20">
+                            <div class="flex items-center justify-center">
+                                <input type="checkbox" name="selected_ids[]" value="{{ $pos->id }}" class="row-radio border-gray-300 dark:border-slate-600 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400 w-4 h-4 bg-white dark:bg-slate-800">
+                            </div>
                         </td>
                         <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-200 border-r border-b border-gray-200 dark:border-slate-700">
                             <span class="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-slate-600 dark:text-slate-200">
@@ -760,18 +764,51 @@ document.addEventListener('keydown', function(e) {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const rowRadios = document.querySelectorAll('.row-radio');
+    const selectAllCheckbox = document.getElementById('selectAll');
     const exportBtn = document.getElementById('exportBtn');
     const exportControls = document.getElementById('exportControls');
     const selectedCount = document.getElementById('selectedCount');
     const exportForm = document.getElementById('exportForm');
     const selectedIdsInput = document.getElementById('selectedIds');
 
+    // Handle Select All checkbox
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            rowRadios.forEach(radio => {
+                radio.checked = isChecked;
+            });
+            updateExportControls();
+            console.log(isChecked ? '✅ Select All checked' : '❌ Select All unchecked');
+        });
+    }
+
     // Handle individual row selection (checkbox)
     rowRadios.forEach(radio => {
         radio.addEventListener('change', function() {
             updateExportControls();
+            updateSelectAllState();
         });
     });
+
+    // Update Select All checkbox state based on individual checkboxes
+    function updateSelectAllState() {
+        if (!selectAllCheckbox) return;
+        
+        const totalCheckboxes = rowRadios.length;
+        const checkedCheckboxes = document.querySelectorAll('.row-radio:checked').length;
+        
+        if (checkedCheckboxes === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checkedCheckboxes === totalCheckboxes) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true; // Show dash/minus for partial selection
+        }
+    }
 
     function updateExportControls() {
         const selected = document.querySelectorAll('.row-radio:checked');
@@ -785,6 +822,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Always allow export (no selection => export all)
         exportBtn.disabled = false;
     }
+    
+    // Initial check
+    updateSelectAllState();
 });
 
 function exportSelected(type = 'surat_jalan') {

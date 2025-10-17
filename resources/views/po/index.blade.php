@@ -155,6 +155,35 @@
             </div>
             @endif
 
+            @php
+                $customerCollection = isset($customers) ? $customers : collect();
+                $currentCustomerId = old('customer_id', $po->customer_id ?? null);
+                $currentCustomerName = old('customer_name', $po->customer ?? null);
+                $activeCustomer = null;
+                if ($currentCustomerId) {
+                    $activeCustomer = $customerCollection->firstWhere('id', (int) $currentCustomerId);
+                }
+                if (!$activeCustomer && $currentCustomerName) {
+                    $trimmedName = trim((string) $currentCustomerName);
+                    $activeCustomer = $customerCollection->first(function ($cust) use ($trimmedName) {
+                        return isset($cust->name) && strcasecmp(trim($cust->name), $trimmedName) === 0;
+                    });
+                }
+                $customerCodeNumber = $activeCustomer->code_number ?? '';
+                $codeNumberParts = ['pt' => '', 'tahun' => ''];
+                if (!empty($customerCodeNumber)) {
+                    $slashParts = array_values(array_filter(array_map('trim', explode('/', $customerCodeNumber)), fn($v) => $v !== ''));
+                    if (!empty($slashParts)) {
+                        if (count($slashParts) > 1) {
+                            $codeNumberParts['tahun'] = array_pop($slashParts);
+                        }
+                        $codeNumberParts['pt'] = implode('/', $slashParts);
+                    }
+                }
+                $prefillAddress1 = old('address_1', $po->alamat_1 ?? ($activeCustomer->address_1 ?? ''));
+                $prefillAddress2 = old('address_2', $po->alamat_2 ?? ($activeCustomer->address_2 ?? ''));
+            @endphp
+
             <form method="POST" action="{{ isset($po) && request('from') !== 'invoice' ? route('po.update', $po->id) : route('po.store') }}" class="space-y-6">
                 @csrf
                 @if(isset($po) && request('from') !== 'invoice')
@@ -178,6 +207,11 @@
                         </div>
                         <input type="hidden" name="customer_id" id="customer"
                                value="{{ old('customer_id', $po->customer_id ?? '') }}"
+                               data-code-number="{{ $customerCodeNumber }}"
+                               data-address1="{{ $activeCustomer->address_1 ?? '' }}"
+                               data-address2="{{ $activeCustomer->address_2 ?? '' }}"
+                               data-sj-pt="{{ $codeNumberParts['pt'] }}"
+                               data-sj-tahun="{{ $codeNumberParts['tahun'] }}"
                                required>
                     </div>
 
@@ -237,9 +271,9 @@
                             <div class="flex gap-2 items-center w-full">
                                 <input type="number" name="no_surat_jalan_nomor" id="delivery_nomor" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100" placeholder="Nomor" value="{{ old('no_surat_jalan_nomor', $noSuratJalanParts[0] ?? '') }}" required>
                                 <span class="text-gray-400 font-bold text-sm sm:text-base">/</span>
-                                <input type="text" name="no_surat_jalan_pt" id="delivery_pt" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[2] basis-1/2 min-w-0 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="PT" value="{{ old('no_surat_jalan_pt', $noSuratJalanParts[1] ?? 'CAM-WPB') }}" required readonly>
+                                <input type="text" name="no_surat_jalan_pt" id="delivery_pt" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[2] basis-1/2 min-w-0 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="PT" value="{{ old('no_surat_jalan_pt', $noSuratJalanParts[1] ?? ($codeNumberParts['pt'] ?: 'CAM-WPB')) }}" required readonly>
                                 <span class="text-gray-400 font-bold text-sm sm:text-base">/</span>
-                                <input type="number" name="no_surat_jalan_tahun" id="delivery_tahun" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="Tahun" value="{{ old('no_surat_jalan_tahun', $noSuratJalanParts[2] ?? '') }}" required readonly>
+                                <input type="number" name="no_surat_jalan_tahun" id="delivery_tahun" class="border-2 border-gray-200 dark:border-gray-700 rounded-lg px-2 sm:px-3 py-2 sm:py-3 text-sm sm:text-base flex-[1] basis-1/4 min-w-0 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100" placeholder="Tahun" value="{{ old('no_surat_jalan_tahun', $noSuratJalanParts[2] ?? ($codeNumberParts['tahun'] ?: '')) }}" required readonly>
                             </div>
                         </div>
                     </div>
@@ -252,7 +286,7 @@
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>Alamat 1 <span class="text-red-500"></span>
                         </label>
-                        <input type="text" name="address_1" id="address_1" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800" value="{{ old('address_1', $po->alamat_1 ?? '') }}" required placeholder="Masukkan alamat lengkap" readonly>
+                        <input type="text" name="address_1" id="address_1" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800" value="{{ $prefillAddress1 }}" required placeholder="Masukkan alamat lengkap" readonly>
                     </div>
 
                     <!-- Made alamat_2 editable, not readonly -->
@@ -261,7 +295,7 @@
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>Alamat 2
                         </label>
-                        <input type="text" name="address_2" id="address_2" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800" value="{{ old('address_2', $po->alamat_2 ?? '') }}" placeholder="Alamat tambahan (opsional)" readonly>
+                        <input type="text" name="address_2" id="address_2" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800" value="{{ $prefillAddress2 }}" placeholder="Alamat tambahan (opsional)" readonly>
                     </div>
 
                     <!-- Pengiriman: gaya mengikuti No Surat Jalan (3 kolom sejajar, tanpa slash) -->
@@ -432,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const customerSelect = document.getElementById('customer');
     const address1Input = document.getElementById('address_1');
     const address2Input = document.getElementById('address_2');
-    
+
     const deliveryNomorInput = document.getElementById('delivery_nomor');
     const deliveryPtInput = document.getElementById('delivery_pt');
     const deliveryTahunInput = document.getElementById('delivery_tahun');
@@ -441,21 +475,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tanggalPOInput = document.querySelector('input[name="tanggal_po"]');
 
-    // Prefill No Surat Jalan dari data customer (code_number) jika kosong
-    function prefillSJFromCustomer() {
-        try {
-            const custEl = customerSelect; // hidden input with data-sj-*
-            if (!custEl) return;
-            const sjNomor = custEl.dataset.sjNomor || '';
-            const sjTahun = custEl.dataset.sjTahun || '';
-            // PT selalu CAM-WPB (fixed)
-            if (deliveryPtInput) deliveryPtInput.value = 'CAM-WPB';
-            // Nomor bisa diisi manual (tidak auto-fill)
-            if (deliveryTahunInput && !deliveryTahunInput.value && sjTahun) deliveryTahunInput.value = sjTahun;
-        } catch (e) { /* ignore */ }
+    function getCustomerData() {
+        if (!customerSelect) return {};
+        if (customerSelect.tagName === 'SELECT') {
+            const opt = customerSelect.options[customerSelect.selectedIndex];
+            if (!opt) return {};
+            return {
+                address1: opt.getAttribute('data-address1') || '',
+                address2: opt.getAttribute('data-address2') || '',
+                codeNumber: opt.getAttribute('data-code-number') || opt.getAttribute('data-code_number') || '',
+                sjPt: opt.getAttribute('data-sj-pt') || opt.getAttribute('data-sj_pt') || opt.getAttribute('data-code-pt') || '',
+                sjTahun: opt.getAttribute('data-sj-tahun') || opt.getAttribute('data-sj_tahun') || opt.getAttribute('data-code-year') || ''
+            };
+        }
+        const ds = customerSelect.dataset || {};
+        return {
+            address1: ds.address1 || '',
+            address2: ds.address2 || '',
+            codeNumber: ds.codeNumber || ds.code_number || '',
+            sjPt: ds.sjPt || ds.sj_pt || '',
+            sjTahun: ds.sjTahun || ds.sj_tahun || ''
+        };
     }
-    // Jalankan segera setelah load, sebelum fallback dari tanggal PO
-    prefillSJFromCustomer();
 
     // Batasi input hanya angka untuk field nomor dan tahun
     function enforceDigitOnly(el) {
@@ -624,51 +665,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function updateCustomerAddresses() {
-        const selected = customerSelect.options[customerSelect.selectedIndex];
-        const paymentInfo = document.getElementById('customer-payment-info');
-        const paymentTermsText = document.getElementById('payment-terms-text');
-        
-        if (selected.value) {
-            const address1 = selected.getAttribute('data-address1') || '';
-            const address2 = selected.getAttribute('data-address2') || '';
-            
-            const deliveryNomor = selected.getAttribute('data-delivery-nomor') || '';
-            const deliveryPt = selected.getAttribute('data-delivery-pt') || '';
-            const deliveryTahun = selected.getAttribute('data-delivery-tahun') || '';
-            
-            // Auto-fill address
-            address1Input.value = address1;
-            address2Input.value = address2;
-            addAutoFillEffect(address1Input);
-            addAutoFillEffect(address2Input);
+        const data = getCustomerData();
+        if (!data) return;
 
-            // Auto-fill delivery & invoice parts (jangan override jika user sudah isi)
-            // PT selalu CAM-WPB (fixed)
-            if (deliveryPtInput) deliveryPtInput.value = 'CAM-WPB';
-            if (deliveryTahunInput && !deliveryTahunInput.value) deliveryTahunInput.value = deliveryTahun;
+        const addr1 = data.address1 || '';
+        const addr2 = data.address2 || '';
+        if (address1Input) {
+            address1Input.value = addr1;
+            address1Input.readOnly = true;
+            if (addr1) addAutoFillEffect(address1Input);
+        }
+        if (address2Input) {
+            address2Input.value = addr2;
+            address2Input.readOnly = true;
+            if (addr2) addAutoFillEffect(address2Input);
+        }
 
-            if (address1Input) { address1Input.value = address1; if (address1) addAutoFillEffect(address1Input); address1Input.readOnly = true; }
-            if (address2Input) { address2Input.value = address2; if (address2) addAutoFillEffect(address2Input); address2Input.readOnly = true; }
-            // Biarkan NOMOR diisi manual oleh pengguna -> kosongkan dan jangan readonly
-            if (deliveryNomorInput) { deliveryNomorInput.value = ''; deliveryNomorInput.placeholder = 'Nomor'; deliveryNomorInput.readOnly = false; }
-            if (deliveryPtInput) { deliveryPtInput.value = 'CAM-WPB'; deliveryPtInput.readOnly = true; }
-            // Tahun (Surat Jalan) bisa diisi manual: hanya prefill jika kosong, dan tetap editable
-            if (deliveryTahunInput) {
-                if (!deliveryTahunInput.value && deliveryTahun) {
-                    deliveryTahunInput.value = deliveryTahun;
-                    addAutoFillEffect(deliveryTahunInput);
-                }
-                deliveryTahunInput.readOnly = false;
+        if (deliveryPtInput) {
+            const ptVal = data.sjPt || 'CAM-WPB';
+            deliveryPtInput.value = ptVal;
+            deliveryPtInput.readOnly = true;
+        }
+
+        if (deliveryTahunInput) {
+            const tahunVal = data.sjTahun || '';
+            if (!deliveryTahunInput.value && tahunVal) {
+                deliveryTahunInput.value = tahunVal;
+                addAutoFillEffect(deliveryTahunInput);
             }
+            deliveryTahunInput.readOnly = false;
+        }
 
-            // Jika customer tidak punya alamat, tetap bisa edit
-            if (!address1 && !address1Input.value) {
-                address1Input.classList.add('border-yellow-400', 'bg-yellow-50');
-                address1Input.placeholder = 'Customer tidak memiliki alamat, silakan isi manual';
-                address1Input.readOnly = false;
-            } else {
-                address1Input.classList.remove('border-yellow-400', 'bg-yellow-50');
-            }
+        if (deliveryNomorInput) {
+            deliveryNomorInput.placeholder = 'Nomor';
+            deliveryNomorInput.readOnly = false;
+        }
+
+        if (!addr1 && address1Input) {
+            address1Input.classList.add('border-yellow-400', 'bg-yellow-50');
+            address1Input.placeholder = 'Customer tidak memiliki alamat, silakan isi manual';
+            address1Input.readOnly = false;
+        } else if (address1Input) {
+            address1Input.classList.remove('border-yellow-400', 'bg-yellow-50');
         }
     }
 
@@ -688,18 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renumberRows();
     updateGrandTotal();
     // Prefill No Surat Jalan jika #customer bukan SELECT
-    if (customerSelect && customerSelect.tagName !== 'SELECT') {
-        try {
-            const t = customerSelect.dataset.sjTahun || '';
-            // PT selalu CAM-WPB (fixed)
-            if (deliveryPtInput) deliveryPtInput.value = 'CAM-WPB';
-            // Nomor diisi manual (tidak auto-fill)
-            if (deliveryTahunInput && !deliveryTahunInput.value && t) deliveryTahunInput.value = t;
-        } catch (e) { /* ignore */ }
-    } else {
-        // Jika SELECT, pakai mekanisme lama
-        updateCustomerAddresses();
-    }
+    updateCustomerAddresses();
 
     // Hook: saat tanggal PO berubah, isi Tahun otomatis
     if (tanggalPOInput) {
@@ -713,103 +740,56 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 // Validasi front-end sederhana sebelum submit untuk mencegah kegagalan yang tidak terlihat
 document.addEventListener('DOMContentLoaded', () => {
-    // Reset field tertentu HANYA jika ada parameter reset_fields=1
-    // Parameter ini ditambahkan saat:
-    // 1. Klik "Kembali ke Form Input PO" dari Data PO
-    // 2. Double-click nomor urut di Data Invoice
+    // Reset field tertentu saat kembali dari Data PO jika parameter reset_fields=1
     const urlParams = new URLSearchParams(window.location.search);
-    const hasResetParam = urlParams.get('reset_fields') === '1';
-    
-    console.log('URL:', window.location.href);
-    console.log('Reset parameter:', hasResetParam);
-    
-    if (hasResetParam) {
-        console.log('⚡ Starting reset process...');
-        // Gunakan setTimeout untuk memastikan semua field sudah ter-load
-        setTimeout(() => {
-            // Reset No PO
-            const noPo = document.getElementById('no_po');
-            if (noPo) {
-                noPo.value = '';
-                console.log('Reset No PO');
-            }
+    if (urlParams.get('reset_fields') === '1') {
+        // Reset No PO
+        const noPo = document.getElementById('no_po');
+        if (noPo) noPo.value = '';
+        
+        // Reset No Surat Jalan Nomor (yang bisa diinput saja)
+        const deliveryNomor = document.getElementById('delivery_nomor');
+        if (deliveryNomor) deliveryNomor.value = '';
+        
+        // Reset Pengiriman (pengirim, kendaraan, no polisi)
+        const pengirim = document.getElementById('pengirim');
+        if (pengirim) pengirim.value = '';
+        
+        const kendaraan = document.getElementById('kendaraan');
+        if (kendaraan) kendaraan.value = '';
+        
+        const noPolisi = document.getElementById('no_polisi');
+        if (noPolisi) noPolisi.value = '';
+        
+        // Reset Item Rows - hapus semua row kecuali yang pertama
+        const itemsContainer = document.getElementById('items-container');
+        if (itemsContainer) {
+            const rows = itemsContainer.querySelectorAll('.item-row');
+            // Hapus semua row kecuali yang pertama
+            rows.forEach((row, index) => {
+                if (index > 0) row.remove();
+            });
             
-            // Reset No Surat Jalan Nomor (yang bisa diinput saja)
-            const deliveryNomor = document.getElementById('delivery_nomor');
-            if (deliveryNomor) {
-                deliveryNomor.value = '';
-                console.log('Reset Delivery Nomor');
-            }
-            
-            // Reset Pengiriman (pengirim, kendaraan, no polisi)
-            const pengirim = document.getElementById('pengirim');
-            if (pengirim) {
-                pengirim.selectedIndex = 0; // Set ke option pertama (-- Pilih Pengirim --)
-                console.log('Reset Pengirim');
-            }
-            
-            const kendaraan = document.getElementById('kendaraan');
-            if (kendaraan) {
-                kendaraan.value = '';
-                console.log('Reset Kendaraan');
-            }
-            
-            const noPolisi = document.getElementById('no_polisi');
-            if (noPolisi) {
-                noPolisi.value = '';
-                console.log('Reset No Polisi');
-            }
-            
-            // Reset Item Rows - hapus semua row kecuali yang pertama
-            const itemsContainer = document.getElementById('items-container');
-            if (itemsContainer) {
-                const rows = itemsContainer.querySelectorAll('.item-row');
-                console.log('Total rows:', rows.length);
+            // Reset field di row pertama
+            if (rows[0]) {
+                const firstRow = rows[0];
+                const produkSelect = firstRow.querySelector('.produk-select');
+                const qtyInput = firstRow.querySelector('.item-qty');
+                const hargaInput = firstRow.querySelector('.item-harga');
+                const totalInput = firstRow.querySelector('.item-total');
                 
-                // Hapus semua row kecuali yang pertama
-                rows.forEach((row, index) => {
-                    if (index > 0) {
-                        row.remove();
-                        console.log('Removed row', index);
-                    }
-                });
-                
-                // Reset field di row pertama
-                if (rows[0]) {
-                    const firstRow = rows[0];
-                    const produkSelect = firstRow.querySelector('.produk-select');
-                    const qtyInput = firstRow.querySelector('.item-qty');
-                    const hargaInput = firstRow.querySelector('.item-harga');
-                    const totalInput = firstRow.querySelector('.item-total');
-                    
-                    if (produkSelect) {
-                        produkSelect.selectedIndex = 0;
-                        console.log('Reset Produk Select');
-                    }
-                    if (qtyInput) {
-                        qtyInput.value = '';
-                        console.log('Reset Qty');
-                    }
-                    if (hargaInput) {
-                        hargaInput.value = '';
-                        console.log('Reset Harga');
-                    }
-                    if (totalInput) {
-                        totalInput.value = '';
-                        console.log('Reset Total');
-                    }
-                }
-                
-                // Reset grand total
-                const grandTotal = document.getElementById('grand_total');
-                if (grandTotal) {
-                    grandTotal.value = '0';
-                    console.log('Reset Grand Total');
-                }
+                if (produkSelect) produkSelect.value = '';
+                if (qtyInput) qtyInput.value = '';
+                if (hargaInput) hargaInput.value = '';
+                if (totalInput) totalInput.value = '';
             }
             
-            console.log('✅ Fields reset completed: No PO, No SJ Nomor, Pengiriman, Items');
-        }, 100); // Delay 100ms untuk memastikan semua field ter-load
+            // Reset grand total
+            const grandTotal = document.getElementById('grand_total');
+            if (grandTotal) grandTotal.value = '0';
+        }
+        
+        console.log('✅ Fields reset: No PO, No SJ Nomor, Pengiriman, Items');
     }
     
     // No PO sudah menjadi satu input (name="no_po"), tidak perlu penggabungan bagian

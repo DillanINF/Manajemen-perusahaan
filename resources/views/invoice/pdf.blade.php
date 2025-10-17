@@ -121,26 +121,23 @@
             if($p){ $uniquePOsInfo[$p] = true; }
         }
         $multiPOInfo = count($uniquePOsInfo) > 1;
-
-        // Tentukan No Invoice terbaru dari items
-        $latestInvoiceNo = $invoiceDetails['invoice_no'] ?? '-';
-        $bestNum = -1; $bestTime = null; $bestStr = null;
-        foreach(($items ?? []) as $invIt){
-            $invStr = $invIt->invoice_no ?? ($invIt->no_invoice ?? ($invIt->po->no_invoice ?? null));
-            if ($invStr) {
-                $parts = explode('/', (string)$invStr);
-                $num = intval($parts[0] ?? -1);
-            } else { $num = -1; }
-            $tgl = $invIt->tanggal_po ?? ($invIt->po->tanggal_po ?? null);
-            $ts = $tgl ? @strtotime($tgl) : null;
-            if ($num >= 0) {
-                if ($num > $bestNum) { $bestNum = $num; $bestStr = $invStr; $bestTime = $ts; }
-                elseif ($num === $bestNum && $ts && (!$bestTime || $ts > $bestTime)) { $bestStr = $invStr; $bestTime = $ts; }
-            } elseif ($ts) {
-                if (!$bestTime || $ts > $bestTime) { $bestStr = $invStr; $bestTime = $ts; }
-            }
+        // Ambil nomor invoice dan customer code dari data yang dikirim controller
+        $noInvoice = $invoiceDetails['no_invoice'] ?? '';
+        $customerCode = $invoiceDetails['customer_code'] ?? '';
+        // Bersihkan tahun jika customer_code berbentuk CAM-WPB/2025 -> ambil sebelum '/'
+        if (is_string($customerCode) && strpos($customerCode, '/') !== false) {
+            $parts = explode('/', $customerCode);
+            if (count($parts) > 0) { $customerCode = $parts[0]; }
         }
-        if ($bestStr) { $latestInvoiceNo = $bestStr; }
+        // Gabungkan: nomor / customer_code (tanpa tahun) / bulan/tahun dari form
+        $displayNo = trim((string)$noInvoice);
+        if (!empty($customerCode)) {
+            $displayNo .= ' / ' . trim((string)$customerCode);
+        }
+        $monthYear = $invoiceDetails['invoice_month_year'] ?? '';
+        if (!empty($monthYear)) {
+            $displayNo .= ' / ' . $monthYear;
+        }
     @endphp
     <table class="no-break" style="width:100%; border-collapse:collapse; margin:0;">
         <tr>
@@ -148,7 +145,7 @@
                 <span style="font-weight:bold;">No. PO : {{ $multiPOInfo ? '' : ($invoiceDetails['no_po'] ?? '-') }}</span>
             </td>
             <td style="width:33.33%; text-align:center; vertical-align:bottom; padding:0;">
-                <span style="font-weight:bold;">No : {{ $latestInvoiceNo }}</span>
+                <span style="font-weight:bold;">No : {{ $displayNo }}</span>
             </td>
             <td style="width:33.33%; text-align:right; vertical-align:bottom; padding:0;">
                 <span style="font-weight:bold;">Date : {{ $invoiceDetails['invoice_date'] ?? '-' }}</span>

@@ -551,19 +551,29 @@ class SuratJalanController extends Controller
             $ppn = (int) round($subtotal * 0.11);
             $grandTotal = $subtotal + $ppn;
 
-            // Nomor invoice: gunakan no_invoice dari PO jika tersedia; fallback ke format lama
+            // Ambil nomor invoice dari po_number (kolom NO INVOICE yang dipilih user)
             $firstPo = $pos->first();
             // Gunakan tanggal PO (dari data) untuk konsistensi dengan tabel Surat Jalan
             $today = $firstPo && $firstPo->tanggal_po ? Carbon::parse($firstPo->tanggal_po) : Carbon::now();
             $today->locale('id');
-            $invoiceNo = trim((string)($firstPo->no_invoice ?? ''));
-            if ($invoiceNo === '') {
-                $invoiceNo = rand(1000, 9999) . ' / CAM-GM / ' . $today->month . ' / ' . $today->format('y');
+            
+            // Ambil nomor invoice dari po_number (angka urut yang dipilih user di Data Invoice)
+            $noInvoice = (string) ($firstPo->po_number ?? '');
+            
+            // Ambil kode customer TANPA RELASI - langsung query
+            $customerCode = '';
+            if ($firstPo->customer) {
+                $cust = \App\Models\Customer::where('name', $firstPo->customer)->first();
+                if ($cust && $cust->code_number) {
+                    $customerCode = $cust->code_number;
+                }
             }
 
             $invoiceDetails = [
-                'invoice_no' => $invoiceNo,
+                'no_invoice' => $noInvoice,
+                'customer_code' => $customerCode,
                 'invoice_date' => $today->translatedFormat('d F Y'),
+                'invoice_month_year' => $today->format('m / Y'),
                 'customer' => $firstPo->customer,
                 'address' => trim(($firstPo->alamat_1 ?? '') . ' ' . ($firstPo->alamat_2 ?? '')),
                 'no_po' => $firstPo->no_po ?? '-',
