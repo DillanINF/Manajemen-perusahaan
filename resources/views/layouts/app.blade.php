@@ -433,7 +433,8 @@
 
             <!-- Parent Menu with Toggle -->
             
-            <!-- Manajemen Pengguna -->
+            <!-- Manajemen Pengguna - Hanya untuk Admin -->
+            @if(auth()->user()?->is_admin)
             <button @click="toggleUser()"
                     class="w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex justify-between items-center {{ request()->routeIs('users.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                 <span class="inline-flex items-center gap-3">
@@ -459,7 +460,6 @@
                     <span>Tambah User</span>
                 </a>
 
-                @if(auth()->user()?->is_admin)
                 <a href="{{ route('users.index') }}"
                 class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('users.index') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                 <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -467,8 +467,8 @@
                 </svg>
                 <span>Daftar User</span>
             </a>
-            @endif
         </div>
+        @endif
 
             <!-- Link-link Data digabung dalam submenu Data Master di atas -->
 

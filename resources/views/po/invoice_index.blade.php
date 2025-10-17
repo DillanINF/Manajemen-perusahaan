@@ -83,33 +83,51 @@
             @media (max-width: 1024px) { table.invoice-table { min-width: 1000px; } }
             @media (max-width: 768px)  { table.invoice-table { min-width: 900px; } }
 
-            /* Scroll horizontal HANYA di sel PRODUCT */
-            .custom-product-scroll {
+            /* Scroll horizontal untuk sel No PO - hanya tampil 1 badge */
+            .custom-nopo-scroll {
                 overflow-x: auto;
+                overflow-y: hidden;
                 -ms-overflow-style: none; /* IE/Edge - sembunyikan scrollbar */
                 scrollbar-width: none; /* Firefox - sembunyikan scrollbar */
-                max-width: 200px; /* batasi lebar sel product agar scroll muncul */
+                width: 160px; /* Lebih lebar untuk No PO panjang */
+                max-width: 160px;
+                scroll-snap-type: x mandatory; /* Snap scroll horizontal */
+                scroll-behavior: smooth; /* Smooth scrolling */
+                display: block;
             }
-            .custom-product-scroll::-webkit-scrollbar { display: none; } /* Chrome/Safari - sembunyikan scrollbar */
+            .custom-nopo-scroll::-webkit-scrollbar { display: none; } /* Chrome/Safari - sembunyikan scrollbar */
             
-            /* Pastikan konten product bisa digeser horizontal */
-            .product-content {
-                white-space: nowrap;
+            /* Pastikan konten no po bisa digeser horizontal */
+            .nopo-content {
                 display: inline-flex;
                 align-items: center;
-                gap: 8px;
-                min-width: max-content;
+                gap: 0;
+            }
+            
+            /* Setiap badge No PO akan snap - margin presisi agar tidak terlihat badge lain */
+            .nopo-content > span {
+                flex: 0 0 auto;
+                scroll-snap-align: start; /* Snap ke start untuk kontrol lebih baik */
+                scroll-snap-stop: always; /* PENTING: Selalu berhenti di setiap badge, tidak skip */
+                margin-right: 20px; /* Jarak cukup agar badge lain tidak terlihat */
+                min-width: fit-content;
+                width: 140px; /* Width tetap untuk setiap badge */
+                text-align: center;
+            }
+            
+            /* Badge terakhir dengan padding agar bisa di-scroll penuh */
+            .nopo-content > span:last-child {
+                margin-right: 140px; /* Padding agar badge terakhir bisa ter-snap sempurna */
             }
         </style>
         <style>
             /* Lebar kolom default (desktop) */
             .col-date { width: 12%; }
             .col-order { width: 9%; min-width: 92px; }
-            .col-customer { width: 16%; min-width: 160px; }
-            .col-nopo { width: 12%; }
-            .col-product { width: 28%; }
+            .col-customer { width: 18%; min-width: 160px; }
+            .col-nopo { width: 20%; } /* Cukup untuk container 160px scroll */
             .col-qty { width: 8%; }
-            .col-total { width: 12%; }
+            .col-total { width: 15%; }
             .col-action { width: 128px; }
 
             /* Tablet */
@@ -117,8 +135,7 @@
                 .col-date { width: 14%; }
                 .col-order { width: 9%; min-width: 88px; }
                 .col-customer { width: 15%; min-width: 150px; }
-                .col-nopo { width: 10%; }
-                .col-product { width: auto; }
+                .col-nopo { width: auto; }
                 .col-qty { width: 8%; }
                 .col-total { width: 12%; }
                 .col-action { width: 112px; }
@@ -129,8 +146,7 @@
                 .col-date { width: 18%; }
                 .col-order { width: 11%; min-width: 84px; }
                 .col-customer { width: 20%; min-width: 140px; }
-                .col-nopo { width: 10%; }
-                .col-product { width: auto; }
+                .col-nopo { width: auto; }
                 .col-qty { width: 8%; }
                 .col-total { width: 12%; }
                 .col-action { width: 104px; }
@@ -246,7 +262,6 @@
                             <col class="col-order" />
                             <col class="col-customer" />
                             <col class="col-nopo" />
-                            <col class="col-product" />
                             <col class="col-qty" />
                             <col class="col-total" />
                             <col class="col-status" style="width: 120px;" />
@@ -276,12 +291,6 @@
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-file-alt text-green-500"></i>
                                         No PO
-                                    </div>
-                                </th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fas fa-box text-orange-500"></i>
-                                        Product
                                     </div>
                                 </th>
                                 <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -360,28 +369,22 @@
                                         <div class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[220px] md:max-w-[300px] lg:max-w-[420px] ml-1 mr-1">{{ $first->customer ?? 'N/A' }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $isMulti ? '-' : ($first->no_po ?? '-') }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-2 w-full">
-                                            <div class="p-1.5 bg-orange-100 dark:bg-orange-900/50 rounded shrink-0">
-                                                <i class="fas fa-barcode text-orange-600 dark:text-orange-400 text-xs"></i>
+                                            <div class="p-1.5 bg-green-100 dark:bg-green-900/50 rounded shrink-0">
+                                                <i class="fas fa-file-alt text-green-600 dark:text-green-400 text-xs"></i>
                                             </div>
                                             <div class="flex-1 min-w-0">
-                                                <!-- Scroll horizontal HANYA di sel PRODUCT dengan scrollbar tersembunyi -->
-                                                <div class="custom-product-scroll">
-                                                    <div class="product-content">
+                                                <!-- Scroll horizontal di sel NO PO dengan scrollbar tersembunyi -->
+                                                <div class="custom-nopo-scroll">
+                                                    <div class="nopo-content">
                                                         @if($isMulti)
                                                             @foreach($rows as $r)
-                                                                <div class="inline-flex items-center gap-2 mr-4">
-                                                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $r->barang ?? 'N/A' }}</span>
-                                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 border border-blue-200 dark:border-blue-800">
-                                                                        No PO: {{ $r->no_po ?? '-' }}
-                                                                    </span>
-                                                                </div>
+                                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200 border border-green-200 dark:border-green-800 mr-2">
+                                                                    {{ $r->no_po ?? '-' }}
+                                                                </span>
                                                             @endforeach
                                                         @else
-                                                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $first->barang ?? 'N/A' }}</span>
+                                                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $first->no_po ?? '-' }}</span>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -530,7 +533,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-12 text-center">
+                                    <td colspan="8" class="px-6 py-12 text-center">
                                         <div class="flex flex-col items-center gap-4">
                                             <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-full">
                                                 <i class="fas fa-inbox text-gray-400 text-3xl"></i>
