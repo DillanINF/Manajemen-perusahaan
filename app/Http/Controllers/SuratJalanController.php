@@ -57,7 +57,7 @@ class SuratJalanController extends Controller
         $allYears = range(2020, 2035);
 
         // PERBAIKAN: Filter data berdasarkan po_number jika ada
-        $suratjalan = PO::with(['produkRel', 'kendaraanRel'])
+        $suratjalan = PO::with(['produkRel'])
             ->when($year, fn($q) => $q->whereRaw(DatabaseService::year('tanggal_po') . ' = ?', [$year]))
             ->when($month, fn($q) => $q->whereRaw(DatabaseService::month('tanggal_po') . ' = ?', [$month]))
             ->when($poNumber, fn($q) => $q->where('po_number', (int)$poNumber))
@@ -77,7 +77,7 @@ class SuratJalanController extends Controller
         $produk = Produk::all();
 
         // PERBAIKAN: Filter data PO berdasarkan po_number jika ada
-        $pos = PO::with(['produkRel', 'kendaraanRel'])
+        $pos = PO::with(['produkRel'])
             ->when($year, fn($q) => $q->whereRaw(DatabaseService::year('tanggal_po') . ' = ?', [$year]))
             ->when($month, fn($q) => $q->whereRaw(DatabaseService::month('tanggal_po') . ' = ?', [$month]))
             ->when($poNumber, fn($q) => $q->where('po_number', (int)$poNumber))
@@ -117,6 +117,9 @@ class SuratJalanController extends Controller
             }
         }
 
+        // Mapping nama customer -> code_number untuk header invoice di view
+        $customerCodes = Customer::pluck('code_number', 'name');
+
         return view('suratjalan.index', [
             'suratjalan'      => $suratjalan,
             'produk'          => $produk,
@@ -131,6 +134,7 @@ class SuratJalanController extends Controller
             'totalRupiah'     => $totalRupiah,
             'monthlyStats'    => $monthlyStats,
             'tahunNow'        => $year,
+            'customerCodes'   => $customerCodes,
         ]);
     }
 

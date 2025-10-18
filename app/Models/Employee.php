@@ -23,7 +23,7 @@ class Employee extends Model
     ];
 
     protected $casts = [
-        'gaji_pokok' => 'decimal:2',
+        // gaji_pokok cast removed to prevent errors with null/0 values
     ];
 
     // Accessor untuk total gaji

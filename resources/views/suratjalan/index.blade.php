@@ -5,6 +5,12 @@
 
 @section('content')
 <div class="px-2 sm:px-4 py-3 sm:py-4">
+    <script>
+        // Pemetaan kode customer dari server untuk header invoice
+        window.customerCodes = @json($customerCodes ?? []);
+        // po_number aktif dari server (bila ada)
+        window.currentPoNumber = @json($poNumber ?? null);
+    </script>
     <!-- Header Section -->
     <div class="rounded-lg shadow-lg p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-slate-50 to-slate-100 border border-gray-200 dark:border-transparent dark:bg-gradient-to-r dark:from-gray-700 dark:to-gray-800">
         <div class="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
@@ -1058,8 +1064,18 @@ function populateInvoice(data) {
     
     // No PO dari database column no_po
     document.getElementById('invoiceNoPO').textContent = first.no_po || '-';
-    // No Invoice dikosongkan secara default (tidak diambil dari No Surat Jalan atau data lain)
-    document.getElementById('invoiceNo').textContent = '';
+    // Set "No :" sesuai template -> no_invoice/kode customer/bulan/tahun
+    const invMonth = String(dbDate.getMonth() + 1).padStart(2, '0');
+    const invYear = String(dbDate.getFullYear());
+    const customerName = (first.customer || '').trim();
+    const customerCode = (window.customerCodes && window.customerCodes[customerName]) ? window.customerCodes[customerName] : '';
+    // Gunakan po_number dari filter jika ada, fallback ke field pada baris pertama
+    const invoiceNumber = (window.currentPoNumber ?? first.po_number ?? '') + '';
+    const parts = [];
+    if (invoiceNumber) parts.push(invoiceNumber);
+    if (customerCode) parts.push(customerCode);
+    parts.push(invMonth, invYear);
+    document.getElementById('invoiceNo').textContent = parts.join(' / ');
     document.getElementById('invoiceDate').textContent = invoiceDate;
     document.getElementById('invoiceDateLocation').textContent = invoiceDate;
 
