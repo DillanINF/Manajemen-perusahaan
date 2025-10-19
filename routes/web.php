@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Models\Produk;
 use App\Http\Controllers\{
     POController,
@@ -282,6 +283,29 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Diagnostic: Check customers table structure
+    Route::get('/diagnostic/customers', function () {
+        try {
+            $columns = \DB::select("SHOW COLUMNS FROM customers");
+            $count = \DB::table('customers')->count();
+            $sample = \DB::table('customers')->limit(1)->get();
+            
+            return response()->json([
+                'status' => 'ok',
+                'table' => 'customers',
+                'total_records' => $count,
+                'columns' => $columns,
+                'sample_data' => $sample,
+            ], 200, [], JSON_PRETTY_PRINT);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500, [], JSON_PRETTY_PRINT);
+        }
+    })->name('diagnostic.customers');
 });
 
 /*

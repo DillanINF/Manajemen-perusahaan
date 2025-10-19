@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Employee extends Model
 {
@@ -18,7 +19,9 @@ class Employee extends Model
         'posisi',
         'departemen',
         'gaji_pokok',
+        'tunjangan',
         'status',
+        'tanggal_masuk',
         'foto'
     ];
 
@@ -32,15 +35,11 @@ class Employee extends Model
         return $this->gaji_pokok;
     }
 
-    // Scope untuk karyawan aktif
     public function scopeAktif($query)
     {
-        return $query->where('status', 'aktif');
-    }
-
-    // Scope untuk karyawan tidak aktif
-    public function scopeTidakAktif($query)
-    {
-        return $query->where('status', 'tidak_aktif');
+        if (Schema::hasColumn('employees', 'status')) {
+            return $query->where('status', 'aktif');
+        }
+        return $query;
     }
 }
