@@ -5,6 +5,11 @@
 @section('content')
 <div class="space-y-8">
     <style>
+        /* Force modal width to be compact */
+        .modal-employee {
+            max-width: 28rem !important; /* 448px - sama dengan max-w-md */
+        }
+        
         /* Dark mode styles for employee modals (non-intrusive to light mode) */
         html.dark .modal-employee { background-color: #0f172a !important; color: #e5e7eb !important; } /* slate-900 bg, gray-200 text */
         html.dark .modal-employee .sticky { background-color: #0f172a !important; border-color: rgba(255,255,255,0.1) !important; }
@@ -127,7 +132,7 @@
                         <th class="px-4 py-3 text-left">No. Telepon</th>
                         <th class="px-4 py-3 text-left">Alamat</th>
                         <th class="px-4 py-3 text-left">Posisi</th>
-                        <th class="px-4 py-3 text-right w-40">Aksi</th>
+                        <th class="px-4 py-3 text-center w-40">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
@@ -139,7 +144,7 @@
                         <td class="px-4 py-3 text-gray-700 dark:text-slate-200">{{ $employee->alamat ?? '-' }}</td>
                         <td class="px-4 py-3 text-gray-700 dark:text-slate-200">{{ $employee->posisi ?? '-' }}</td>
                         <td class="px-4 py-3">
-                            <div class="flex items-center justify-end gap-2">
+                            <div class="flex items-center justify-center gap-2">
                                 <x-table.action-buttons 
                                     onEdit="editEmployee({{ json_encode($employee) }})"
                                     deleteAction="{{ route('employee.destroy', $employee) }}"
@@ -159,29 +164,25 @@
 </div>
 
 <!-- Modal Tambah Karyawan -->
-<div id="tambahModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/80 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 transition-all duration-300 opacity-0">
-    <div class="modal-employee relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700 transform scale-95 translate-y-4 transition-all duration-300" style="max-width: 28rem !important;">
-        <!-- Header dengan gradient -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-6">
+<div id="tambahModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+    <div class="modal-employee relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <!-- Header Simple Seperti Edit -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
             <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-user-plus text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-white">Tambah Karyawan Baru</h3>
-                        <p class="text-blue-100 text-sm">Lengkapi informasi karyawan di bawah ini</p>
-                    </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900">Tambah Karyawan</h3>
+                    <p class="text-gray-600 mt-1">Lengkapi informasi karyawan</p>
                 </div>
-                <button onclick="closeModal('tambahModal')" 
-                        class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-all duration-200 flex items-center justify-center">
-                    <i class="fa-solid fa-times text-lg"></i>
+                <button onclick="closeModal('tambahModal')" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-xl transition-all duration-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </button>
             </div>
         </div>
         
         <!-- Form Content -->
-        <div class="p-6 bg-gray-50 dark:bg-slate-800">
+        <div class="p-8">
             <form method="POST" action="{{ route('employee.store') }}" class="space-y-6">
                 @csrf
                 
@@ -204,69 +205,61 @@
                 </div>
                 @endif
                 
-                <!-- Personal Information Section -->
-                <div class="space-y-3">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
-                        <i class="fa-solid fa-user text-blue-500 mr-3 text-lg"></i>
-                        Informasi Personal
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="space-y-2">
-                            <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                <i class="fa-solid fa-id-card text-indigo-500 mr-2"></i>
-                                Nama Karyawan *
-                            </label>
-                            <input type="text" name="nama_karyawan" required 
-                                   class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200"
-                                   placeholder="Masukkan nama">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                <i class="fa-solid fa-phone text-purple-500 mr-2"></i>
-                                No. Telepon *
-                            </label>
-                            <input type="text" name="no_telepon" required 
-                                   class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200"
-                                   placeholder="08xxxxxxxxxx">
-                        </div>
-                    </div>
-                    <div class="space-y-2 mt-3">
-                        <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            <i class="fa-solid fa-map-marker-alt text-red-500 mr-2"></i>
-                            Alamat *
+                <div class="space-y-6">
+                    <!-- Nama Karyawan -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user text-blue-500 mr-2"></i>
+                            Nama Karyawan *
                         </label>
-                        <textarea name="alamat" required rows="2" 
-                                  class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200 resize-none"
-                                  placeholder="Alamat lengkap karyawan"></textarea>
+                        <input type="text" name="nama_karyawan" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                               placeholder="Masukkan nama karyawan">
                     </div>
 
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
-                        <i class="fa-solid fa-briefcase text-green-500 mr-3 text-lg"></i>
-                        Informasi Pekerjaan
-                    </h4>
-                    <div class="space-y-3">
-                        <div class="space-y-2">
-                            <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                <i class="fa-solid fa-user-tie text-blue-500 mr-2"></i>
-                                Posisi *
-                            </label>
-                            <input type="text" name="posisi" required 
-                                   class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200"
-                                   placeholder="Manager, Staff, dll">
-                        </div>
+                    <!-- No. Telepon -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-phone text-green-500 mr-2"></i>
+                            No. Telepon *
+                        </label>
+                        <input type="text" name="no_telepon" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                               placeholder="Masukkan nomor telepon">
+                    </div>
+
+                    <!-- Alamat -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                            Alamat *
+                        </label>
+                        <textarea name="alamat" required rows="3" 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                                  placeholder="Masukkan alamat lengkap"></textarea>
+                    </div>
+
+                    <!-- Posisi -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-briefcase text-purple-500 mr-2"></i>
+                            Posisi *
+                        </label>
+                        <input type="text" name="posisi" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                               placeholder="Masukkan posisi/jabatan">
                     </div>
                 </div>
                 
-                
-                <!-- Action Buttons -->
-                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-slate-600">
+                <div class="flex justify-end space-x-4 pt-6 mt-8 border-t border-gray-200">
                     <button type="button" onclick="closeModal('tambahModal')" 
-                            class="px-6 py-3 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition-all duration-200 font-medium">
-                        <i class="fa-solid fa-times mr-2"></i>Batal
+                            class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
+                        Batal
                     </button>
                     <button type="submit" 
-                            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl">
-                        <i class="fa-solid fa-save mr-2"></i>Simpan Karyawan
+                            class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan Karyawan
                     </button>
                 </div>
             </form>
@@ -277,7 +270,7 @@
 <!-- Added Edit Modal -->
 <!-- Modal Edit Karyawan -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-    <div class="modal-employee relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div class="modal-employee relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
             <div class="flex justify-between items-center">
                 <div>
@@ -296,83 +289,60 @@
             @csrf
             @method('PUT')
             
-            <!-- Personal Information Section -->
-            <div class="mb-8">
-                <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                    Informasi Personal
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Karyawan *</label>
-                        <input type="text" id="edit_nama_karyawan" name="nama_karyawan" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
-                        <input type="email" id="edit_email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">No. Telepon *</label>
-                        <input type="text" id="edit_no_telepon" name="no_telepon" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                    </div>
+            <div class="space-y-6">
+                <!-- Nama Karyawan -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-user text-blue-500 mr-2"></i>
+                        Nama Karyawan *
+                    </label>
+                    <input type="text" id="edit_nama_karyawan" name="nama_karyawan" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                           placeholder="Masukkan nama karyawan">
                 </div>
-                <div class="mt-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat *</label>
-                    <textarea id="edit_alamat" name="alamat" required rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"></textarea>
+
+                <!-- No. Telepon -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-phone text-green-500 mr-2"></i>
+                        No. Telepon *
+                    </label>
+                    <input type="text" id="edit_no_telepon" name="no_telepon" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                           placeholder="Masukkan nomor telepon">
                 </div>
-            </div>
-            
-            <!-- Job Information Section -->
-            <div class="mb-8">
-                <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 112 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 112-2V6"/>
-                    </svg>
-                    Informasi Pekerjaan
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Posisi *</label>
-                        <input type="text" id="edit_posisi" name="posisi" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Departemen *</label>
-                        <input type="text" id="edit_departemen" name="departemen" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
-                        <select id="edit_status" name="status" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                            <option value="">Pilih Status</option>
-                            <option value="aktif">Aktif</option>
-                            <option value="tidak_aktif">Tidak Aktif</option>
-                        </select>
-                    </div>
+
+                <!-- Alamat -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                        Alamat *
+                    </label>
+                    <textarea id="edit_alamat" name="alamat" required rows="3" 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                              placeholder="Masukkan alamat lengkap"></textarea>
+                </div>
+
+                <!-- Posisi -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-briefcase text-purple-500 mr-2"></i>
+                        Posisi *
+                    </label>
+                    <input type="text" id="edit_posisi" name="posisi" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                           placeholder="Masukkan posisi/jabatan">
                 </div>
             </div>
             
-            <!-- Salary Information Section -->
-            <div class="mb-8">
-                <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.333 0-4 1-4 4s2.667 4 4 4 4-1 4-4-2.667-4-4-4z"/>
-                    </svg>
-                    Informasi Gaji
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Gaji Pokok *</label>
-                        <input type="number" id="edit_gaji_pokok" name="gaji_pokok" required min="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                <button type="button" onclick="closeModal('editModal')" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
+            <div class="flex justify-end space-x-4 pt-6 mt-8 border-t border-gray-200">
+                <button type="button" onclick="closeModal('editModal')" 
+                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
                     Batal
                 </button>
-                <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl">
+                <button type="submit" 
+                        class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
                     Update Karyawan
                 </button>
             </div>
@@ -416,15 +386,11 @@ function closeModal(modalId) {
 }
 
 function editEmployee(employee) {
-    // Populate form fields
+    // Populate form fields - hanya 4 field yang tersisa
     document.getElementById('edit_nama_karyawan').value = employee.nama_karyawan || '';
-    document.getElementById('edit_email').value = employee.email || '';
     document.getElementById('edit_no_telepon').value = employee.no_telepon || '';
     document.getElementById('edit_alamat').value = employee.alamat || '';
     document.getElementById('edit_posisi').value = employee.posisi || '';
-    document.getElementById('edit_departemen').value = employee.departemen || '';
-    document.getElementById('edit_status').value = employee.status || '';
-    document.getElementById('edit_gaji_pokok').value = employee.gaji_pokok || '';
     
     // Set form action URL
     document.getElementById('editForm').action = `{{ url('/employee') }}/${employee.id}`;

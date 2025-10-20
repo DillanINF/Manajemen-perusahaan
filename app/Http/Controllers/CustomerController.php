@@ -20,50 +20,14 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
+        // Validasi field yang ada di database
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code_number' => 'nullable|string|max:100',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
             'address_1' => 'nullable|string|max:500',
             'address_2' => 'nullable|string|max:500',
-            'address_3' => 'nullable|string|max:500',
-            'payment_terms_days' => 'nullable|integer|min:1|max:365',
-            'delivery_note_nomor' => 'nullable|string|max:50',
-            'delivery_note_pt' => 'nullable|string|max:50',
-            'delivery_note_tahun' => 'nullable|string|max:10',
-            'invoice_nomor' => 'nullable|string|max:50',
-            'invoice_pt' => 'nullable|string|max:50',
-            'invoice_tahun' => 'nullable|string|max:10',
         ]);
-
-        $deliveryNoteParts = [
-            $validated['delivery_note_nomor'] ?? '',
-            $validated['delivery_note_pt'] ?? '',
-            $validated['delivery_note_tahun'] ?? ''
-        ];
-        
-        // Only set delivery_note_number if at least one part has value
-        if (array_filter($deliveryNoteParts)) {
-            $validated['delivery_note_number'] = implode('/', $deliveryNoteParts);
-        }
-
-        // Remove individual delivery note fields as they're not in database
-        unset($validated['delivery_note_nomor'], $validated['delivery_note_pt'], $validated['delivery_note_tahun']);
-
-        // Compose invoice number
-        $invoiceParts = [
-            $validated['invoice_nomor'] ?? '',
-            $validated['invoice_pt'] ?? '',
-            $validated['invoice_tahun'] ?? ''
-        ];
-        if (array_filter($invoiceParts)) {
-            $validated['invoice_number'] = implode('/', $invoiceParts);
-        }
-        unset($validated['invoice_nomor'], $validated['invoice_pt'], $validated['invoice_tahun']);
-
-        // code_number akan tersimpan jika dikirim dari form
         
         Customer::create($validated);
 
@@ -86,22 +50,49 @@ class CustomerController extends Controller
 
     public function update(Request $request, Customer $customer)
     {
-        // Validasi hanya field yang dikirim dari form edit
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code_number' => 'nullable|string|max:100',
-            'email' => 'nullable|email|max:255',
-            'address_1' => 'nullable|string|max:500',
-            'address_2' => 'nullable|string|max:500',
-        ]);
+        try {
+            // Validasi field yang ada di database
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'code_number' => 'nullable|string|max:100',
+                'email' => 'nullable|email|max:255',
+                'address_1' => 'nullable|string|max:500',
+                'address_2' => 'nullable|string|max:500',
+            ]);
 
-        $customer->update($validated);
+            $customer->update($validated);
 
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Customer berhasil diperbarui']);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Customer berhasil diperbarui',
+                    'customer' => $customer
+                ]);
+            }
+
+            return redirect()->route('customer.index')->with('success', 'Customer berhasil diperbarui');
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            \Log::error('Error update customer: ' . $e->getMessage());
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Gagal update customer: ' . $e->getMessage());
         }
-
-        return redirect()->route('customer.index')->with('success', 'Customer berhasil diperbarui');
     }
 
     public function destroy(Customer $customer)

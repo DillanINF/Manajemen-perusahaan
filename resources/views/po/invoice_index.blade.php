@@ -287,10 +287,10 @@
                                         Customer
                                     </div>
                                 </th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-3 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider" style="width: 90px;">
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-file-alt text-green-500"></i>
-                                        No PO
+                                        Total PO
                                     </div>
                                 </th>
                                 <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -368,28 +368,11 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[220px] md:max-w-[300px] lg:max-w-[420px] ml-1 mr-1">{{ $first->customer ?? 'N/A' }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center gap-2 w-full">
-                                            <div class="p-1.5 bg-green-100 dark:bg-green-900/50 rounded shrink-0">
-                                                <i class="fas fa-file-alt text-green-600 dark:text-green-400 text-xs"></i>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <!-- Scroll horizontal di sel NO PO dengan scrollbar tersembunyi -->
-                                                <div class="custom-nopo-scroll">
-                                                    <div class="nopo-content">
-                                                        @if($isMulti)
-                                                            @foreach($rows as $r)
-                                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200 border border-green-200 dark:border-green-800 mr-2">
-                                                                    {{ $r->no_po ?? '-' }}
-                                                                </span>
-                                                            @endforeach
-                                                        @else
-                                                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $first->no_po ?? '-' }}</span>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <td class="px-3 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
+                                            <i class="fas fa-file-alt text-blue-500 text-[10px]"></i>
+                                            <span>{{ $first->total_po ?? 0 }} PO</span>
+                                        </span>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">

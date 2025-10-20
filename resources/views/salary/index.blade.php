@@ -4,6 +4,17 @@
 
 @push('styles')
 <style>
+/* Force modal salary width to be compact - sama dengan employee */
+.modal-gaji-container {
+    max-width: 28rem !important; /* 448px - max-w-md */
+    width: 100% !important;
+}
+
+#inputGajiModal .modal-gaji-container,
+#editGajiModal .modal-gaji-container {
+    max-width: 28rem !important;
+}
+
 /* Sembunyikan panah native agar tidak dobel */
 #filterMonth, #filterYear {
   -webkit-appearance: none;
@@ -157,30 +168,10 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <!-- Edit Button - Blue Circle -->
-                                    <button onclick="window.location.href='{{ route('salary.edit', $salary->id) }}'"
-                                            class="w-9 h-9 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors shadow-sm"
-                                            title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    
-                                    <!-- Delete Button - Red Circle -->
-                                    <form action="{{ route('salary.destroy', $salary->id) }}" method="POST" class="inline"
-                                          onsubmit="return confirm('Yakin ingin menghapus data gaji ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="w-9 h-9 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors shadow-sm"
-                                                title="Hapus">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                            </svg>
-                                        </button>
-                                    </form>
-                                </div>
+                                <x-table.action-buttons 
+                                    onEdit="openEditModal({{ $salary->id }}, {{ $salary->employee_id }}, {{ $salary->bulan }}, {{ $salary->tahun }}, {{ $salary->gaji_pokok }})"
+                                    deleteAction="{{ route('salary.destroy', $salary->id) }}"
+                                    confirmText="Yakin ingin menghapus data gaji ini?" />
                             </td>
                         </tr>
                         @empty
@@ -205,26 +196,26 @@
     </div>
 </div>
 
-<!-- Modal Input Gaji - Compact & Minimal -->
-<div id="inputGajiModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full overflow-hidden border border-gray-200 dark:border-slate-700" style="max-width: 28rem !important;">
-        <!-- Modal Header - Gradient Blue -->
-        <div class="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+<!-- Modal Input Gaji - Style Seperti Employee -->
+<div id="inputGajiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="modal-gaji-container bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header - Putih Simple -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-lg font-bold">Input Gaji</h2>
-                    <p class="text-blue-100 text-xs">Lengkapi data gaji karyawan</p>
+                    <h2 class="text-2xl font-bold text-gray-900">Tambah Gaji</h2>
+                    <p class="text-gray-600 mt-1">Lengkapi data gaji karyawan</p>
                 </div>
-                <button onclick="closeInputGajiModal()" class="text-white/80 hover:text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onclick="closeInputGajiModal()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-xl transition-all duration-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
         </div>
 
-        <!-- Modal Body - Compact -->
-        <form id="inputGajiForm" action="{{ route('salary.store-simple') }}" method="POST" class="p-6 space-y-4">
+        <!-- Modal Body -->
+        <form id="inputGajiForm" action="{{ route('salary.store-simple') }}" method="POST" class="p-8 space-y-6">
             @csrf
             
             <!-- Bulan & Tahun dalam 1 baris -->
@@ -264,15 +255,115 @@
                 </div>
             </div>
 
-            <!-- Modal Footer - Compact -->
-            <div class="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-slate-700 mt-4">
+            <!-- Modal Footer -->
+            <div class="flex justify-end space-x-4 pt-6 mt-8 border-t border-gray-200">
                 <button type="button" onclick="closeInputGajiModal()" 
-                        class="px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
+                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
                     Batal
                 </button>
                 <button type="submit" 
-                        class="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors shadow-sm">
-                    Simpan
+                        class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
+                    Simpan Gaji
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Edit Gaji - Style Seperti Employee -->
+<div id="editGajiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="modal-gaji-container bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Edit Gaji</h2>
+                    <p class="text-gray-600 mt-1">Perbarui data gaji karyawan</p>
+                </div>
+                <button onclick="closeEditGajiModal()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-xl transition-all duration-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="editGajiForm" method="POST" class="p-8 space-y-6">
+            @csrf
+            @method('PUT')
+            
+            <!-- Employee ID & Data Hidden -->
+            <input type="hidden" name="employee_id" id="edit_employee_id">
+            <input type="hidden" name="jenis_gaji" id="edit_jenis_gaji" value="borongan">
+            <input type="hidden" name="jumlah_hari" id="edit_jumlah_hari" value="1">
+            <input type="hidden" name="tarif_harian" id="edit_tarif_harian" value="0">
+            <input type="hidden" name="jumlah_unit" id="edit_jumlah_unit" value="1">
+            <input type="hidden" name="tarif_per_unit" id="edit_tarif_per_unit" value="0">
+            <input type="hidden" name="tunjangan" value="0">
+            <input type="hidden" name="bonus" value="0">
+            <input type="hidden" name="lembur" value="0">
+            <input type="hidden" name="potongan_pajak" value="0">
+            <input type="hidden" name="potongan_bpjs" value="0">
+            <input type="hidden" name="potongan_lain" value="0">
+            <input type="hidden" name="status_pembayaran" value="dibayar">
+            <input type="hidden" name="tanggal_bayar" id="edit_tanggal_bayar">
+            <input type="hidden" name="keterangan" value="">
+            
+            <!-- Bulan & Tahun -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar text-blue-500 mr-2"></i>
+                        Bulan *
+                    </label>
+                    <select name="bulan" id="edit_bulan" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @for($i = 1; $i <= 12; $i++)
+                            <option value="{{ $i }}">{{ DateTime::createFromFormat('!m', $i)->format('F') }}</option>
+                        @endfor
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt text-green-500 mr-2"></i>
+                        Tahun *
+                    </label>
+                    <select name="tahun" id="edit_tahun" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @for($y = 2020; $y <= 2035; $y++)
+                            <option value="{{ $y }}">{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Gaji Pokok -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-money-bill-wave text-green-500 mr-2"></i>
+                    Gaji Pokok *
+                </label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
+                    <input type="number" name="gaji_pokok" id="edit_gaji_pokok" required
+                           class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="0" oninput="updateTarifPerUnit()">
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end space-x-4 pt-6 mt-8 border-t border-gray-200">
+                <button type="button" onclick="closeEditGajiModal()" 
+                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
+                    Batal
+                </button>
+                <button type="submit" 
+                        class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
+                    Update Gaji
                 </button>
             </div>
         </form>
@@ -301,6 +392,95 @@ function closeInputGajiModal() {
     // Reset form
     document.getElementById('inputGajiForm').reset();
 }
+
+// Edit Modal Functions - Parameter langsung seperti employee
+function openEditModal(id, employeeId, bulan, tahun, gaji) {
+    const modal = document.getElementById('editGajiModal');
+    const form = document.getElementById('editGajiForm');
+    
+    // Set form action
+    form.action = `{{ url('/salary') }}/${id}`;
+    
+    // Fill form fields
+    document.getElementById('edit_employee_id').value = employeeId || '';
+    document.getElementById('edit_bulan').value = bulan;
+    document.getElementById('edit_tahun').value = tahun;
+    document.getElementById('edit_gaji_pokok').value = gaji;
+    document.getElementById('edit_tarif_per_unit').value = gaji;
+    document.getElementById('edit_tanggal_bayar').value = new Date().toISOString().split('T')[0];
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEditGajiModal() {
+    const modal = document.getElementById('editGajiModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    document.getElementById('editGajiForm').reset();
+}
+
+// Update tarif per unit saat gaji pokok berubah
+function updateTarifPerUnit() {
+    const gajiPokok = document.getElementById('edit_gaji_pokok').value;
+    document.getElementById('edit_tarif_per_unit').value = gajiPokok;
+}
+
+// Submit form edit via AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const editForm = document.getElementById('editGajiForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const url = this.action;
+            
+            // Debug: Log form data
+            console.log('=== SUBMIT EDIT GAJI ===');
+            console.log('URL:', url);
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+            
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    alert('Gaji berhasil diperbarui!');
+                    closeEditGajiModal();
+                    window.location.reload();
+                } else {
+                    // Tampilkan detail error jika ada
+                    let errorMsg = 'Gagal update: ' + (data.message || 'Unknown error');
+                    if (data.errors) {
+                        errorMsg += '\n\nDetail Error:\n';
+                        for (let field in data.errors) {
+                            errorMsg += '- ' + field + ': ' + data.errors[field].join(', ') + '\n';
+                        }
+                    }
+                    alert(errorMsg);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                alert('Terjadi kesalahan saat update gaji: ' + error.message);
+            });
+        });
+    }
+});
 
 // Format nominal gaji saat user mengetik
 function formatNominal(input) {

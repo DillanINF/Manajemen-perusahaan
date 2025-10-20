@@ -1175,12 +1175,21 @@ class POController extends Controller
                     $customer = '-';
                 }
 
+                // Hitung total PO dengan po_number yang sama dan no_po valid (bukan placeholder)
+                $totalPO = PO::query()
+                    ->where('po_number', $po->po_number)
+                    ->whereNotNull('no_po')
+                    ->where('no_po', '!=', '-')
+                    ->whereRaw("TRIM(no_po) != ''")
+                    ->count();
+
                 return (object) [
                     'id'        => $po->id,
                     'tanggal'   => $po->tanggal_po ? \Carbon\Carbon::parse($po->tanggal_po)->format('d/m/Y') : '-',
                     'no_urut'   => $po->po_number ?? '-',
                     'customer'  => $customer,
                     'no_po'     => $po->no_po,
+                    'total_po'  => $totalPO,
                     'barang'    => $barang,
                     'qty'       => $po->qty,
                     'harga'     => $po->harga,

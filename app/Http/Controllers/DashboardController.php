@@ -35,12 +35,16 @@ class DashboardController extends Controller
 
         // Hormati tahun yang dipilih user; tidak ada pemaksaan ke tahun tertentu
 
-        // Total Invoice (diambil dari Surat Jalan/PO) sesuai bulan & tahun terpilih
-        // Menggunakan field tanggal_po pada tabel PO
+        // Total Invoice (jumlah invoice unik) sesuai bulan & tahun terpilih
+        // Invoice = distinct po_number pada tabel POS (model PO), difilter by tanggal_po
         $invoiceCount = (int) PO::where(function($q) use ($tahunNow, $bulanNow) {
                 $q->whereRaw(DatabaseService::year('tanggal_po') . ' = ?', [$tahunNow])
                   ->whereRaw(DatabaseService::month('tanggal_po') . ' = ?', [$bulanNow]);
-            })->count();
+            })
+            ->whereNotNull('po_number')
+            ->where('po_number', '<>', '')
+            ->distinct('po_number')
+            ->count('po_number');
 
         $totalGajiKaryawan = Employee::where('status', 'aktif')->sum('gaji_pokok');
         $rataRataGaji = $karyawanAktif > 0 ? $totalGajiKaryawan / $karyawanAktif : 0;

@@ -174,7 +174,7 @@
                             </td>
                             <td class="px-3 md:px-6 py-3 md:py-4">
                                 <x-table.action-buttons 
-                                    onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!}, {{ $customer->payment_terms_days ?? 30 }})"
+                                    onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!})"
                                     deleteAction="{{ route('customer.destroy', $customer->id) }}"
                                     confirmText="Yakin ingin menghapus customer ini?"
                                 />
@@ -213,14 +213,14 @@
                             <span class="text-gray-900 dark:text-slate-100 font-semibold">{{ $customer->name }}</span>
                         </div>
                         <div class="mt-2 space-y-1 text-sm">
+                            <div class="text-gray-700 dark:text-slate-300">Email: <span class="font-medium">{{ $customer->email ?? '-' }}</span></div>
                             <div class="text-gray-700 dark:text-slate-300">Alamat 1: <span class="font-medium">{{ $customer->address_1 ?? '-' }}</span></div>
                             <div class="text-gray-700 dark:text-slate-300">Alamat 2: <span class="font-medium">{{ $customer->address_2 ?? '-' }}</span></div>
-                            <div class="text-gray-700 dark:text-slate-300">Email: <span class="font-medium">{{ $customer->email ?? '-' }}</span></div>
                         </div>
                     </div>
                     <div class="flex flex-col gap-2">
                         <x-table.action-buttons 
-                            onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!}, {{ $customer->payment_terms_days ?? 30 }})"
+                            onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!})"
                             deleteAction="{{ route('customer.destroy', $customer->id) }}"
                             confirmText="Yakin ingin menghapus customer ini?"
                         />
@@ -476,16 +476,18 @@ function closeAddModal() {
     }, 300);
 }
 
-function openEditModal(id, name, email, address1, address2, codeNumber, paymentTermsDays) {
+function openEditModal(id, name, email, address1, address2, codeNumber) {
     document.getElementById('editModal').classList.remove('hidden');
     document.getElementById('editModal').classList.add('flex');
-    // Set action menggunakan base URL Laravel agar aman di subfolder
+    // Set action menggunakan route Laravel yang benar
     const form = document.getElementById('editCustomerForm');
     if (!form) {
         console.warn('editCustomerForm tidak ditemukan');
         return;
     }
-    form.action = "{{ url('/customer') }}/" + id;
+    // Gunakan route Laravel untuk customer.update
+    const baseUrl = "{{ route('customer.index') }}";
+    form.action = baseUrl + '/' + id;
     const nameEl = document.getElementById('edit_name');
     if (nameEl) nameEl.value = name;
     const emailEl = document.getElementById('edit_email');
@@ -532,10 +534,64 @@ document.getElementById('addCustomerForm').addEventListener('submit', function()
     if (window.combineAddCodeNumber) window.combineAddCodeNumber();
 });
 
-document.getElementById('editCustomerForm').addEventListener('submit', function() {
-    document.getElementById('editSubmitBtn').disabled = true;
-    document.getElementById('editLoading').classList.remove('hidden');
+document.getElementById('editCustomerForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent default form submission
+    
+    // Combine code number sebelum submit
     if (window.combineEditCodeNumber) window.combineEditCodeNumber();
+    
+    const form = this;
+    const submitBtn = document.getElementById('editSubmitBtn');
+    const loadingSpinner = document.getElementById('editLoading');
+    
+    // Disable button dan show loading
+    submitBtn.disabled = true;
+    loadingSpinner.classList.remove('hidden');
+    
+    // Get form data
+    const formData = new FormData(form);
+    
+    // Debug log
+    console.log('Form edit submit via AJAX:', {
+        action: form.action,
+        data: Object.fromEntries(formData)
+    });
+    
+    // Submit via AJAX
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.message || 'Update gagal');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Update berhasil:', data);
+        // Show success message
+        alert('Customer berhasil diperbarui!');
+        // Close modal
+        closeEditModal();
+        // Reload page to show updated data
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('Error update customer:', error);
+        alert('Gagal update customer: ' + error.message);
+    })
+    .finally(() => {
+        // Re-enable button dan hide loading
+        submitBtn.disabled = false;
+        loadingSpinner.classList.add('hidden');
+    });
 });
 
 // Close modal when clicking outside

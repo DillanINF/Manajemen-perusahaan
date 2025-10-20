@@ -209,6 +209,144 @@
     </script>
     
     @stack('styles')
+    
+    <!-- Loading Overlay Styles -->
+    <style>
+        /* Loading Overlay - Transparent background with centered spinner */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.2s ease-out;
+        }
+        
+        #loading-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+        
+        /* Loading Container */
+        .loading-container {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem 3.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 
+                        0 0 0 1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            animation: containerFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes containerFloat {
+            0%, 100% { 
+                transform: translateY(0) scale(1); 
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 
+                            0 0 0 1px rgba(0, 0, 0, 0.05);
+            }
+            50% { 
+                transform: translateY(-5px) scale(1.01); 
+                box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2), 
+                            0 0 0 1px rgba(0, 0, 0, 0.05);
+            }
+        }
+        
+        /* Bouncing Dots Loader */
+        .spinner {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        
+        .dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out infinite;
+        }
+        
+        /* Warna dots: Merah, Putih (dengan border), Biru */
+        .dot:nth-child(1) {
+            background: #EF4444; /* Merah */
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+            animation-delay: 0s;
+        }
+        
+        .dot:nth-child(2) {
+            background: white;
+            border: 3px solid #6B7280; /* Abu-abu */
+            box-shadow: 0 5px 15px rgba(107, 114, 128, 0.3);
+            animation-delay: 0.2s;
+        }
+        
+        .dot:nth-child(3) {
+            background: #3B82F6; /* Biru */
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-25px) scale(1.15);
+            }
+        }
+        
+        /* Loading Text */
+        .loading-text {
+            background: linear-gradient(90deg, #EF4444 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            animation: textShine 2s ease-in-out infinite;
+        }
+        
+        @keyframes textShine {
+            0%, 100% { 
+                opacity: 1;
+                filter: brightness(1);
+            }
+            50% { 
+                opacity: 0.8;
+                filter: brightness(1.2);
+            }
+        }
+        
+        /* Dark mode support */
+        .dark .loading-container {
+            background: #1f2937;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 
+                        0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        .dark .loading-text {
+            background: linear-gradient(90deg, #EF4444 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .dark .dot:nth-child(2) {
+            background: #374151;
+            border-color: #9CA3AF;
+        }
+    </style>
 </head>
 <body x-data="{ mobileSidebarOpen: false, desktopSidebarOpen: true }" x-init="
     (() => {
@@ -235,6 +373,18 @@
     })();
   " class="flex font-sans bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden @yield('body-classes')"
   :class="{ 'sidebar-hidden': !desktopSidebarOpen }">
+
+      <!-- Loading Overlay -->
+      <div id="loading-overlay">
+          <div class="loading-container">
+              <div class="spinner">
+                  <div class="dot"></div>
+                  <div class="dot"></div>
+                  <div class="dot"></div>
+              </div>
+              <div class="loading-text">Loading</div>
+          </div>
+      </div>
 
       <aside id="sidebar" class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen flex flex-col transform transition-transform duration-300 fixed inset-y-0 left-0 z-40 -translate-x-full md:fixed md:inset-y-0 md:left-0 overflow-hidden"
            x-bind:class="{
@@ -825,6 +975,61 @@
 
     @stack('modals')
     @stack('scripts')
+    
+    <!-- Loading Overlay Script -->
+    <script>
+        // Fungsi untuk show/hide loading
+        function showLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.classList.add('show');
+            }
+        }
+        
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+        }
+        
+        // Auto show loading saat klik link (navigasi ke halaman lain)
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (link && link.href && !link.hasAttribute('target') && !link.href.startsWith('#') && !link.href.startsWith('javascript:')) {
+                // Cek apakah link navigasi ke halaman lain (bukan anchor atau logout)
+                if (link.href.indexOf(window.location.origin) === 0 && !link.href.includes('logout')) {
+                    showLoading();
+                }
+            }
+            
+            // Show loading saat klik button submit
+            const button = e.target.closest('button[type="submit"]');
+            if (button) {
+                showLoading();
+            }
+        });
+        
+        // Auto show loading saat submit form
+        document.addEventListener('submit', function(e) {
+            showLoading();
+        });
+        
+        // Hide loading saat halaman selesai dimuat (untuk back button browser)
+        window.addEventListener('pageshow', function(event) {
+            hideLoading();
+        });
+        
+        // Hide loading saat page load
+        window.addEventListener('load', function() {
+            hideLoading();
+        });
+        
+        // Fallback: hide loading setelah 10 detik (jika stuck)
+        setTimeout(() => {
+            hideLoading();
+        }, 10000);
+    </script>
 </body>
 </html>
 

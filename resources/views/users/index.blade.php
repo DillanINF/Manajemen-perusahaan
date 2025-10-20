@@ -100,7 +100,7 @@
                                 <span>Dibuat</span>
                             </div>
                         </th>
-                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             <span>Aksi</span>
                         </th>
                     </tr>
@@ -158,17 +158,10 @@
                                     <span class="text-sm text-gray-700 dark:text-gray-300">{{ $user->created_at?->format('d M Y') }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Hapus user ini? Tindakan tidak dapat dibatalkan.')" class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 focus:ring-4 focus:ring-red-200 dark:focus:ring-red-800 transition-all duration-200 shadow-md hover:shadow-lg">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                        Hapus
-                                    </button>
-                                </form>
+                            <td class="px-6 py-4 text-center">
+                                <x-table.action-buttons 
+                                    deleteAction="{{ route('users.destroy', $user) }}"
+                                    confirmText="Hapus user ini? Tindakan tidak dapat dibatalkan." />
                             </td>
                         </tr>
                     @empty

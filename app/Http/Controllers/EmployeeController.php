@@ -12,16 +12,10 @@ class EmployeeController extends Controller
     {
         $employees = Employee::latest()->get();
         $totalKaryawan = Employee::count();
-        $karyawanAktif = Employee::aktif()->count();
-        $totalGaji = Employee::aktif()->sum('gaji_pokok');
-        $rataRataGaji = Employee::aktif()->count() > 0 ? $totalGaji / Employee::aktif()->count() : 0;
 
         return view('employees.index', compact(
             'employees', 
-            'totalKaryawan', 
-            'karyawanAktif', 
-            'totalGaji', 
-            'rataRataGaji'
+            'totalKaryawan'
         ));
     }
 
@@ -32,70 +26,58 @@ class EmployeeController extends Controller
 
    public function store(Request $request)
 {
-    $data = $request->validate([
-        'nama_karyawan' => 'required|string|max:255',
-        'no_telepon' => 'required|string|max:20',
-        'alamat' => 'required|string',
-        'posisi' => 'required|string|max:255',
-        'email' => 'nullable|email|unique:employees,email',
-        'departemen' => 'nullable|string|max:255',
-        'gaji_pokok' => 'nullable|numeric|min:0',
-        'status' => 'nullable|in:aktif,tidak_aktif',
-        'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
-    ]);
-
-    // Mirror legacy kolom 'name' untuk kompatibilitas schema lama (NOT NULL)
-    $data['name'] = $data['nama_karyawan'];
-    
-    // Set safe defaults untuk kolom opsional
-    if (!isset($data['email']) || empty($data['email'])) {
-        // Generate unique email dari nama + timestamp
-        $data['email'] = strtolower(str_replace(' ', '', $data['nama_karyawan'])) . time() . '@placeholder.com';
-    }
-    if (!isset($data['departemen']) || $data['departemen'] === null || $data['departemen'] === '') {
-        $data['departemen'] = 'Umum';
-    }
-    if (!isset($data['status']) || empty($data['status'])) {
-        $data['status'] = 'aktif';
-    }
-    if (!isset($data['gaji_pokok']) || $data['gaji_pokok'] === null) {
-        $data['gaji_pokok'] = 0;
-    }
-
-    if ($request->hasFile('foto')) {
-        $data['foto'] = $request->file('foto')->store('employees', 'public');
-    }
-
     try {
+        // Validasi hanya 4 field yang tersisa di database
+        $data = $request->validate([
+            'nama_karyawan' => 'required|string|max:255',
+            'no_telepon' => 'required|string|max:20',
+            'alamat' => 'required|string',
+            'posisi' => 'required|string|max:255',
+        ]);
+
         \Log::info('Attempting to create employee with data:', $data);
         
-        // Use DB transaction to ensure data is committed
-        \DB::beginTransaction();
-        
+        // Simpan ke database
         $employee = Employee::create($data);
         
-        \Log::info('Employee object created with ID: ' . $employee->id);
+        \Log::info('Employee created successfully with ID: ' . $employee->id);
         
-        // Verify in database immediately
-        $verifyEmployee = \DB::table('employees')->where('id', $employee->id)->first();
-        
-        if ($verifyEmployee) {
-            \Log::info('Verified employee exists in database:', (array)$verifyEmployee);
-            \DB::commit();
-            
-            return redirect()->route('employee.index')->with('success', 'Data karyawan berhasil ditambahkan dengan ID: ' . $employee->id . ' | Nama: ' . $employee->nama_karyawan);
-        } else {
-            \Log::error('Employee not found in database after create!');
-            \DB::rollBack();
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['error' => 'Data gagal diverifikasi di database']);
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Data karyawan berhasil ditambahkan',
+                'employee' => $employee
+            ]);
         }
         
+        return redirect()->route('employee.index')->with('success', 'Data karyawan berhasil ditambahkan: ' . $employee->nama_karyawan);
+        
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::error('Validation Error: ' . json_encode($e->errors()));
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        }
+        
+        return redirect()->back()
+            ->withInput()
+            ->withErrors($e->errors());
+            
     } catch (\Exception $e) {
-        \DB::rollBack();
         \Log::error('Employee Store Error: ' . $e->getMessage());
         \Log::error('Stack trace: ' . $e->getTraceAsString());
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+            ], 500);
+        }
+        
         return redirect()->back()
             ->withInput()
             ->withErrors(['error' => 'Gagal menyimpan data: ' . $e->getMessage()]);
@@ -111,57 +93,52 @@ class EmployeeController extends Controller
 
     public function update(Request $request, Employee $employee)
     {
-        $data = $request->validate([
-            'nama_karyawan' => 'required|string|max:255',
-            'no_telepon' => 'required|string|max:20',
-            'alamat' => 'required|string',
-            'posisi' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:employees,email,' . $employee->id,
-            'departemen' => 'nullable|string|max:255',
-            'gaji_pokok' => 'nullable|numeric|min:0',
-            'status' => 'nullable|in:aktif,tidak_aktif',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
-        ]);
+        try {
+            // Validasi hanya 4 field yang tersisa di database
+            $data = $request->validate([
+                'nama_karyawan' => 'required|string|max:255',
+                'no_telepon' => 'required|string|max:20',
+                'alamat' => 'required|string',
+                'posisi' => 'required|string|max:255',
+            ]);
 
-        // Handle foto upload
-        if ($request->hasFile('foto')) {
-            // Delete old foto if exists
-            if ($employee->foto) {
-                Storage::disk('public')->delete($employee->foto);
+            $employee->update($data);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data karyawan berhasil diperbarui',
+                    'employee' => $employee
+                ]);
             }
-            $data['foto'] = $request->file('foto')->store('employees', 'public');
-        }
 
-        // Mirror legacy kolom 'name' untuk kompatibilitas schema lama (NOT NULL)
-        $data['name'] = $data['nama_karyawan'];
-        
-        // Preserve atau set safe defaults
-        if (!isset($data['email']) || empty($data['email'])) {
-            $data['email'] = $employee->email ?? (strtolower(str_replace(' ', '', $data['nama_karyawan'])) . time() . '@placeholder.com');
+            return redirect()->route('employee.index')->with('success', 'Data karyawan berhasil diperbarui.');
+            
+        } catch (\Exception $e) {
+            \Log::error('Error update employee: ' . $e->getMessage());
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Gagal update karyawan: ' . $e->getMessage());
         }
-        if (!isset($data['departemen']) || $data['departemen'] === null || $data['departemen'] === '') {
-            $data['departemen'] = $employee->departemen ?? 'Umum';
-        }
-        if (!isset($data['status']) || empty($data['status'])) {
-            $data['status'] = $employee->status ?? 'aktif';
-        }
-        if (!array_key_exists('gaji_pokok', $data) || $data['gaji_pokok'] === null) {
-            $data['gaji_pokok'] = $employee->gaji_pokok ?? 0;
-        }
-
-        $employee->update($data);
-
-        return redirect()->route('employee.index')->with('success', 'Data karyawan berhasil diperbarui.');
     }
 
     public function destroy(Employee $employee)
     {
-        // Delete foto if exists
-        if ($employee->foto) {
-            Storage::disk('public')->delete($employee->foto);
-        }
-
         $employee->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Data karyawan berhasil dihapus'
+            ]);
+        }
+        
         return redirect()->route('employee.index')->with('success', 'Data karyawan berhasil dihapus.');
     }
 }
