@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JatuhTempo;
-use App\Models\Invoice;
+// Invoice model tidak digunakan - data invoice disimpan di tabel POS
 use App\Models\Customer;
 use App\Models\PO;
 use Illuminate\Http\Request;
@@ -13,6 +13,39 @@ use Illuminate\Support\Facades\Mail;
 
 class JatuhTempoController extends Controller
 {
+    /**
+     * Helper method untuk mendapatkan total pembayaran dari tabel invoice
+     */
+    private function getTotalPembayaranFromInvoice($jatuhTempo)
+    {
+        // CATATAN: Nama method tetap "FromInvoice" tapi datanya dari tabel POS
+        // karena form "Data Invoice" menyimpan ke tabel POS, bukan tabel invoices
+        
+        $totalPembayaran = 0;
+        
+        // Cari di tabel POS berdasarkan no_invoice (po_number) atau no_po
+        $noInvoice = trim((string)($jatuhTempo->no_invoice_asli ?? $jatuhTempo->no_invoice));
+        $noPo = trim((string)($jatuhTempo->no_po ?? ''));
+        
+        $poQuery = PO::query();
+        
+        // Match berdasarkan po_number (yang menjadi no_invoice di UI)
+        if ($noInvoice !== '' && is_numeric($noInvoice)) {
+            $poQuery->where('po_number', (int) $noInvoice);
+        }
+        // Atau match berdasarkan no_po
+        else if ($noPo !== '' && $noPo !== '-') {
+            $poQuery->where(function($q) use ($noPo) {
+                $q->where('no_po', $noPo)
+                  ->orWhereRaw('TRIM(no_po) = ?', [$noPo]);
+            });
+        }
+        
+        // Hitung total dari sum(total) karena tabel pos tidak punya kolom grand_total
+        $totalPembayaran = (float) $poQuery->sum('total');
+        
+        return (float) $totalPembayaran;
+    }
     public function index()
     {
         // Filter bulan/tahun dan status pembayaran
@@ -20,20 +53,22 @@ class JatuhTempoController extends Controller
         $tahun = (int) request()->get('year', (int) Carbon::now()->format('Y'));
         $statusPembayaran = request()->get('status'); // null|Belum Bayar|Lunas
 
-        $query = JatuhTempo::query()
-            ->leftJoin('invoices', function($join) {
-                // Kaitan utama via No PO agar mengambil No Invoice dari Data Invoice
-                $join->on('invoices.no_po', '=', 'jatuh_tempos.no_po');
-            })
-            // Ambil semua kolom JT + override no_invoice dengan yang dari Data Invoice bila tersedia
-            ->select('jatuh_tempos.*', \DB::raw("COALESCE(NULLIF(invoices.no_invoice, ''), jatuh_tempos.no_invoice) as no_invoice"));
-        $query->whereYear('jatuh_tempos.tanggal_invoice', $tahun)
-              ->whereMonth('jatuh_tempos.tanggal_invoice', $bulan);
+        // Langsung query jatuh_tempos tanpa join ke tabel invoices (yang sudah tidak digunakan)
+        $query = JatuhTempo::query();
+            
+        $query->whereYear('tanggal_invoice', $tahun)
+              ->whereMonth('tanggal_invoice', $bulan);
         if ($statusPembayaran) {
             $query->where('status_pembayaran', $statusPembayaran);
         }
 
-        $jatuhTempos = $query->orderBy('jatuh_tempos.tanggal_jatuh_tempo', 'asc')->get();
+        $jatuhTempos = $query->orderBy('tanggal_jatuh_tempo', 'asc')->get();
+        
+        // Untuk setiap jatuh tempo, ambil total pembayaran dari tabel POS (bukan invoices)
+        $jatuhTempos = $jatuhTempos->map(function($jt) {
+            $jt->jumlah_tagihan_display = $this->getTotalPembayaranFromInvoice($jt);
+            return $jt;
+        });
 
         // Monthly stats like Surat Jalan (for the selected year)
         $statsBuilder = JatuhTempo::query()->whereYear('tanggal_invoice', $tahun);
@@ -46,10 +81,18 @@ class JatuhTempoController extends Controller
         // Get stats for each month
         for ($i = 1; $i <= 12; $i++) {
             $monthQuery = clone $statsBuilder;
-            $monthData = $monthQuery
-                ->whereMonth('tanggal_invoice', $i)
-                ->selectRaw('COUNT(*) as total_count, COALESCE(SUM(jumlah_tagihan), 0) as total_sum')
-                ->first();
+            $monthItems = $monthQuery->whereMonth('tanggal_invoice', $i)->get();
+            
+            // Hitung total menggunakan helper method
+            $totalSum = 0;
+            foreach ($monthItems as $item) {
+                $totalSum += $this->getTotalPembayaranFromInvoice($item);
+            }
+            
+            $monthData = (object) [
+                'total_count' => $monthItems->count(),
+                'total_sum' => $totalSum
+            ];
             
             // Overdue indicator diselaraskan dengan bulan INVOICE (bukan bulan deadline):
             // ambil item dengan bulan `tanggal_invoice` = $i (tahun aktif), status bukan Lunas,
@@ -70,11 +113,11 @@ class JatuhTempoController extends Controller
         }
 
         // Statistik sesuai kebutuhan user
-        // Total Tagihan Pending (hanya yang status Belum Bayar/Sebagian)
-        $totalTagihanPending = $jatuhTempos->where('status_pembayaran', '!=', 'Lunas')->sum('jumlah_tagihan');
+        // Total Tagihan Pending (hanya yang status Belum Bayar/Sebagian) - gunakan jumlah_tagihan_display
+        $totalTagihanPending = $jatuhTempos->where('status_pembayaran', '!=', 'Lunas')->sum('jumlah_tagihan_display');
         
-        // Total Terbayar (hanya yang status Lunas/Accept)
-        $totalTerbayar = $jatuhTempos->where('status_pembayaran', 'Lunas')->sum('jumlah_tagihan');
+        // Total Terbayar (hanya yang status Lunas/Accept) - gunakan jumlah_tagihan_display
+        $totalTerbayar = $jatuhTempos->where('status_pembayaran', 'Lunas')->sum('jumlah_tagihan_display');
         
         // Total Customer Pending (unique customer dengan status pending)
         $totalCustomerPending = $jatuhTempos->where('status_pembayaran', '!=', 'Lunas')->unique('customer')->count();
@@ -93,8 +136,8 @@ class JatuhTempoController extends Controller
 
     public function create()
     {
-        $invoices = Invoice::all();
-        return view('jatuh-tempo.create', compact('invoices'));
+        // Data invoice diambil dari tabel POS, bukan tabel invoices
+        return view('jatuh-tempo.create');
     }
 
     public function store(Request $request)
@@ -186,7 +229,6 @@ class JatuhTempoController extends Controller
             
             // For regular requests, return view (existing functionality)
             $jatuhTempos = JatuhTempo::orderBy('tanggal_jatuh_tempo', 'asc')->get();
-            $invoices = Invoice::all();
 
             // Statistik
             $totalTagihan = $jatuhTempos->sum('jumlah_tagihan');
@@ -194,7 +236,7 @@ class JatuhTempoController extends Controller
             $totalOverdue = $jatuhTempos->where('is_overdue', true)->sum('sisa_tagihan');
             $countOverdue = $jatuhTempos->where('is_overdue', true)->count();
 
-            return view('jatuh-tempo.index', compact('jatuhTempo', 'jatuhTempos', 'invoices', 'totalTagihan', 'totalTerbayar', 'totalOverdue', 'countOverdue'));
+            return view('jatuh-tempo.index', compact('jatuhTempo', 'jatuhTempos', 'totalTagihan', 'totalTerbayar', 'totalOverdue', 'countOverdue'));
         } catch (\Exception $e) {
             if (request()->expectsJson()) {
                 return response()->json([

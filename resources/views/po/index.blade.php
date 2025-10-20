@@ -790,6 +790,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         console.log('✅ Fields reset: No PO, No SJ Nomor, Pengiriman, Items');
+        
+        // Tampilkan notifikasi bahwa form sudah direset
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
+        notification.innerHTML = '<i class="fas fa-refresh mr-2"></i>Form berhasil direset untuk input PO berikutnya';
+        document.body.appendChild(notification);
+        
+        // Hilangkan notifikasi setelah 3 detik
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
     
     // No PO sudah menjadi satu input (name="no_po"), tidak perlu penggabungan bagian

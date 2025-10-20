@@ -10,7 +10,7 @@ use App\Models\BarangKeluar;
 use App\Models\Customer;
 use App\Models\Pengirim; // Tambahkan model Pengirim
 use App\Models\JatuhTempo; // Sinkronisasi Jatuh Tempo dari PO
-use App\Models\Invoice; // Hapus entri invoice saat group delete
+// Invoice model tidak digunakan - data invoice disimpan di tabel POS
 use App\Models\Setting;
 use App\Models\SisaPOItem;
 use Illuminate\Support\Facades\Log;
@@ -476,6 +476,7 @@ class POController extends Controller
                     'from' => $from,
                     'po_number' => $poNumber,
                     'tanggal_po' => $data['tanggal_po'],
+                    'reset_fields' => '1', // Parameter untuk trigger reset form
                 ])
                 ->with('success', 'Data PO disimpan! Semua produk masuk ke Sisa Data PO karena stok habis.');
         }
@@ -511,26 +512,10 @@ class POController extends Controller
             IOFactory::createWriter($spreadsheet, 'Xls')->save($savePath);
         }
 
-        // Handle kasus khusus jika semua produk stok 0
-        if ($po === null) {
-            // Redirect kembali ke form dengan pesan bahwa semua masuk ke Sisa Data PO
-            $from = $request->input('from', 'invoice');
-            $poNumber = $request->input('po_number');
-            return redirect()
-                ->route('po.create', [
-                    'from' => $from,
-                    'po_number' => $poNumber,
-                    'tanggal_po' => $data['tanggal_po'],
-                ])
-                ->with('success', 'Data PO disimpan! Semua produk masuk ke Sisa Data PO karena stok habis.');
-        }
-
         // === Sinkronisasi ke Jatuh Tempo ===
         // HANYA buat Jatuh Tempo jika status_approval Data PO adalah 'Accept'
         if (($po->status_approval ?? 'Pending') === 'Accept') {
             try {
-                // Gunakan No Invoice asli jika ada; jika kosong, fallback ke No Urut Invoice (po_number) dari Form Data Invoice
-                // JANGAN fallback ke No Surat Jalan
                 // Gunakan po_number (no urut invoice dari Data Invoice) sebagai no_invoice di Jatuh Tempo
                 $invoiceKey = $data['po_number'] ?? $po->no_invoice;
                 $tanggalInvoice = \Carbon\Carbon::parse($po->tanggal_po);
@@ -542,40 +527,52 @@ class POController extends Controller
                     $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
                 }
 
-                // CEK APAKAH SUDAH ADA JATUH TEMPO UNTUK DATA PO INI
-                $existingJT = JatuhTempo::where('no_po', $po->no_po)
-                    ->where('customer', $po->customer)
-                    ->first();
+                // Ambil SEMUA PO dengan po_number yang sama dan status Accept untuk digabungkan
+                $allAcceptedPos = PO::where('po_number', $invoiceKey)
+                    ->where('status_approval', 'Accept')
+                    ->get();
 
-                $jtPayload = [
-                    'no_invoice' => $invoiceKey,
-                    'no_po' => $po->no_po,
-                    'customer' => $po->customer,
-                    'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
-                    'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
-                    'jumlah_tagihan' => (int) ($po->total ?? 0),
-                    'jumlah_terbayar' => 0,
-                    'sisa_tagihan' => (int) ($po->total ?? 0),
-                    'status_pembayaran' => 'Belum Bayar',
-                    'status_approval' => 'Pending',
-                ];
+                if ($allAcceptedPos->isNotEmpty()) {
+                    // Gabungkan semua No PO dan total tagihan
+                    $allNoPo = $allAcceptedPos->pluck('no_po')->filter()->implode(', ');
+                    $totalTagihan = $allAcceptedPos->sum('total');
+                    
+                    // Cek apakah sudah ada entry jatuh tempo untuk invoice ini
+                    $existingJT = JatuhTempo::where('no_invoice', $invoiceKey)->first();
+                    $jumlahTerbayar = $existingJT ? (int)($existingJT->jumlah_terbayar ?? 0) : 0;
 
-                if ($existingJT) {
-                    // UPDATE JATUH TEMPO YANG SUDAH ADA
-                    $existingJT->update($jtPayload);
-                    \Log::info('[JT] Updated existing JatuhTempo for Accept status', [
-                        'jt_id' => $existingJT->id,
-                        'po_id' => $po->id,
-                        'payload' => $jtPayload
-                    ]);
-                } else {
-                    // BUAT JATUH TEMPO BARU
-                    $jt = JatuhTempo::create($jtPayload);
-                    \Log::info('[JT] Created new JatuhTempo for Accept status', [
-                        'jt_id' => $jt->id,
-                        'po_id' => $po->id,
-                        'payload' => $jtPayload
-                    ]);
+                    $jtPayload = [
+                        'no_invoice' => $invoiceKey,
+                        'no_po' => $allNoPo, // Gabungan semua No PO
+                        'customer' => $po->customer,
+                        'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
+                        'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
+                        'jumlah_tagihan' => (int) $totalTagihan, // Total dari semua PO
+                        'jumlah_terbayar' => $jumlahTerbayar,
+                        'sisa_tagihan' => max(0, (int)$totalTagihan - $jumlahTerbayar),
+                        'status_pembayaran' => $jumlahTerbayar >= $totalTagihan ? 'Lunas' : ($jumlahTerbayar > 0 ? 'Sebagian' : 'Belum Bayar'),
+                        'status_approval' => 'Pending',
+                    ];
+
+                    if ($existingJT) {
+                        // UPDATE JATUH TEMPO YANG SUDAH ADA
+                        $existingJT->update($jtPayload);
+                        \Log::info('[JT] Updated existing JatuhTempo for Accept status', [
+                            'jt_id' => $existingJT->id,
+                            'po_id' => $po->id,
+                            'all_pos' => $allNoPo,
+                            'total_tagihan' => $totalTagihan
+                        ]);
+                    } else {
+                        // BUAT JATUH TEMPO BARU
+                        $jt = JatuhTempo::create($jtPayload);
+                        \Log::info('[JT] Created new JatuhTempo for Accept status', [
+                            'jt_id' => $jt->id,
+                            'po_id' => $po->id,
+                            'all_pos' => $allNoPo,
+                            'total_tagihan' => $totalTagihan
+                        ]);
+                    }
                 }
             } catch (\Throwable $e) {
                 \Log::warning('[JT] Sync JatuhTempo gagal', [
@@ -601,6 +598,7 @@ class POController extends Controller
                 'from' => $from ?: 'invoice',
                 'po_number' => $poNumber,
                 'tanggal_po' => \Carbon\Carbon::parse($po->tanggal_po)->format('Y-m-d'),
+                'reset_fields' => '1', // Parameter untuk trigger reset form
             ])
             ->with('success', $successMsg);
     }
@@ -619,40 +617,76 @@ class POController extends Controller
             $po->update(['status_approval' => $new]);
 
             if ($new === 'Accept') {
-                // Sinkronkan 1 baris ke Jatuh Tempo untuk PO ini saja
+                // Sinkronkan SEMUA PO dengan po_number yang sama ke 1 entry Jatuh Tempo
                 try {
-                    $customer = Customer::find($po->customer_id);
-                    $tanggalInvoice = \Carbon\Carbon::parse($po->tanggal_po);
-                    $termsDays = (int) (($customer->payment_terms_days ?? 0));
-                    $tanggalJatuhTempo = $termsDays > 0
-                        ? (clone $tanggalInvoice)->addDays($termsDays)
-                        : (clone $tanggalInvoice)->addMonth();
+                    // Ambil semua PO dengan po_number yang sama dan status Accept
+                    $allAcceptedPos = PO::where('po_number', $po->po_number)
+                        ->where('status_approval', 'Accept')
+                        ->get();
 
-                    $payload = [
-                        'no_invoice' => $invoiceKey,
-                        'no_po' => $po->no_po,
-                        'customer' => $po->customer,
-                        'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
-                        'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
-                        'jumlah_tagihan' => (int) ($po->total ?? 0),
-                        'jumlah_terbayar' => 0,
-                        'sisa_tagihan' => (int) ($po->total ?? 0),
-                        'status_pembayaran' => 'Belum Bayar',
-                    ];
+                    if ($allAcceptedPos->isNotEmpty()) {
+                        $customer = Customer::find($po->customer_id);
+                        $tanggalInvoice = \Carbon\Carbon::parse($po->tanggal_po);
+                        $termsDays = (int) (($customer->payment_terms_days ?? 0));
+                        $tanggalJatuhTempo = $termsDays > 0
+                            ? (clone $tanggalInvoice)->addDays($termsDays)
+                            : (clone $tanggalInvoice)->addMonth();
 
-                    \App\Models\JatuhTempo::updateOrCreate(
-                        ['no_invoice' => $invoiceKey, 'no_po' => $po->no_po],
-                        $payload
-                    );
+                        // Gabungkan semua No PO dan total tagihan
+                        $allNoPo = $allAcceptedPos->pluck('no_po')->filter()->implode(', ');
+                        $totalTagihan = $allAcceptedPos->sum('total');
+                        
+                        // Cek apakah sudah ada entry jatuh tempo untuk invoice ini
+                        $existingJT = \App\Models\JatuhTempo::where('no_invoice', $invoiceKey)->first();
+                        $jumlahTerbayar = $existingJT ? (int)($existingJT->jumlah_terbayar ?? 0) : 0;
+
+                        $payload = [
+                            'no_invoice' => $invoiceKey,
+                            'no_po' => $allNoPo, // Gabungan semua No PO
+                            'customer' => $po->customer,
+                            'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
+                            'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
+                            'jumlah_tagihan' => (int) $totalTagihan, // Total dari semua PO
+                            'jumlah_terbayar' => $jumlahTerbayar,
+                            'sisa_tagihan' => max(0, (int)$totalTagihan - $jumlahTerbayar),
+                            'status_pembayaran' => $jumlahTerbayar >= $totalTagihan ? 'Lunas' : ($jumlahTerbayar > 0 ? 'Sebagian' : 'Belum Bayar'),
+                        ];
+
+                        \App\Models\JatuhTempo::updateOrCreate(
+                            ['no_invoice' => $invoiceKey],
+                            $payload
+                        );
+                    }
                 } catch (\Throwable $e) {
-                    \Log::warning('[JT] Toggle single sync failed', ['error' => $e->getMessage()]);
+                    \Log::warning('[JT] Toggle group sync failed', ['error' => $e->getMessage()]);
                 }
             } else {
-                // Toggle ke Pending: hapus Jatuh Tempo hanya untuk PO ini
+                // Toggle ke Pending: cek apakah masih ada PO lain yang Accept
                 try {
-                    \App\Models\JatuhTempo::where('no_invoice', $invoiceKey)
-                        ->where('no_po', $po->no_po)
-                        ->delete();
+                    $remainingAcceptedPos = PO::where('po_number', $po->po_number)
+                        ->where('status_approval', 'Accept')
+                        ->where('id', '!=', $po->id)
+                        ->get();
+
+                    if ($remainingAcceptedPos->isEmpty()) {
+                        // Tidak ada PO Accept lagi, hapus jatuh tempo
+                        \App\Models\JatuhTempo::where('no_invoice', $invoiceKey)->delete();
+                    } else {
+                        // Masih ada PO Accept lain, update jatuh tempo dengan data yang tersisa
+                        $allNoPo = $remainingAcceptedPos->pluck('no_po')->filter()->implode(', ');
+                        $totalTagihan = $remainingAcceptedPos->sum('total');
+                        
+                        $existingJT = \App\Models\JatuhTempo::where('no_invoice', $invoiceKey)->first();
+                        if ($existingJT) {
+                            $jumlahTerbayar = (int)($existingJT->jumlah_terbayar ?? 0);
+                            $existingJT->update([
+                                'no_po' => $allNoPo,
+                                'jumlah_tagihan' => (int) $totalTagihan,
+                                'sisa_tagihan' => max(0, (int)$totalTagihan - $jumlahTerbayar),
+                                'status_pembayaran' => $jumlahTerbayar >= $totalTagihan ? 'Lunas' : ($jumlahTerbayar > 0 ? 'Sebagian' : 'Belum Bayar'),
+                            ]);
+                        }
+                    }
                 } catch (\Throwable $e) {
                     \Log::warning('[JT] Delete JT on single toggle back failed', ['error' => $e->getMessage()]);
                 }
@@ -959,9 +993,7 @@ class POController extends Controller
                 try {
                     $noInvKey = trim((string)$po->po_number);
                     if ($noInvKey !== '') {
-                        // Hapus baris pada tabel invoices yang memiliki no_invoice sama
-                        Invoice::where('no_invoice', $noInvKey)->delete();
-                        Invoice::whereRaw('TRIM(no_invoice) = ?', [$noInvKey])->delete();
+                        // Hapus entri Jatuh Tempo terkait (tabel invoices sudah tidak digunakan)
                         JatuhTempo::where('no_invoice', $noInvKey)->delete();
                         JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$noInvKey])->delete();
                     }

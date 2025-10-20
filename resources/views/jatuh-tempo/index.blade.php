@@ -198,7 +198,6 @@
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">No Invoice</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Customer</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Email</th>
-                        <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">No PO</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Tagihan</th>
                         <th class="py-1 px-1.5 text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Deadline</th>
                         <th class="py-1 px-1.5 text-center text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wider">Status</th>
@@ -222,8 +221,9 @@
                             <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ Str::limit($jt->customer, 15) }}</td>
                             @php($custEmail = optional(($customers ?? collect())->firstWhere('name', $jt->customer))->email)
                             <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $custEmail ?: '-' }}</td>
-                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">{{ $jt->no_po ?: '-' }}</td>
-                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">Rp {{ number_format($jt->jumlah_tagihan, 0, ',', '.') }}</td>
+                            <td class="py-1 px-1.5 text-xs text-gray-900 dark:text-slate-200">
+                                Rp {{ number_format($jt->jumlah_tagihan_display ?? $jt->jumlah_tagihan, 0, ',', '.') }}
+                            </td>
                             <td class="py-1 px-1.5 text-xs">
                                 @php($deadline = \Carbon\Carbon::parse($jt->tanggal_jatuh_tempo))
                                 @php($today = \Carbon\Carbon::today())
@@ -862,6 +862,11 @@ function setupAutoPlusMonth() {
         tglJt.removeAttribute('disabled');
     }
 
+    // Alias untuk compatibility dengan button onclick di form
+    function setCustomDays(days) {
+        setCustomDeadline(days);
+    }
+
     // Function to auto-populate deadline based on customer payment terms
     function autoPopulateDeadline() {
         const customerSelect = document.getElementById('customer');
@@ -1211,13 +1216,13 @@ async function sendEmailWithMessage() {
             // Error state
             sendBtn.disabled = false;
             sendBtn.innerHTML = originalContent;
-            showAdvancedNotification('error', data.message, 'Gagal mengirim email');
+            showNotification('error', data.message || 'Gagal mengirim email');
         }
     } catch (error) {
         console.error('Error sending email:', error);
         sendBtn.disabled = false;
         sendBtn.innerHTML = originalContent;
-        showAdvancedNotification('error', 'Terjadi kesalahan saat mengirim email', error.message);
+        showNotification('error', 'Terjadi kesalahan saat mengirim email: ' + error.message);
     }
 }
 

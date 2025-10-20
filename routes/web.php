@@ -11,7 +11,7 @@ use App\Http\Controllers\{
     CustomerController,
     PengirimController, // Added PengirimController import
     SuratJalanController,
-    InvoiceController,
+    // InvoiceController, // Tidak digunakan - data invoice di tabel POS
     JatuhTempoController,
     EmployeeController,
     SalaryController,
@@ -173,20 +173,21 @@ Route::middleware(['auth'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Invoice Management (CRUD)
+    | Invoice Management (CRUD) - DISABLED (menggunakan PO)
     |--------------------------------------------------------------------------
+    | Route ini dinonaktifkan karena data invoice disimpan di tabel POS
+    | Akses invoice melalui: Route::get('/po/invoices', ...)
     */
-    Route::prefix('invoice')->name('invoice.')->group(function () {
-        Route::get('/', [InvoiceController::class, 'index'])->name('index');
-        Route::get('/create', [InvoiceController::class, 'create'])->name('create');
-        Route::post('/', [InvoiceController::class, 'store'])->name('store');
-        Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->name('edit');
-        Route::put('/{invoice}', [InvoiceController::class, 'update'])->name('update');
-        Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->name('destroy');
-        Route::patch('/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('update-status');
-        // Hapus semua data Invoice (+ Jatuh Tempo terkait)
-        Route::delete('/all', [InvoiceController::class, 'destroyAll'])->name('destroy-all');
-    });
+    // Route::prefix('invoice')->name('invoice.')->group(function () {
+    //     Route::get('/', [InvoiceController::class, 'index'])->name('index');
+    //     Route::get('/create', [InvoiceController::class, 'create'])->name('create');
+    //     Route::post('/', [InvoiceController::class, 'store'])->name('store');
+    //     Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->name('edit');
+    //     Route::put('/{invoice}', [InvoiceController::class, 'update'])->name('update');
+    //     Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->name('destroy');
+    //     Route::patch('/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('update-status');
+    //     Route::delete('/all', [InvoiceController::class, 'destroyAll'])->name('destroy-all');
+    // });
 
     // Seluruh route CRUD Tanda Terima dinonaktifkan (dipusatkan ke Surat Jalan)
     
