@@ -356,7 +356,7 @@
                                                 data-harga-pcs="{{ $p->harga_pcs ?? 0 }}" 
                                                 data-harga-set="{{ $p->harga_set ?? 0 }}" 
                                                 data-harga="{{ $p->harga ?? 0 }}" 
-                                                data-satuan="{{ strtoupper($p->satuan ?? 'PCS') }}"
+                                                data-satuan="PCS"
                                                 data-stok="{{ $stokTersedia }}">
                                             {{ $p->nama_produk }} (Stok: {{ $stokTersedia }})
                                         </option>

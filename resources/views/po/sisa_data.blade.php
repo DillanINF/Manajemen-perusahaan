@@ -175,21 +175,23 @@
                                     </td>
                                     <td class="px-4 py-4 text-center">
                                         <div class="flex items-center justify-center space-x-2">
-                                            <a href="{{ route('sisa-data-po.edit', $item->sisa_id) }}" 
-                                               class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors duration-200">
-                                                <i class="fas fa-edit mr-1"></i>
-                                                Edit
-                                            </a>
-                                            <form action="{{ route('sisa-data-po.destroy', $item->sisa_id) }}" method="POST" class="inline-block" 
-                                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus sisa data PO ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" 
-                                                        class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors duration-200">
-                                                    <i class="fas fa-trash mr-1"></i>
-                                                    Delete
-                                                </button>
-                                            </form>
+                                            <x-table.action-buttons 
+                                                onEdit="openSisaEditModal(this)"
+                                                :editPayload="[
+                                                    'id' => $item->sisa_id,
+                                                    'produk_id' => (int) $item->produk_id,
+                                                    'no_po' => $item->no_po,
+                                                    'customer' => $item->customer,
+                                                    'nama_produk' => $item->nama_produk,
+                                                    'satuan' => $item->satuan,
+                                                    'qty_po' => (int) $item->total_qty_po,
+                                                    'sisa_stok' => (int) $item->sisa_stok,
+                                                    'qty_sisa' => (int) $item->sisa_belum_terinput,
+                                                    'harga' => (int) $item->harga,
+                                                ]"
+                                                deleteAction="{{ route('sisa-data-po.destroy', $item->sisa_id) }}"
+                                                confirmText="Apakah Anda yakin ingin menghapus sisa data PO ini?"
+                                            />
                                         </div>
                                     </td>
                                 </tr>
@@ -243,21 +245,23 @@
                             
                             <!-- Action Buttons -->
                             <div class="flex items-center justify-center space-x-2 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <a href="{{ route('sisa-data-po.edit', $item->sisa_id) }}" 
-                                   class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                    <i class="fas fa-edit mr-2"></i>
-                                    Edit
-                                </a>
-                                <form action="{{ route('sisa-data-po.destroy', $item->sisa_id) }}" method="POST" class="flex-1" 
-                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus sisa data PO ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            class="w-full inline-flex items-center justify-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                        <i class="fas fa-trash mr-2"></i>
-                                        Delete
-                                    </button>
-                                </form>
+                                <x-table.action-buttons 
+                                    onEdit="openSisaEditModal(this)"
+                                    :editPayload="[
+                                        'id' => $item->sisa_id,
+                                        'produk_id' => (int) $item->produk_id,
+                                        'no_po' => $item->no_po,
+                                        'customer' => $item->customer,
+                                        'nama_produk' => $item->nama_produk,
+                                        'satuan' => $item->satuan,
+                                        'qty_po' => (int) $item->total_qty_po,
+                                        'sisa_stok' => (int) $item->sisa_stok,
+                                        'qty_sisa' => (int) $item->sisa_belum_terinput,
+                                        'harga' => (int) $item->harga,
+                                    ]"
+                                    deleteAction="{{ route('sisa-data-po.destroy', $item->sisa_id) }}"
+                                    confirmText="Apakah Anda yakin ingin menghapus sisa data PO ini?"
+                                />
                             </div>
                         </div>
                     @endforeach
@@ -281,6 +285,50 @@
             @endif
         </div>
     </div>
+</div>
+
+<!-- Modal Edit Sisa Data PO -->
+<div id="sisaEditOverlay" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/40" onclick="closeSisaEditModal()"></div>
+  <div class="relative z-10 max-w-2xl w-[92vw] sm:w-[640px] mx-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden">
+    <div class="px-4 sm:px-6 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Edit Sisa Data PO</h3>
+      <button type="button" class="w-9 h-9 inline-flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" onclick="closeSisaEditModal()">
+        <i class="fas fa-times text-gray-500"></i>
+      </button>
+    </div>
+    <form id="sisaEditForm" method="POST" action="#">
+      @csrf
+      @method('PUT')
+      <input type="hidden" name="_id" id="sisa_edit_id">
+      <div class="p-4 sm:p-6 space-y-4">
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produk</label>
+            <select name="produk_id" id="sisa_edit_produk_id" class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required>
+              <option value="">-- Pilih Produk --</option>
+              @foreach($produks as $p)
+                <option value="{{ $p->id }}">{{ $p->nama_produk }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><span class="text-red-600">*</span> Sisa PO</label>
+            <input name="qty_sisa" id="sisa_edit_qty_sisa" type="number" min="1" required class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          </div>
+        </div>
+      </div>
+      <div class="px-4 sm:px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-2">
+        <button type="button" class="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" onclick="closeSisaEditModal()">
+          <i class="fas fa-times mr-2"></i>Batal
+        </button>
+        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white">
+          <i class="fas fa-save mr-2"></i>Simpan Perubahan
+        </button>
+      </div>
+    </form>
+  </div>
+  <template id="sisaEditRouteBase" data-base="{{ url('/sisa-data-po') }}"></template>
 </div>
 
 <script>
@@ -379,6 +427,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderSuggestions(results);
             }
         });
+    }
+    // ===== Modal Edit Sisa Data PO =====
+    window.openSisaEditModal = function(btn){
+        try{
+            const dataRaw = btn?.getAttribute('data-edit') || btn?.dataset?.edit || '{}';
+            const data = JSON.parse(dataRaw);
+            const overlay = document.getElementById('sisaEditOverlay');
+            const base = document.getElementById('sisaEditRouteBase')?.dataset?.base || '';
+            const form = document.getElementById('sisaEditForm');
+            const id = data.id;
+            form.action = base && id ? (base + '/' + id) : '#';
+            document.getElementById('sisa_edit_id').value = id || '';
+            const sel = document.getElementById('sisa_edit_produk_id');
+            if (sel) {
+              sel.value = (data.produk_id ?? '').toString();
+              if (!sel.value) sel.selectedIndex = 0;
+            }
+            document.getElementById('sisa_edit_qty_sisa').value = data.qty_sisa ?? 1;
+            overlay.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }catch(e){ console.error('Gagal buka modal:', e); }
+    }
+    window.closeSisaEditModal = function(){
+        const overlay = document.getElementById('sisaEditOverlay');
+        overlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
     }
 });
 </script>

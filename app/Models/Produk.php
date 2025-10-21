@@ -20,8 +20,6 @@ class Produk extends Model
         'harga',
         'harga_pcs',
         'harga_set',
-        'satuan',
-        'deskripsi',
     ];
 
     // Otomatis tambahkan atribut sisa_stok ke serialization

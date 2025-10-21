@@ -54,7 +54,6 @@ class SalaryController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'employee_id' => 'required|exists:employees,id',
             'jenis_gaji' => 'required|in:borongan,harian',
             'jumlah_hari' => 'nullable|integer|min:1',
             'tarif_harian' => 'nullable|integer|min:0',
@@ -98,14 +97,13 @@ class SalaryController extends Controller
         $totalPotongan = $data['potongan_pajak'] + $data['potongan_bpjs'] + $data['potongan_lain'];
         $data['total_gaji'] = $totalPendapatan - $totalPotongan;
 
-        // Cek duplikasi gaji untuk bulan dan tahun yang sama
-        $existingSalary = Salary::where('employee_id', $data['employee_id'])
-            ->where('bulan', $data['bulan'])
+        // Cek duplikasi berdasarkan bulan dan tahun saja (karena employee_id sudah dihapus)
+        $existingSalary = Salary::where('bulan', $data['bulan'])
             ->where('tahun', $data['tahun'])
             ->first();
 
         if ($existingSalary) {
-            return redirect()->back()->withErrors(['error' => 'Gaji untuk karyawan ini pada bulan dan tahun tersebut sudah ada.']);
+            return redirect()->back()->withErrors(['error' => 'Data gaji untuk bulan dan tahun tersebut sudah ada.']);
         }
 
         Salary::create($data);
@@ -125,7 +123,6 @@ class SalaryController extends Controller
         try {
             // Validasi hanya field yang pasti ada di database
             $validated = $request->validate([
-                'employee_id' => 'nullable|exists:employees,id',
                 'bulan' => 'required|integer|min:1|max:12',
                 'tahun' => 'required|integer|min:2020|max:2030',
                 'gaji_pokok' => 'required|numeric|min:0',
@@ -135,30 +132,21 @@ class SalaryController extends Controller
             $gajiPokok = (float)$validated['gaji_pokok'];
             $totalGaji = $gajiPokok;
 
-            // Gunakan employee_id lama jika tidak ada yang baru
-            if (empty($validated['employee_id'])) {
-                $validated['employee_id'] = $salary->employee_id;
-            }
+            // Cek duplikasi berdasarkan bulan dan tahun saja (kecuali record yang sedang diupdate)
+            $existingSalary = Salary::where('bulan', $validated['bulan'])
+                ->where('tahun', $validated['tahun'])
+                ->where('id', '!=', $salary->id)
+                ->first();
 
-            // Cek duplikasi gaji untuk bulan dan tahun yang sama (kecuali record yang sedang diupdate)
-            if (!empty($validated['employee_id'])) {
-                $existingSalary = Salary::where('employee_id', $validated['employee_id'])
-                    ->where('bulan', $validated['bulan'])
-                    ->where('tahun', $validated['tahun'])
-                    ->where('id', '!=', $salary->id)
-                    ->first();
-
-                if ($existingSalary) {
-                    if ($request->ajax()) {
-                        return response()->json(['success' => false, 'message' => 'Gaji untuk karyawan ini pada bulan dan tahun tersebut sudah ada.'], 422);
-                    }
-                    return redirect()->back()->withErrors(['error' => 'Gaji untuk karyawan ini pada bulan dan tahun tersebut sudah ada.']);
+            if ($existingSalary) {
+                if ($request->ajax()) {
+                    return response()->json(['success' => false, 'message' => 'Data gaji untuk bulan dan tahun tersebut sudah ada.'], 422);
                 }
+                return redirect()->back()->withErrors(['error' => 'Data gaji untuk bulan dan tahun tersebut sudah ada.']);
             }
 
             // Data yang akan di-update (hanya kolom yang pasti ada)
             $updateData = [
-                'employee_id' => $validated['employee_id'],
                 'bulan' => $validated['bulan'],
                 'tahun' => $validated['tahun'],
                 'gaji_pokok' => $gajiPokok,

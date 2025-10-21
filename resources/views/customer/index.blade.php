@@ -239,27 +239,27 @@
 
 <!-- Add Customer Modal - Responsive -->
 <div id="addModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/80 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 transition-all duration-300 opacity-0">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700 transform scale-95 translate-y-4 transition-all duration-300" style="max-width: 28rem !important;">
-        <!-- Header dengan gradient -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-6">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700 transform scale-95 translate-y-4 transition-all duration-300" style="max-width: 28rem !important;">
+        <!-- Header putih sederhana (sticky) -->
+        <div class="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 py-5 rounded-t-2xl">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-user-plus text-white text-xl"></i>
+                    <div class="w-10 h-10 bg-blue-50 dark:bg-slate-700 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-user-plus text-blue-600 dark:text-blue-300"></i>
                     </div>
                     <div>
-                        <h3 class="text-2xl font-bold text-white">Tambah Customer</h3>
-                        <p class="text-blue-100 text-sm">Lengkapi informasi customer baru</p>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-slate-100">Tambah Customer</h3>
+                        <p class="text-gray-600 dark:text-slate-400 text-sm">Lengkapi informasi customer baru</p>
                     </div>
                 </div>
                 <button onclick="closeAddModal()" 
-                        class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-all duration-200 flex items-center justify-center">
+                        class="w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-700 transition-all duration-200 flex items-center justify-center">
                     <i class="fa-solid fa-times text-lg"></i>
                 </button>
             </div>
         </div>
         
-        <form id="addCustomerForm" action="{{ route('customer.store') }}" method="POST" class="p-4">
+        <form id="addCustomerForm" action="{{ route('customer.store') }}" method="POST" class="p-6">
             @csrf
             <div class="space-y-3">
                 <div>

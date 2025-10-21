@@ -96,10 +96,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-slate-700/50 rounded-lg border border-gray-200 dark:border-slate-600">
-                    <span class="text-sm text-gray-500 dark:text-slate-400">Total:</span>
-                    <span id="totalHariIni" class="text-base font-bold text-gray-900 dark:text-slate-100">Rp 0</span>
-                </div>
             </div>
         </div>
 
@@ -169,7 +165,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <x-table.action-buttons 
-                                    onEdit="openEditModal({{ $salary->id }}, {{ $salary->employee_id }}, {{ $salary->bulan }}, {{ $salary->tahun }}, {{ $salary->gaji_pokok }})"
+                                    onEdit="openEditModal({{ $salary->id }}, {{ $salary->bulan }}, {{ $salary->tahun }}, {{ $salary->gaji_pokok }})"
                                     deleteAction="{{ route('salary.destroy', $salary->id) }}"
                                     confirmText="Yakin ingin menghapus data gaji ini?" />
                             </td>
@@ -198,9 +194,9 @@
 
 <!-- Modal Input Gaji - Style Seperti Employee -->
 <div id="inputGajiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-    <div class="modal-gaji-container bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div class="modal-gaji-container bg-white dark:bg-slate-900 dark:text-slate-200 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-transparent dark:border-slate-700">
         <!-- Modal Header - Putih Simple -->
-        <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+        <div class="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-8 py-6 rounded-t-2xl">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-900">Tambah Gaji</h2>
@@ -258,7 +254,7 @@
             <!-- Modal Footer -->
             <div class="flex justify-end space-x-4 pt-6 mt-8 border-t border-gray-200">
                 <button type="button" onclick="closeInputGajiModal()" 
-                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
+                            class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">
                     Batal
                 </button>
                 <button type="submit" 
@@ -273,7 +269,7 @@
 
 <!-- Modal Edit Gaji - Style Seperti Employee -->
 <div id="editGajiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-    <div class="modal-gaji-container bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div class="modal-gaji-container bg-white dark:bg-slate-900 dark:text-slate-200 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-transparent dark:border-slate-700">
         <!-- Modal Header -->
         <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
             <div class="flex items-center justify-between">
@@ -294,8 +290,7 @@
             @csrf
             @method('PUT')
             
-            <!-- Employee ID & Data Hidden -->
-            <input type="hidden" name="employee_id" id="edit_employee_id">
+            <!-- Data Hidden -->
             <input type="hidden" name="jenis_gaji" id="edit_jenis_gaji" value="borongan">
             <input type="hidden" name="jumlah_hari" id="edit_jumlah_hari" value="1">
             <input type="hidden" name="tarif_harian" id="edit_tarif_harian" value="0">
@@ -357,7 +352,7 @@
             <!-- Modal Footer -->
             <div class="flex justify-end space-x-4 pt-6 mt-8 border-t border-gray-200">
                 <button type="button" onclick="closeEditGajiModal()" 
-                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
+                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">
                     Batal
                 </button>
                 <button type="submit" 
@@ -394,7 +389,7 @@ function closeInputGajiModal() {
 }
 
 // Edit Modal Functions - Parameter langsung seperti employee
-function openEditModal(id, employeeId, bulan, tahun, gaji) {
+function openEditModal(id, bulan, tahun, gaji) {
     const modal = document.getElementById('editGajiModal');
     const form = document.getElementById('editGajiForm');
     
@@ -402,7 +397,6 @@ function openEditModal(id, employeeId, bulan, tahun, gaji) {
     form.action = `{{ url('/salary') }}/${id}`;
     
     // Fill form fields
-    document.getElementById('edit_employee_id').value = employeeId || '';
     document.getElementById('edit_bulan').value = bulan;
     document.getElementById('edit_tahun').value = tahun;
     document.getElementById('edit_gaji_pokok').value = gaji;

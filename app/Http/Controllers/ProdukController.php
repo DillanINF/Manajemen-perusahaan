@@ -43,7 +43,6 @@ class ProdukController extends Controller
                 'harga' => 'nullable|numeric|min:0',
                 'harga_pcs' => 'nullable|numeric|min:0',
                 'harga_set' => 'nullable|numeric|min:0',
-                'deskripsi' => 'nullable|string',
             ]);
 
             // Pastikan kode_produk selalu ada
@@ -65,7 +64,6 @@ class ProdukController extends Controller
             // Set default untuk field yang kosong
             $validated['harga_pcs'] = $validated['harga_pcs'] ?? 0;
             $validated['harga_set'] = $validated['harga_set'] ?? 0;
-            $validated['deskripsi'] = $validated['deskripsi'] ?? '';
 
             // Jaga kompatibilitas: jika kolom 'name' di DB wajib isi, mirror dari nama_produk
             if (empty($validated['name']) && !empty($validated['nama_produk'])) {
@@ -135,7 +133,6 @@ class ProdukController extends Controller
                 'harga' => 'nullable|numeric|min:0',
                 'harga_pcs' => 'nullable|numeric|min:0',
                 'harga_set' => 'nullable|numeric|min:0',
-                'deskripsi' => 'nullable|string',
             ]);
 
             // Generate kode_produk otomatis jika kosong
@@ -157,7 +154,6 @@ class ProdukController extends Controller
             // Set default untuk field yang kosong
             $validated['harga_pcs'] = $validated['harga_pcs'] ?? 0;
             $validated['harga_set'] = $validated['harga_set'] ?? 0;
-            $validated['deskripsi'] = $validated['deskripsi'] ?? '';
 
             $produk->update($validated);
 

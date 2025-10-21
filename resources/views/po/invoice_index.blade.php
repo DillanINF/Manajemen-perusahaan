@@ -359,7 +359,7 @@
                                     data-po-number="{{ (int)($noUrut ?? 0) }}"
                                     data-invoice-no="{{ $invAttr }}"
                                     data-due-date="{{ $jtAttr }}"
-                                    ondblclick="goToInputPO({{ (int)($noUrut ?? 0) }})">
+                                    ondblclick="goToInputPO('{{ $invAttr }}')">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-3">
                                             <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50 transition-colors">
@@ -377,7 +377,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[220px] md:max-w-[300px] lg:max-w-[420px] ml-1 mr-1">{{ $first->customer ?? 'N/A' }}</div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[220px] md:max-w-[300px] lg:max-w-[420px] ml-1 mr-1">{{ $first->customer ?? '' }}</div>
                                     </td>
                                     <td class="px-3 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
@@ -968,9 +968,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function untuk membuat baris invoice baru
     function createNewInvoiceRow(data) {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-slate-700 transition-all duration-200 group';
+        tr.className = 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-slate-700 transition-all duration-200 cursor-pointer group';
         tr.setAttribute('data-id', data.id);
         tr.setAttribute('data-invoice-number', String(data.no_invoice ?? ''));
+        tr.setAttribute('data-invoice-no', String(data.no_invoice ?? '-'));
+        tr.setAttribute('data-customer', String(data.customer || ''));
+        
+        // Pasang handler double-click agar langsung bisa ke form input PO
+        tr.ondblclick = function() {
+            if (typeof goToInputPO === 'function') {
+                goToInputPO(String(data.no_invoice || ''), String(data.customer || ''));
+            }
+        };
         
         tr.innerHTML = `
             <td class="px-6 py-4 whitespace-nowrap">
@@ -998,22 +1007,15 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900 dark:text-white">-</div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center gap-2">
-                    <div class="p-1.5 bg-orange-100 dark:bg-orange-900/50 rounded">
-                        <i class="fas fa-barcode text-orange-600 dark:text-orange-400 text-xs"></i>
-                    </div>
-                    <div>
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">N/A</div>
-                    </div>
-                </div>
+            <td class="hidden">
+                <!-- Kolom placeholder (sebelumnya N/A) disembunyikan untuk baris draft invoice -->
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-4 whitespace-nowrap">
                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">
                     0 pcs
                 </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
                     <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900/50 rounded">
                         <i class="fas fa-rupiah-sign text-emerald-600 dark:text-emerald-400 text-xs"></i>
@@ -1025,9 +1027,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </td>
             <!-- Status (default: Panding) -->
-            <td class="px-4 py-4 pl-10 whitespace-nowrap text-center" style="width: 120px;">
+            <td class="px-4 py-4 pl-6 pr-8 whitespace-nowrap text-center" style="width: 120px;">
                 <button type="button"
-                        class="relative inline-flex items-center justify-center w-[90px] px-3 py-2 mt-0 text-xs font-medium rounded-md border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-700"
+                        class="inline-flex items-center justify-center w-[90px] px-3 py-2 text-xs font-medium rounded-md border bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-600"
                         disabled>
                     <div class="flex items-center justify-center space-x-1.5">
                         <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">

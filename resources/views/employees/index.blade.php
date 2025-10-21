@@ -253,7 +253,7 @@
                 
                 <div class="flex justify-end space-x-4 pt-6 mt-8 border-t border-gray-200">
                     <button type="button" onclick="closeModal('tambahModal')" 
-                            class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
+                            class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">
                         Batal
                     </button>
                     <button type="submit" 
@@ -337,7 +337,7 @@
             
             <div class="flex justify-end space-x-4 pt-6 mt-8 border-t border-gray-200">
                 <button type="button" onclick="closeModal('editModal')" 
-                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
+                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">
                     Batal
                 </button>
                 <button type="submit" 

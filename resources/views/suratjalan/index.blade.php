@@ -142,8 +142,8 @@
                             ]) }}" 
                            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-purple-700 bg-white border border-purple-300 rounded-full hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:bg-slate-800 dark:text-purple-200 dark:border-purple-600 dark:hover:bg-slate-700">
                             <i class="fa-solid fa-plus mr-1.5"></i>
-                            Kembali ke Form Input PO
-                        </a>
+                            Tambah PO
+                            </a>
                     </div>
                 </div>
             </div>

@@ -172,15 +172,15 @@ class SisaDataPOController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $validated = $request->validate([
+            'produk_id' => 'required|integer|exists:produks,id',
             'qty_sisa' => 'required|integer|min:1',
-            'keterangan' => 'nullable|string|max:255'
         ]);
 
         $sisaItem = SisaPOItem::findOrFail($id);
         $sisaItem->update([
-            'qty_sisa' => $request->qty_sisa,
-            'keterangan' => $request->keterangan
+            'produk_id' => $validated['produk_id'],
+            'qty_sisa' => $validated['qty_sisa'],
         ]);
 
         return redirect()->route('sisa-data-po.index')

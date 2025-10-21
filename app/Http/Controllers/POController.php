@@ -127,7 +127,8 @@ class POController extends Controller
             'no_invoice_pt'        => 'nullable|string|max:255',
             'no_invoice_tanggal'   => 'nullable|integer|min:1|max:12',
             'no_invoice_tahun'     => 'nullable|integer',
-            'customer_id'          => 'required|exists:customers,id',
+            // customer_id was removed from pos schema; make it optional for backward-compatible forms
+            'customer_id'          => 'nullable|exists:customers,id',
             'tanggal_po'           => 'required|date',
             'kendaraan'            => 'nullable|string',
             'no_polisi'            => 'nullable|string',
@@ -145,9 +146,12 @@ class POController extends Controller
         // Gabungkan nomor surat jalan
         $noSuratJalan = "{$data['no_surat_jalan_nomor']}/{$data['no_surat_jalan_pt']}/{$data['no_surat_jalan_tahun']}";
 
-        // Ambil nama customer dari customer_id
-        $customer = Customer::find($data['customer_id']);
-        $customerName = $customer ? $customer->name : '';
+        // Ambil nama customer dari customer_id jika ada; fallback ke field 'customer' dari request
+        $customer = null;
+        if (!empty($data['customer_id'])) {
+            $customer = Customer::find($data['customer_id']);
+        }
+        $customerName = $customer?->name ?? (string) $request->input('customer', '');
 
         if (empty($data['address_1']) || $data['address_1'] === '-') {
             $data['address_1'] = $customer->address_1 ?? '';
@@ -344,7 +348,6 @@ class POController extends Controller
                 $po->update([
                     'no_invoice'    => $data['invoice_number'], // Nomor urut invoice
                     'tanggal_po'    => $data['tanggal_po'],
-                    'customer_id'   => $data['customer_id'],
                     'customer'      => $customerName,
                     'no_surat_jalan'=> $noSuratJalan,
                     'no_po'         => $data['no_po'],
@@ -392,7 +395,6 @@ class POController extends Controller
                 $po = PO::create([
                     'no_invoice'    => $data['invoice_number'] ?? null,
                     'tanggal_po'    => $data['tanggal_po'],
-                    'customer_id'   => $data['customer_id'],
                     'customer'      => $customerName,
                     'no_surat_jalan'=> $noSuratJalan,
                     'no_po'         => $data['no_po'],
@@ -1304,7 +1306,6 @@ class POController extends Controller
                 'qty_jenis'   => 'PCS',
                 'harga'       => 0,
                 'total'       => 0,
-                'customer_id' => $customerId,
                 'customer'    => $customerNm ?: '-',
                 'alamat_1'    => null,
                 'alamat_2'    => null,
@@ -1365,7 +1366,6 @@ class POController extends Controller
             'qty_jenis'   => 'PCS',
             'harga'       => 0,
             'total'       => 0,
-            'customer_id' => $customerId,
             'customer'    => $customerNm ?: '-',
             'alamat_1'    => null,
             'alamat_2'    => null,
@@ -1403,7 +1403,6 @@ class POController extends Controller
             
             DB::transaction(function() use ($invoiceNumber, $request, $customerName, $customer) {
                 $updates = [
-                    'customer_id' => $request->customer_id,
                     'customer' => $customerName,
                     'tanggal_po' => $request->tanggal_invoice,
                 ];
