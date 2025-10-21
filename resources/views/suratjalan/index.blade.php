@@ -8,8 +8,8 @@
     <script>
         // Pemetaan kode customer dari server untuk header invoice
         window.customerCodes = @json($customerCodes ?? []);
-        // po_number aktif dari server (bila ada)
-        window.currentPoNumber = @json($poNumber ?? null);
+        // invoice_number aktif dari server (bila ada)
+        window.currentInvoiceNumber = @json($poNumber ?? null);
     </script>
     <!-- Header Section -->
     <div class="rounded-lg shadow-lg p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-slate-50 to-slate-100 border border-gray-200 dark:border-transparent dark:bg-gradient-to-r dark:from-gray-700 dark:to-gray-800">
@@ -137,7 +137,7 @@
                         </a>
                         <a href="{{ route('po.create', [
                                 'from' => 'invoice',
-                                'po_number' => (request('po_number') ?? ($poNumber ?? (($suratjalan->first()->po_number ?? null)))),
+                                'invoice_number' => (request('invoice_number') ?? ($poNumber ?? (($suratjalan->first()->no_invoice ?? null)))),
                                 'reset_fields' => '1'
                             ]) }}" 
                            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-purple-700 bg-white border border-purple-300 rounded-full hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:bg-slate-800 dark:text-purple-200 dark:border-purple-600 dark:hover:bg-slate-700">
@@ -153,7 +153,7 @@
                 @for($m=1;$m<=12;$m++)
                     @php($stat = isset($monthlyStats) ? ($monthlyStats[$m] ?? null) : null)
                     @php($isActive = ((int)($month ?? now()->format('n'))) === $m)
-                    <a href="{{ route('suratjalan.index', ['month' => $m, 'year' => $tahunTerpilihLocal, 'po_number' => $poNumber]) }}" class="block focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
+                    <a href="{{ route('suratjalan.index', ['month' => $m, 'year' => $tahunTerpilihLocal, 'invoice_number' => $poNumber]) }}" class="block focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
                         <div class="p-2 rounded-lg border text-xs sm:text-sm transition-colors hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700/40
                                     {{ $isActive ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-600' : 'bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700' }}">
                             <div class="flex items-center justify-between">
@@ -336,7 +336,7 @@
                 <!-- Hidden inputs untuk preserve filter saat redirect -->
                 <input type="hidden" name="month" value="{{ request('month') ?? $month ?? '' }}">
                 <input type="hidden" name="year" value="{{ request('year') ?? $year ?? '' }}">
-                <input type="hidden" name="po_number" value="{{ request('po_number') ?? $poNumber ?? '' }}">
+                <input type="hidden" name="invoice_number" value="{{ request('invoice_number') ?? $poNumber ?? '' }}">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -1069,8 +1069,8 @@ function populateInvoice(data) {
     const invYear = String(dbDate.getFullYear());
     const customerName = (first.customer || '').trim();
     const customerCode = (window.customerCodes && window.customerCodes[customerName]) ? window.customerCodes[customerName] : '';
-    // Gunakan po_number dari filter jika ada, fallback ke field pada baris pertama
-    const invoiceNumber = (window.currentPoNumber ?? first.po_number ?? '') + '';
+    // Gunakan invoice_number dari filter jika ada, fallback ke field pada baris pertama
+    const invoiceNumber = (window.currentInvoiceNumber ?? first.no_invoice ?? '') + '';
     const parts = [];
     if (invoiceNumber) parts.push(invoiceNumber);
     if (customerCode) parts.push(customerCode);

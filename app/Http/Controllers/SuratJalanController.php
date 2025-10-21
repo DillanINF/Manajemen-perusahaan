@@ -26,8 +26,8 @@ class SuratJalanController extends Controller
         $month = (int) ($request->get('month') ?: now()->format('n'));
         $year  = (int) ($request->get('year')  ?: now()->format('Y'));
         
-        // PERBAIKAN: Ambil filter po_number untuk menampilkan data spesifik per invoice
-        $poNumber = $request->get('po_number');
+        // PERBAIKAN: Ambil filter invoice_number untuk menampilkan data spesifik per invoice
+        $poNumber = $request->get('invoice_number');
 
         // Daftar tahun dari database
         $dbYears = collect();
@@ -56,11 +56,11 @@ class SuratJalanController extends Controller
         // Daftar semua tahun untuk modal (dari 2020 sampai 2035)
         $allYears = range(2020, 2035);
 
-        // PERBAIKAN: Filter data berdasarkan po_number jika ada
+        // PERBAIKAN: Filter data berdasarkan no_invoice jika ada
         $suratjalan = PO::with(['produkRel'])
             ->when($year, fn($q) => $q->whereRaw(DatabaseService::year('tanggal_po') . ' = ?', [$year]))
             ->when($month, fn($q) => $q->whereRaw(DatabaseService::month('tanggal_po') . ' = ?', [$month]))
-            ->when($poNumber, fn($q) => $q->where('po_number', (int)$poNumber))
+            ->when($poNumber, fn($q) => $q->where('no_invoice', $poNumber))
             // Hanya tampilkan data PO yang benar-benar diinput (bukan placeholder dari Data Invoice)
             ->whereNotNull('no_po')
             ->where('no_po', '!=', '-')
@@ -76,11 +76,11 @@ class SuratJalanController extends Controller
         // Ambil semua produk untuk dropdown
         $produk = Produk::all();
 
-        // PERBAIKAN: Filter data PO berdasarkan po_number jika ada
+        // PERBAIKAN: Filter data PO berdasarkan no_invoice jika ada
         $pos = PO::with(['produkRel'])
             ->when($year, fn($q) => $q->whereRaw(DatabaseService::year('tanggal_po') . ' = ?', [$year]))
             ->when($month, fn($q) => $q->whereRaw(DatabaseService::month('tanggal_po') . ' = ?', [$month]))
-            ->when($poNumber, fn($q) => $q->where('po_number', (int)$poNumber))
+            ->when($poNumber, fn($q) => $q->where('no_invoice', $poNumber))
             ->whereNotNull('no_po')
             ->where('no_po', '!=', '-')
             ->orderBy('created_at', 'desc')
@@ -101,7 +101,7 @@ class SuratJalanController extends Controller
         for ($m = 1; $m <= 12; $m++) {
             $monthData = DB::table('pos')
                 ->select(DB::raw('SUM(total) as total_sum, COUNT(*) as total_count'))
-                ->when($poNumber, fn($q) => $q->where('po_number', (int) $poNumber))
+                ->when($poNumber, fn($q) => $q->where('no_invoice', $poNumber))
                 ->whereNotNull('no_po')
                 ->where('no_po', '!=', '-')
                 ->whereYear('tanggal_po', $year)
@@ -182,11 +182,7 @@ class SuratJalanController extends Controller
             'no_polisi', 'qty', 'qty_jenis', 'produk_id', 'total', 'alamat_1', 'alamat_2',
             'pengirim'
         ]);
-        // Kompatibilitas schema lama: isi kolom legacy 'po_number' jika ada constraint NOT NULL
-        $data['po_number'] = $data['no_po'] ?? null;
-
-        // Kompatibilitas schema lama: isi kolom legacy 'po_number' jika ada constraint NOT NULL
-        $data['po_number'] = $data['no_po'] ?? null;
+        // Tidak perlu lagi set po_number karena sudah migrasi ke no_invoice
 
         // PERBAIKAN: Bersihkan data kendaraan yang invalid
         if (isset($data['kendaraan'])) {
@@ -341,15 +337,15 @@ class SuratJalanController extends Controller
             \Log::warning('SJ Sync JatuhTempo (update) gagal: ' . $e->getMessage());
         }
 
-        // Redirect dengan parameter yang sama (month, year, po_number) agar tetap di halaman yang sama
+        // Redirect dengan parameter yang sama (month, year, invoice_number) agar tetap di halaman yang sama
         $month = $request->input('month') ?: ($suratJalan->tanggal_po ? date('n', strtotime($suratJalan->tanggal_po)) : null);
         $year = $request->input('year') ?: ($suratJalan->tanggal_po ? date('Y', strtotime($suratJalan->tanggal_po)) : null);
-        $poNumber = $request->input('po_number') ?: $suratJalan->po_number;
+        $invoiceNumber = $request->input('invoice_number') ?: $suratJalan->no_invoice;
         
         return redirect()->route('suratjalan.index', [
             'month' => $month,
             'year' => $year,
-            'po_number' => $poNumber
+            'invoice_number' => $invoiceNumber
         ])->with('success', 'Data PO berhasil diupdate');
     }
 
@@ -418,24 +414,23 @@ class SuratJalanController extends Controller
             }
 
             // Simpan konteks untuk placeholder invoice jika grup kosong
-            $poNumber = (int) ($suratJalan->po_number ?? 0);
+            $invoiceNumber = $suratJalan->no_invoice;
             $placeholderTanggal = $suratJalan->tanggal_po ?: now()->format('Y-m-d');
             $placeholderCustomerId = $suratJalan->customer_id ?? null;
             $placeholderCustomer = $suratJalan->customer ?? '-';
 
             $suratJalan->delete();
 
-            // Jika setelah hapus tidak ada lagi PO untuk po_number ini, buat draft placeholder
-            if ($poNumber > 0 && !\App\Models\PO::where('po_number', $poNumber)->exists()) {
+            // Jika setelah hapus tidak ada lagi PO untuk no_invoice ini, buat draft placeholder
+            if (!empty($invoiceNumber) && !\App\Models\PO::where('no_invoice', $invoiceNumber)->exists()) {
                 try {
                     \App\Models\PO::create([
-                        'po_number'      => $poNumber,
+                        'no_invoice'     => $invoiceNumber,
                         'tanggal_po'     => $placeholderTanggal,
                         'customer_id'    => $placeholderCustomerId,
                         'customer'       => $placeholderCustomer,
                         'no_surat_jalan' => null,
                         'no_po'          => '-',
-                        'no_invoice'     => null,
                         'produk_id'      => null,
                         'qty'            => 0,
                         'qty_jenis'      => 'PCS',
@@ -451,7 +446,7 @@ class SuratJalanController extends Controller
                 } catch (\Throwable $e) {
                     \Log::warning('[Invoice Placeholder] Gagal membuat draft placeholder setelah hapus PO', [
                         'error' => $e->getMessage(),
-                        'po_number' => $poNumber,
+                        'no_invoice' => $invoiceNumber,
                     ]);
                 }
             }
@@ -555,14 +550,14 @@ class SuratJalanController extends Controller
             $ppn = (int) round($subtotal * 0.11);
             $grandTotal = $subtotal + $ppn;
 
-            // Ambil nomor invoice dari po_number (kolom NO INVOICE yang dipilih user)
+            // Ambil nomor invoice dari no_invoice (kolom NO INVOICE yang dipilih user)
             $firstPo = $pos->first();
             // Gunakan tanggal PO (dari data) untuk konsistensi dengan tabel Surat Jalan
             $today = $firstPo && $firstPo->tanggal_po ? Carbon::parse($firstPo->tanggal_po) : Carbon::now();
             $today->locale('id');
             
-            // Ambil nomor invoice dari po_number (angka urut yang dipilih user di Data Invoice)
-            $noInvoice = (string) ($firstPo->po_number ?? '');
+            // Ambil nomor invoice dari no_invoice (angka urut yang dipilih user di Data Invoice)
+            $noInvoice = (string) ($firstPo->no_invoice ?? '');
             
             // Ambil kode customer TANPA RELASI - langsung query
             $customerCode = '';
@@ -672,9 +667,8 @@ class SuratJalanController extends Controller
                 $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
             }
 
-            // Gunakan po_number sebagai no_invoice (no urut invoice dari Data Invoice)
-            // Jika tidak ada po_number, gunakan no_invoice dari database
-            $invoiceKey = $pos->po_number ?? $pos->no_invoice;
+            // Gunakan no_invoice sebagai key untuk Jatuh Tempo
+            $invoiceKey = $pos->no_invoice;
 
             // CEK APAKAH SUDAH ADA JATUH TEMPO UNTUK DATA PO INI
             $existingJT = JatuhTempo::where('no_po', $pos->no_po)

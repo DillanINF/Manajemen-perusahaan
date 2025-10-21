@@ -43,8 +43,8 @@ class POController extends Controller
     {
         // Guard: Form Create PO hanya boleh diakses dari Data Invoice (double click)
         $from = request('from');
-        $poNumber = request('po_number');
-        if ($from !== 'invoice' || empty($poNumber)) {
+        $invoiceNumber = request('invoice_number');
+        if ($from !== 'invoice' || empty($invoiceNumber)) {
             return redirect()->route('invoice.index')
                 ->with('error', 'Akses formulir PO hanya melalui Data Invoice (double click pada nomor urut).');
         }
@@ -63,7 +63,7 @@ class POController extends Controller
 
         // Prefill tanggal dari draft POS (no urut terkait) atau fallback ke hari ini
         $prefillTanggal = null;
-        $draft = PO::where('po_number', (int)$poNumber)->orderByDesc('id')->first();
+        $draft = PO::where('no_invoice', (string)$invoiceNumber)->orderByDesc('id')->first();
         if ($draft && !empty($draft->tanggal_po)) {
             try {
                 $prefillTanggal = \Carbon\Carbon::parse($draft->tanggal_po)->format('Y-m-d');
@@ -118,7 +118,7 @@ class POController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'po_number'           => 'nullable|integer|min:1',
+            'invoice_number'      => 'nullable|string|max:50',
             'no_surat_jalan_nomor' => 'required|string',
             'no_surat_jalan_pt'    => 'required|string',
             'no_surat_jalan_tahun' => 'required|integer',
@@ -326,11 +326,11 @@ class POController extends Controller
                 return null; // Akan dihandle di luar transaction
             }
 
-            // Cari draft berdasarkan po_number
+            // Cari draft berdasarkan no_invoice (nomor urut invoice)
             $po = null;
             $shouldUpdateDraft = false;
-            if (!empty($data['po_number'])) {
-                $po = PO::where('po_number', (int)$data['po_number'])->orderByDesc('id')->first();
+            if (!empty($data['invoice_number'])) {
+                $po = PO::where('no_invoice', (string)$data['invoice_number'])->orderByDesc('id')->first();
                 if ($po) {
                     $hasItems = $po->items()->count() > 0;
                     $isNoPoEmpty = empty(trim((string)($po->no_po))) || trim((string)($po->no_po)) === '-';
@@ -342,13 +342,12 @@ class POController extends Controller
             if ($po && $shouldUpdateDraft) {
                 // UPDATE draft awal agar tidak membuat baris kosong
                 $po->update([
-                    'po_number'     => $data['po_number'], // PERBAIKAN: Pastikan po_number tetap sama
+                    'no_invoice'    => $data['invoice_number'], // Nomor urut invoice
                     'tanggal_po'    => $data['tanggal_po'],
                     'customer_id'   => $data['customer_id'],
                     'customer'      => $customerName,
                     'no_surat_jalan'=> $noSuratJalan,
                     'no_po'         => $data['no_po'],
-                    'no_invoice'     => $noInvoice,
                     'produk_id'      => $first['produk_id'] ?? null,
                     'qty'            => $first['qty'] ?? 0,
                     'qty_jenis'      => $first['qty_jenis'] ?? 'PCS',
@@ -389,15 +388,14 @@ class POController extends Controller
                     }
                 }
             } else {
-                // CREATE baris baru meskipun po_number sama (mendukung input >1x untuk No Urut yang sama)
+                // CREATE baris baru meskipun no_invoice sama (mendukung input >1x untuk No Urut yang sama)
                 $po = PO::create([
-                    'po_number'     => $data['po_number'] ?? null,
+                    'no_invoice'    => $data['invoice_number'] ?? null,
                     'tanggal_po'    => $data['tanggal_po'],
                     'customer_id'   => $data['customer_id'],
                     'customer'      => $customerName,
                     'no_surat_jalan'=> $noSuratJalan,
                     'no_po'         => $data['no_po'],
-                    'no_invoice'     => $noInvoice,
                     'produk_id'      => $first['produk_id'] ?? null,
                     'qty'            => $first['qty'] ?? 0,
                     'qty_jenis'      => $first['qty_jenis'] ?? 'PCS',
@@ -453,15 +451,15 @@ class POController extends Controller
         }
 
         // Bersihkan reserved jika nomor ini ada di cache (nomor sudah resmi tersimpan)
-        if (!empty($data['po_number'])) {
+        if (!empty($data['invoice_number'])) {
             $reserved = (array) (session('invoice_reserved_numbers', []));
-            $reserved = array_values(array_filter($reserved, fn($v) => (int)$v !== (int)$data['po_number']));
+            $reserved = array_values(array_filter($reserved, fn($v) => $v !== $data['invoice_number']));
             session(['invoice_reserved_numbers' => $reserved]);
             // Jika epoch aktif, catat nomor ini sebagai saved dalam epoch
             if ((bool) session('invoice_epoch_active', false)) {
                 $epochSaved = (array) (session('invoice_epoch_saved_numbers', []));
-                $epochSaved[] = (int) $data['po_number'];
-                $epochSaved = array_values(array_slice(array_unique(array_map('intval', $epochSaved)), -500));
+                $epochSaved[] = $data['invoice_number'];
+                $epochSaved = array_values(array_slice(array_unique($epochSaved), -500));
                 session(['invoice_epoch_saved_numbers' => $epochSaved]);
             }
         }
@@ -470,11 +468,11 @@ class POController extends Controller
         if ($po === null) {
             // Redirect kembali ke form dengan pesan bahwa semua masuk ke Sisa Data PO
             $from = $request->input('from', 'invoice');
-            $poNumber = $request->input('po_number');
+            $invoiceNumber = $request->input('invoice_number');
             return redirect()
                 ->route('po.create', [
                     'from' => $from,
-                    'po_number' => $poNumber,
+                    'invoice_number' => $invoiceNumber,
                     'tanggal_po' => $data['tanggal_po'],
                     'reset_fields' => '1', // Parameter untuk trigger reset form
                 ])
@@ -516,8 +514,8 @@ class POController extends Controller
         // HANYA buat Jatuh Tempo jika status_approval Data PO adalah 'Accept'
         if (($po->status_approval ?? 'Pending') === 'Accept') {
             try {
-                // Gunakan po_number (no urut invoice dari Data Invoice) sebagai no_invoice di Jatuh Tempo
-                $invoiceKey = $data['po_number'] ?? $po->no_invoice;
+                // Gunakan no_invoice (nomor urut invoice dari Data Invoice) sebagai no_invoice di Jatuh Tempo
+                $invoiceKey = $data['invoice_number'] ?? $po->no_invoice;
                 $tanggalInvoice = \Carbon\Carbon::parse($po->tanggal_po);
                 // Gunakan payment_terms_days dari customer jika tersedia, fallback +1 bulan
                 $termsDays = (int) (($customer->payment_terms_days ?? 0));
@@ -527,8 +525,8 @@ class POController extends Controller
                     $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
                 }
 
-                // Ambil SEMUA PO dengan po_number yang sama dan status Accept untuk digabungkan
-                $allAcceptedPos = PO::where('po_number', $invoiceKey)
+                // Ambil SEMUA PO dengan no_invoice yang sama dan status Accept untuk digabungkan
+                $allAcceptedPos = PO::where('no_invoice', $invoiceKey)
                     ->where('status_approval', 'Accept')
                     ->get();
 
@@ -584,7 +582,7 @@ class POController extends Controller
 
         // Selalu tetap berada di Form Input PO setelah simpan
         $from = $request->input('from', 'invoice');
-        $poNumber = $request->input('po_number') ?? $po->po_number;
+        $invoiceNumber = $request->input('invoice_number') ?? $po->no_invoice;
         // Bentuk pesan sukses terpadu
         $successMsg = 'Data PO berhasil disimpan! Tetap di Form Input PO untuk melanjutkan.';
         if ($hadSplit && $sisaCount > 0) {
@@ -596,7 +594,7 @@ class POController extends Controller
         return redirect()
             ->route('po.create', [
                 'from' => $from ?: 'invoice',
-                'po_number' => $poNumber,
+                'invoice_number' => $invoiceNumber,
                 'tanggal_po' => \Carbon\Carbon::parse($po->tanggal_po)->format('Y-m-d'),
                 'reset_fields' => '1', // Parameter untuk trigger reset form
             ])
@@ -608,7 +606,7 @@ class POController extends Controller
      */
     public function toggleStatus(Request $request, PO $po)
     {
-        $invoiceKey = $po->po_number ?? $po->no_invoice;
+        $invoiceKey = $po->no_invoice;
         $current = (string)($po->status_approval ?? 'Pending');
         $new = $current === 'Accept' ? 'Pending' : 'Accept';
 
@@ -617,10 +615,10 @@ class POController extends Controller
             $po->update(['status_approval' => $new]);
 
             if ($new === 'Accept') {
-                // Sinkronkan SEMUA PO dengan po_number yang sama ke 1 entry Jatuh Tempo
+                // Sinkronkan SEMUA PO dengan no_invoice yang sama ke 1 entry Jatuh Tempo
                 try {
-                    // Ambil semua PO dengan po_number yang sama dan status Accept
-                    $allAcceptedPos = PO::where('po_number', $po->po_number)
+                    // Ambil semua PO dengan no_invoice yang sama dan status Accept
+                    $allAcceptedPos = PO::where('no_invoice', $po->no_invoice)
                         ->where('status_approval', 'Accept')
                         ->get();
 
@@ -663,7 +661,7 @@ class POController extends Controller
             } else {
                 // Toggle ke Pending: cek apakah masih ada PO lain yang Accept
                 try {
-                    $remainingAcceptedPos = PO::where('po_number', $po->po_number)
+                    $remainingAcceptedPos = PO::where('no_invoice', $po->no_invoice)
                         ->where('status_approval', 'Accept')
                         ->where('id', '!=', $po->id)
                         ->get();
@@ -726,7 +724,7 @@ class POController extends Controller
     public function update(Request $request, PO $po)
     {
         $data = $request->validate([
-            'po_number'           => 'nullable|integer|min:1',
+            'invoice_number'      => 'nullable|string|max:50',
             'no_surat_jalan_nomor' => 'required|string',
             'no_surat_jalan_pt'    => 'required|string',
             'no_surat_jalan_tahun' => 'required|integer',
@@ -828,12 +826,10 @@ class POController extends Controller
             $first = $items->first();
             $sumTotal = (int) $items->sum(fn ($it) => (int) ($it['total'] ?? 0));
 
-            // Pastikan nomor urut tetap ada: jika kosong di DB namun request membawa po_number, set sekali.
+            // Pastikan nomor urut tetap ada
             $updatePayload = [
-                // Jangan ubah po_number saat update agar nomor urut tetap konsisten (kecuali fallback di bawah)
                 'no_surat_jalan' => $noSuratJalan,
                 'no_po'          => $data['no_po'],
-                'no_invoice'     => $noInvoice,
                 'customer_id'    => $data['customer_id'],
                 'customer'       => $customerName,
                 'tanggal_po'     => $data['tanggal_po'],
@@ -848,8 +844,9 @@ class POController extends Controller
                 'alamat_2'       => $data['address_2'] ?? null,
                 'pengirim'       => $data['pengirim'] ?? null,
             ];
-            if (empty($po->po_number) && !empty($data['po_number'])) {
-                $updatePayload['po_number'] = (int)$data['po_number'];
+            // Set no_invoice jika belum ada
+            if (empty($po->no_invoice) && !empty($data['invoice_number'])) {
+                $updatePayload['no_invoice'] = $data['invoice_number'];
             }
 
             $po->update($updatePayload);
@@ -889,9 +886,9 @@ class POController extends Controller
         });
 
         // Bersihkan reserved jika nomor ini ada di cache (nomor sudah resmi tersimpan)
-        if (!empty($data['po_number'])) {
+        if (!empty($data['invoice_number'])) {
             $reserved = (array) (\Cache::get('invoice_reserved_numbers', []));
-            $reserved = array_values(array_filter($reserved, fn($v) => (int)$v !== (int)$data['po_number']));
+            $reserved = array_values(array_filter($reserved, fn($v) => $v !== $data['invoice_number']));
             \Cache::forever('invoice_reserved_numbers', $reserved);
         }
 
@@ -932,11 +929,11 @@ class POController extends Controller
 
         // Redirect: tetap berada di Form Input PO
         $from = $request->input('from', 'invoice');
-        $poNumber = $request->input('po_number') ?? $po->po_number;
+        $invoiceNumber = $request->input('invoice_number') ?? $po->no_invoice;
         return redirect()
             ->route('po.create', [
                 'from' => $from,
-                'po_number' => $poNumber,
+                'invoice_number' => $invoiceNumber,
                 'tanggal_po' => \Carbon\Carbon::parse($po->tanggal_po)->format('Y-m-d'),
             ])
             ->with('success', 'Data PO berhasil disimpan! 🎉');
@@ -945,16 +942,16 @@ class POController extends Controller
     public function destroy(PO $po)
     {
         // Lepas nomor dari reserved cache & epoch agar bisa digunakan lagi
-        $num = (int) ($po->po_number ?? 0);
+        $num = $po->no_invoice;
 
         // HAPUS SELURUH GRUP (Data Invoice) SEKALI KLIK dari halaman Data Invoice
         $from = request('from');
         $referer = request()->headers->get('referer');
         $isInvoiceContext = ($from === 'invoice') || ($referer && str_contains($referer, '/po/invoices'));
         $isGroup = request()->boolean('group');
-        if ($isInvoiceContext && !empty($po->po_number)) {
+        if ($isInvoiceContext && !empty($po->no_invoice)) {
             DB::transaction(function() use ($po, $num) {
-                $group = PO::where('po_number', $po->po_number)->get();
+                $group = PO::where('no_invoice', $po->no_invoice)->get();
 
                 // Kumpulkan semua no_po valid untuk penghapusan JatuhTempo berdasarkan no_po
                 $noPoList = $group->pluck('no_po')->filter(function($v){
@@ -989,9 +986,9 @@ class POController extends Controller
                     $gp->delete();
                 }
 
-                // Hapus JatuhTempo berdasarkan no_invoice (po_number) dan daftar no_po dalam grup
+                // Hapus JatuhTempo berdasarkan no_invoice dan daftar no_po dalam grup
                 try {
-                    $noInvKey = trim((string)$po->po_number);
+                    $noInvKey = $po->no_invoice;
                     if ($noInvKey !== '') {
                         // Hapus entri Jatuh Tempo terkait (tabel invoices sudah tidak digunakan)
                         JatuhTempo::where('no_invoice', $noInvKey)->delete();
@@ -1006,13 +1003,13 @@ class POController extends Controller
                 } catch (\Throwable $e) { /* ignore */ }
 
                 // Bersihkan nomor reserved/epoch sekali saja untuk nomor ini
-                if ($num > 0) {
+                if (!empty($num)) {
                     $reserved = (array) (session('invoice_reserved_numbers', []));
-                    $reserved = array_values(array_filter($reserved, fn($v) => (int)$v !== $num));
+                    $reserved = array_values(array_filter($reserved, fn($v) => $v !== $num));
                     session(['invoice_reserved_numbers' => $reserved]);
                     if ((bool) session('invoice_epoch_active', false)) {
                         $epochSaved = (array) (session('invoice_epoch_saved_numbers', []));
-                        $epochSaved = array_values(array_filter($epochSaved, fn($v) => (int)$v !== $num));
+                        $epochSaved = array_values(array_filter($epochSaved, fn($v) => $v !== $num));
                         session(['invoice_epoch_saved_numbers' => $epochSaved]);
                     }
                 }
@@ -1047,26 +1044,16 @@ class POController extends Controller
         } catch (\Throwable $e) { /* ignore */ }
         // Cascade delete: hapus JatuhTempo terkait no_invoice dan no_po
         try {
-            $noInvKey = trim((string)($po->po_number ?? $po->no_invoice ?? ''));
-            $noInvAlt = trim((string)($po->no_invoice ?? ''));
+            $noInvKey = $po->no_invoice;
 
-            if ($noInvKey !== '') {
+            if (!empty($noInvKey)) {
                 JatuhTempo::where('no_invoice', $noInvKey)->delete();
-                JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$noInvKey])->delete();
-                if (is_numeric($noInvKey)) {
-                    $asInt = (string) ((int) $noInvKey);
-                    JatuhTempo::where('no_invoice', $asInt)->delete();
-                    JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$asInt])->delete();
-                }
-            }
-            if ($noInvAlt !== '' && $noInvAlt !== $noInvKey) {
-                JatuhTempo::where('no_invoice', $noInvAlt)->delete();
-                JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [$noInvAlt])->delete();
+                JatuhTempo::whereRaw('TRIM(no_invoice) = ?', [trim((string)$noInvKey)])->delete();
             }
 
             // Hapus juga berdasarkan semua no_po dalam grup nomor urut yang sama
-            if (!empty($po->po_number)) {
-                $groupNoPos = PO::where('po_number', $po->po_number)
+            if (!empty($po->no_invoice)) {
+                $groupNoPos = PO::where('no_invoice', $po->no_invoice)
                     ->whereNotNull('no_po')
                     ->pluck('no_po')
                     ->filter(fn($v) => trim((string)$v) !== '' && trim((string)$v) !== '-')
@@ -1087,19 +1074,19 @@ class POController extends Controller
             \Log::warning('[JT] Gagal menghapus JatuhTempo via POController::destroy', [
                 'error' => $e->getMessage(),
                 'po_id' => $po->id,
-                'po_number' => $po->po_number,
+                'no_invoice' => $po->no_invoice,
                 'no_po' => $po->no_po,
             ]);
         }
 
         $po->delete();
-        if ($num > 0) {
+        if (!empty($num)) {
             $reserved = (array) (session('invoice_reserved_numbers', []));
-            $reserved = array_values(array_filter($reserved, fn($v) => (int)$v !== $num));
+            $reserved = array_values(array_filter($reserved, fn($v) => $v !== $num));
             session(['invoice_reserved_numbers' => $reserved]);
             if ((bool) session('invoice_epoch_active', false)) {
                 $epochSaved = (array) (session('invoice_epoch_saved_numbers', []));
-                $epochSaved = array_values(array_filter($epochSaved, fn($v) => (int)$v !== $num));
+                $epochSaved = array_values(array_filter($epochSaved, fn($v) => $v !== $num));
                 session(['invoice_epoch_saved_numbers' => $epochSaved]);
             }
         }
@@ -1115,8 +1102,8 @@ class POController extends Controller
         try {
             $customer = Customer::where('nama', $po->customer)->first();
             
-            // Gunakan po_number sebagai no_invoice di Jatuh Tempo
-            $invoiceKey = $po->po_number ?? $po->no_invoice;
+            // Gunakan no_invoice sebagai no_invoice di Jatuh Tempo
+            $invoiceKey = $po->no_invoice;
             $tanggalInvoice = \Carbon\Carbon::parse($po->tanggal_po);
             
             // Gunakan payment_terms_days dari customer jika tersedia, fallback +1 bulan
@@ -1159,25 +1146,27 @@ class POController extends Controller
      */
     public function invoiceIndex()
     {
-        // Ambil daftar PO dan tampilkan no urut dari po_number
+        // Ambil daftar PO DISTINCT berdasarkan no_invoice (1 baris per invoice)
+        // Kelompokkan dan ambil yang terbaru per no_invoice
         $invoices = PO::query()
-            ->latest('tanggal_po')
+            ->select('*')
+            ->whereNotNull('no_invoice')
+            ->where('no_invoice', '!=', '')
             ->get()
-            ->map(function ($po) {
+            ->groupBy('no_invoice')
+            ->map(function ($group) {
+                // Ambil baris pertama dari setiap grup no_invoice
+                $po = $group->first();
+                
                 // Saring nilai placeholder "Draft" agar tidak tampil di UI
-                $barangRel = optional($po->produkRel)->nama_produk;
-                $barang = $barangRel ?: ($po->produk ?? null);
-                if (is_string($barang) && strtolower(trim($barang)) === 'draft') {
-                    $barang = null;
-                }
                 $customer = $po->customer;
                 if (is_string($customer) && strtolower(trim($customer)) === 'draft') {
                     $customer = '-';
                 }
 
-                // Hitung total PO dengan po_number yang sama dan no_po valid (bukan placeholder)
+                // Hitung total PO dengan no_invoice yang sama dan no_po valid (bukan placeholder)
                 $totalPO = PO::query()
-                    ->where('po_number', $po->po_number)
+                    ->where('no_invoice', $po->no_invoice)
                     ->whereNotNull('no_po')
                     ->where('no_po', '!=', '-')
                     ->whereRaw("TRIM(no_po) != ''")
@@ -1186,17 +1175,22 @@ class POController extends Controller
                 return (object) [
                     'id'        => $po->id,
                     'tanggal'   => $po->tanggal_po ? \Carbon\Carbon::parse($po->tanggal_po)->format('d/m/Y') : '-',
-                    'no_urut'   => $po->po_number ?? '-',
+                    'no_urut'   => $po->no_invoice,
                     'customer'  => $customer,
                     'no_po'     => $po->no_po,
                     'total_po'  => $totalPO,
-                    'barang'    => $barang,
+                    'barang'    => null, // Tidak perlu tampil individual
                     'qty'       => $po->qty,
                     'harga'     => $po->harga,
                     'total'     => $po->total,
                     'status_approval' => $po->status_approval ?? 'Pending',
                 ];
-            });
+            })
+            ->sortBy(function ($invoice) {
+                // Sort berdasarkan no_urut secara numerik (1, 2, 3... 10, 11)
+                return (int) $invoice->no_urut;
+            })
+            ->values(); // Reset keys dari sortBy
 
         $customers = Customer::all();
         return view('po.invoice_index', compact('invoices', 'customers'));
@@ -1234,10 +1228,11 @@ class POController extends Controller
             } else {
                 // Mode normal: MEX atas DB + reserved
                 $usedNumbers = PO::query()
-                    ->whereNotNull('po_number')
-                    ->where('po_number', '>', 0)
-                    ->pluck('po_number')
+                    ->whereNotNull('no_invoice')
+                    ->where('no_invoice', '!=', '')
+                    ->pluck('no_invoice')
                     ->toArray();
+                // Convert to integers untuk perhitungan next
                 $used = array_fill_keys(array_map('intval', $usedNumbers), true);
                 foreach ($reserved as $r) { $used[(int)$r] = true; }
                 $nextNomor = 1;
@@ -1276,10 +1271,11 @@ class POController extends Controller
             $customerId = $request->input('customer_id');
             $customerNm = $request->input('customer');
 
-            // Kumpulkan SEMUA nomor terpakai secara robust (tanpa filter > 0 di query)
+            // Kumpulkan SEMUA nomor terpakai secara robust
             $raw = PO::query()
-                ->whereNotNull('po_number')
-                ->pluck('po_number')
+                ->whereNotNull('no_invoice')
+                ->where('no_invoice', '!=', '')
+                ->pluck('no_invoice')
                 ->toArray();
             // Normalisasi ke integer dan hanya ambil > 0
             $nums = array_values(array_filter(array_map(function($v){
@@ -1299,7 +1295,7 @@ class POController extends Controller
 
             $today = now();
             $po = PO::create([
-                'po_number'   => $next,
+                'no_invoice'  => (string) $next,
                 'tanggal_po'  => $today->format('Y-m-d'),
                 'no_po'       => '-',
                 'no_surat_jalan' => '-',
@@ -1318,7 +1314,7 @@ class POController extends Controller
             return response()->json([
                 'success' => true,
                 'id' => $po->id,
-                'po_number' => (int) $po->po_number,
+                'no_invoice' => $po->no_invoice,
                 'tanggal' => $today->format('Y-m-d'),
                 'tanggal_display' => $today->format('d/m/Y'),
                 'customer' => $po->customer,
@@ -1347,7 +1343,7 @@ class POController extends Controller
         $customerId = $request->input('customer_id');
         $customerNm = $request->input('customer');
 
-        if (PO::where('po_number', $nextNumber)->exists()) {
+        if (PO::where('no_invoice', (string) $nextNumber)->exists()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Nomor urut ' . $nextNumber . ' sudah digunakan. Silakan pilih nomor lain.'
@@ -1360,7 +1356,7 @@ class POController extends Controller
         // Buat draft baris agar langsung muncul di tabel
         $today = now();
         $po = PO::create([
-            'po_number'   => $nextNumber,
+            'no_invoice'  => (string) $nextNumber,
             'tanggal_po'  => $today->format('Y-m-d'),
             'no_po'       => '-',
             'no_surat_jalan' => '-',
@@ -1380,10 +1376,63 @@ class POController extends Controller
             'success' => true,
             'message' => 'Nomor urut di-set ke ' . $nextNumber,
             'id' => $po->id,
-            'po_number' => (int) $po->po_number,
+            'no_invoice' => $po->no_invoice,
             'tanggal' => $today->format('Y-m-d'),
             'tanggal_display' => $today->format('d/m/Y'),
             'customer' => $po->customer,
         ]);
+    }
+
+    /**
+     * Update invoice info (customer, tanggal invoice) via modal
+     */
+    public function updateInvoice(Request $request, PO $po)
+    {
+        $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'tanggal_invoice' => 'required|date',
+        ]);
+
+        try {
+            // Ambil customer name dari customer_id
+            $customer = Customer::find($request->customer_id);
+            $customerName = $customer ? $customer->name : '';
+            
+            // Update semua PO dengan no_invoice yang sama
+            $invoiceNumber = $po->no_invoice;
+            
+            DB::transaction(function() use ($invoiceNumber, $request, $customerName, $customer) {
+                $updates = [
+                    'customer_id' => $request->customer_id,
+                    'customer' => $customerName,
+                    'tanggal_po' => $request->tanggal_invoice,
+                ];
+                
+                // Update semua PO dengan invoice number yang sama
+                PO::where('no_invoice', $invoiceNumber)->update($updates);
+                
+                // Update JatuhTempo: recalculate due date based on payment terms
+                $tanggalInvoice = \Carbon\Carbon::parse($request->tanggal_invoice);
+                $termsDays = (int) ($customer->payment_terms_days ?? 0);
+                
+                if ($termsDays > 0) {
+                    $tanggalJatuhTempo = (clone $tanggalInvoice)->addDays($termsDays);
+                } else {
+                    $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
+                }
+                
+                JatuhTempo::where('no_invoice', $invoiceNumber)->update([
+                    'customer' => $customerName,
+                    'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
+                ]);
+            });
+
+            return redirect()->route('invoice.index')
+                ->with('success', 'Invoice berhasil diupdate!');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal update invoice: ' . $e->getMessage());
+        }
     }
 }

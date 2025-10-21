@@ -12,6 +12,17 @@
   }
   /* Pastikan konten tidak ketutup saat tinggi header bertambah */
   body.invoice-page .content-after-header { margin-top: 1rem; }
+
+  /* Samakan gaya modal dengan Employee (ukuran compact dan dark mode) */
+  .modal-employee { max-width: 28rem !important; }
+  html.dark .modal-employee { background-color: #0f172a !important; color: #e5e7eb !important; }
+  html.dark .modal-employee .sticky { background-color: #0f172a !important; border-color: rgba(255,255,255,0.1) !important; }
+  html.dark .modal-employee label { color: #e5e7eb !important; }
+  html.dark .modal-employee input,
+  html.dark .modal-employee textarea,
+  html.dark .modal-employee select { background-color: #1f2937 !important; color: #e5e7eb !important; border-color: #374151 !important; }
+  html.dark .modal-employee input::placeholder,
+  html.dark .modal-employee textarea::placeholder { color: #9ca3af !important; }
 </style>
 @endpush
 <div class="min-h-screen bg-transparent py-6 content-after-header">
@@ -165,10 +176,10 @@
                             $invoiceCollection = collect($invoices ?? [])->filter(function ($r) {
                                 return !empty($r) && (is_object($r) || is_array($r));
                             });
-                            // Kelompokkan berdasarkan no_urut atau po_number, singkirkan key null/""
+                            // Kelompokkan berdasarkan no_urut atau no_invoice, singkirkan key null/""
                             $grouped = $invoiceCollection
                                 ->groupBy(function($r){
-                                    return $r->no_urut ?? ($r->po_number ?? null);
+                                    return $r->no_urut ?? null;
                                 })
                                 ->filter(function($rows, $key){
                                     return $key !== null && $key !== '' && $rows->count() > 0;
@@ -348,7 +359,7 @@
                                     data-po-number="{{ (int)($noUrut ?? 0) }}"
                                     data-invoice-no="{{ $invAttr }}"
                                     data-due-date="{{ $jtAttr }}"
-                                    ondblclick="openEditForm({{ $rowIdForDblClick }}, {{ (int)($noUrut ?? 0) }})">
+                                    ondblclick="goToInputPO({{ (int)($noUrut ?? 0) }})">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-3">
                                             <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50 transition-colors">
@@ -503,10 +514,10 @@
                                             </button>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 pl-8 whitespace-nowrap text-center" style="width: 100px;">
+                                    <td class="px-4 py-3 pl-8 whitespace-nowrap text-center" style="width: 100px;" onclick="event.stopPropagation()">
                                         <div class="action-cell">
                                             <x-table.action-buttons 
-                                                onEdit="window.openEditForm({{ $rowIdForDblClick }})"
+                                                onEdit="openEditModal({{ $rowIdForDblClick }}, {{ (int)($noUrut ?? 0) }}, '{{ addslashes($first->customer ?? '') }}', '{{ $first->tanggal ?? '' }}', {{ $first->customer_id ?? 'null' }})"
                                                 deleteAction="{{ route('po.destroy', ['po' => $rowIdForDblClick, 'from' => 'invoice', 'group' => 1]) }}"
                                                 confirmText="Yakin ingin menghapus seluruh data untuk No Invoice ini?"
                                                 :useMenu="true"
@@ -723,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const params = new URLSearchParams();
             params.set('from', 'invoice');
-            if (poNum) params.set('po_number', poNum);
+            if (poNum) params.set('invoice_number', poNum);
             params.set('reset_fields', '1'); // Reset field saat buka dari Data Invoice
             const url = createUrl + (createUrl.includes('?') ? '&' : '?') + params.toString();
             window.location.href = url;
@@ -862,8 +873,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification(result.message, 'success');
                 const emptyRow = tbody.querySelector('td[colspan]');
                 if (emptyRow) emptyRow.closest('tr').remove();
-                if (result.id && result.po_number && result.tanggal_display) {
-                    const newRow = createNewInvoiceRow({ id: result.id, po_number: result.po_number, tanggal_display: result.tanggal_display, customer: pickedCustomerName });
+                if (result.id && result.no_invoice && result.tanggal_display) {
+                    const newRow = createNewInvoiceRow({ id: result.id, no_invoice: result.no_invoice, tanggal_display: result.tanggal_display, customer: pickedCustomerName });
                     tbody.appendChild(newRow);
                     sortTableAscending();
                     const currentCount = parseInt(totalCount.textContent) || 0;
@@ -926,11 +937,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentCount = parseInt(totalCount.textContent) || 0;
             totalCount.textContent = currentCount + 1;
 
-            showNotification(`Invoice #${data.po_number} berhasil dibuat`, 'success');
+            showNotification(`Invoice #${data.no_invoice} berhasil dibuat`, 'success');
 
             // Update seed ke nomor terbaru dari server
-            if (data.po_number) {
-                const n = parseInt(data.po_number);
+            if (data.no_invoice) {
+                const n = parseInt(data.no_invoice);
                 if (!isNaN(n)) nextInvoiceSeed = n;
             }
 
@@ -957,10 +968,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function untuk membuat baris invoice baru
     function createNewInvoiceRow(data) {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-slate-700 transition-all duration-200 cursor-pointer group';
+        tr.className = 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-slate-700 transition-all duration-200 group';
         tr.setAttribute('data-id', data.id);
-        tr.setAttribute('data-po-number', String(data.po_number ?? ''));
-        tr.ondblclick = () => openEditForm(data.id);
+        tr.setAttribute('data-invoice-number', String(data.no_invoice ?? ''));
         
         tr.innerHTML = `
             <td class="px-6 py-4 whitespace-nowrap">
@@ -977,7 +987,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- No Invoice -->
             <td class="px-6 py-4 pr-10 whitespace-nowrap text-left">
                 <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 text-indigo-800 dark:text-indigo-200 align-middle shadow-sm">
-                    ${data.po_number}
+                    ${data.no_invoice}
                 </span>
             </td>
             <!-- Customer -->
@@ -1085,15 +1095,32 @@ document.addEventListener('DOMContentLoaded', function() {
         return tr;
     }
 
-    // Sort seluruh tabel ascending berdasarkan data-po-number
+    // Sort seluruh tabel ascending berdasarkan data-invoice-number
     function sortTableAscending() {
-        const rows = Array.from(tbody.querySelectorAll('tr[data-po-number]'));
+        const rows = Array.from(tbody.querySelectorAll('tr[data-invoice-number]'));
         rows.sort((a, b) => {
-            const na = parseInt(a.getAttribute('data-po-number') || '0');
-            const nb = parseInt(b.getAttribute('data-po-number') || '0');
-            return na - nb; // kecil ke besar
+            const na = parseInt(a.getAttribute('data-invoice-number') || '0');
+            const nb = parseInt(b.getAttribute('data-invoice-number') || '0');
+            return na - nb; // kecil ke besar (1, 2, 3, ... 10, 11)
         });
         rows.forEach(r => tbody.appendChild(r));
+    }
+
+    // Function untuk scroll ke baris baru dan highlight
+    function scrollToAndHighlightRow(row) {
+        // Tunggu sebentar agar sort selesai
+        setTimeout(() => {
+            // Scroll ke baris
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Tambahkan highlight sementara
+            row.classList.add('bg-yellow-100', 'dark:bg-yellow-900/30');
+            
+            // Hilangkan highlight setelah 3 detik
+            setTimeout(() => {
+                row.classList.remove('bg-yellow-100', 'dark:bg-yellow-900/30');
+            }, 3000);
+        }, 300);
     }
 
     // Function untuk menampilkan notifikasi
@@ -1185,6 +1212,139 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     })();
+
+    // Function untuk double-click row -> masuk ke halaman Input PO
+    window.goToInputPO = function(invoiceNumber) {
+        if (!invoiceNumber) {
+            showNotification('Nomor invoice tidak valid', 'error');
+            return;
+        }
+        const url = '{{ route("po.create") }}?from=invoice&invoice_number=' + invoiceNumber;
+        window.location.href = url;
+    };
+
+    // Function untuk buka modal edit (tetap di halaman Data Invoice)
+    window.openEditModal = function(id, invoiceNumber, customer, tanggalInvoice, customerId) {
+        // Tampilkan modal edit
+        const modal = document.getElementById('modal-edit-invoice');
+        const form = document.getElementById('form-edit-invoice');
+        if (modal && form) {
+            // Set form action dengan ID
+            form.action = `/po/${id}/update-invoice`;
+            
+            // Isi data ke form modal
+            document.getElementById('edit-invoice-id').value = id;
+            document.getElementById('edit-invoice-number').value = invoiceNumber;
+            
+            // Set customer dropdown - PENTING: set value setelah delay kecil
+            const customerSelect = document.getElementById('edit-customer-id');
+            if (customerSelect) {
+                // Reset dulu
+                customerSelect.value = '';
+                
+                // Set value dengan delay kecil untuk memastikan DOM ready
+                setTimeout(() => {
+                    if (customerId && customerId !== 'null') {
+                        customerSelect.value = customerId;
+                        console.log('Set customer ID:', customerId, 'Selected:', customerSelect.value);
+                    }
+                }, 50);
+            }
+            
+            // Set tanggal invoice (format Y-m-d untuk input date)
+            if (tanggalInvoice) {
+                // Convert dari d/m/Y ke Y-m-d
+                const parts = tanggalInvoice.split('/');
+                if (parts.length === 3) {
+                    const tanggalFormatted = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    document.getElementById('edit-tanggal-invoice').value = tanggalFormatted;
+                }
+            }
+            
+            // Tampilkan modal
+            modal.classList.remove('hidden');
+        }
+    };
+
+    // Function untuk tutup modal edit
+    window.closeEditModal = function() {
+        const modal = document.getElementById('modal-edit-invoice');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    };
 });
 </script>
 @endpush
+
+<!-- Modal Edit Invoice (Tampilan seperti form employee) -->
+<div id="modal-edit-invoice" class="fixed inset-0 z-50 hidden" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="modal-employee relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="sticky top-0 flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-2xl">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    <i class="fas fa-edit text-blue-500 mr-2"></i>Edit Invoice
+                </h3>
+                <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <form id="form-edit-invoice" method="POST" action="">
+                @csrf
+                @method('PUT')
+                <input type="hidden" id="edit-invoice-id" name="id">
+                
+                <div class="p-6 space-y-4">
+                    <!-- No Invoice (readonly) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            No Invoice
+                        </label>
+                        <input type="text" id="edit-invoice-number" name="invoice_number" readonly
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white cursor-not-allowed">
+                    </div>
+
+                    <!-- Customer Dropdown -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Customer <span class="text-red-500">*</span>
+                        </label>
+                        <select id="edit-customer-id" name="customer_id" required
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                style="color-scheme: dark;">
+                            <option value="">-- Pilih Customer --</option>
+                            @foreach($customers as $customer)
+                                <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Tanggal Invoice -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Tanggal Invoice <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="edit-tanggal-invoice" name="tanggal_invoice" required
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               style="color-scheme: dark;">
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex items-center justify-end gap-3 p-5 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-save mr-1"></i>Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

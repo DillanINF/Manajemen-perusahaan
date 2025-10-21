@@ -22,7 +22,7 @@ class DashboardController extends Controller
     {
         // Statistik Karyawan
         $totalKaryawan = Employee::count();
-        $karyawanAktif = Employee::where('status', 'aktif')->count();
+        $karyawanAktif = Employee::count(); // Semua karyawan dianggap aktif karena tidak ada kolom status
         $karyawanBaru = 0; // Tidak pakai filter tanggal, set manual ke 0 atau sesuai logika lain
 
         // Filter terpisah:
@@ -36,17 +36,21 @@ class DashboardController extends Controller
         // Hormati tahun yang dipilih user; tidak ada pemaksaan ke tahun tertentu
 
         // Total Invoice (jumlah invoice unik) sesuai bulan & tahun terpilih
-        // Invoice = distinct po_number pada tabel POS (model PO), difilter by tanggal_po
+        // Invoice = distinct no_invoice pada tabel POS (model PO), difilter by tanggal_po
         $invoiceCount = (int) PO::where(function($q) use ($tahunNow, $bulanNow) {
                 $q->whereRaw(DatabaseService::year('tanggal_po') . ' = ?', [$tahunNow])
                   ->whereRaw(DatabaseService::month('tanggal_po') . ' = ?', [$bulanNow]);
             })
-            ->whereNotNull('po_number')
-            ->where('po_number', '<>', '')
-            ->distinct('po_number')
-            ->count('po_number');
+            ->whereNotNull('no_invoice')
+            ->where('no_invoice', '<>', '')
+            ->distinct('no_invoice')
+            ->count('no_invoice');
 
-        $totalGajiKaryawan = Employee::where('status', 'aktif')->sum('gaji_pokok');
+        // Gaji tidak diambil dari tabel employees karena kolom gaji_pokok sudah dihapus
+        // Gunakan data dari tabel salaries sebagai gantinya
+        $totalGajiKaryawan = Salary::where('bulan', $bulanNow)
+            ->where('tahun', $tahunNow)
+            ->sum('total_gaji');
         $rataRataGaji = $karyawanAktif > 0 ? $totalGajiKaryawan / $karyawanAktif : 0;
 
         // Pendapatan bulanan (sum total item PO bulan incMonth/incYear + PPN 11%)
@@ -206,13 +210,18 @@ class DashboardController extends Controller
         ];
         $chartLabels = [];
 
-        // Kalau mau tetap bikin chart 6 bulan terakhir tapi tanpa tanggal bergabung,
-        // kita cukup isi data statis berdasarkan semua karyawan aktif.
+        // Chart 6 bulan terakhir - data karyawan dan gaji
         for ($i = 5; $i >= 0; $i--) {
-            $chartLabels[] = now()->subMonths($i)->format('M');
+            $month = now()->subMonths($i);
+            $chartLabels[] = $month->format('M');
 
-            $jumlahKaryawan = Employee::where('status', 'aktif')->count();
-            $totalGajiBulan = Employee::where('status', 'aktif')->sum('gaji_pokok');
+            // Total karyawan (semua karyawan karena tidak ada status)
+            $jumlahKaryawan = Employee::count();
+            
+            // Total gaji dari tabel salaries untuk bulan tersebut
+            $totalGajiBulan = Salary::where('bulan', (int) $month->format('n'))
+                ->where('tahun', (int) $month->format('Y'))
+                ->sum('total_gaji');
 
             $chartData['karyawan'][] = $jumlahKaryawan;
             $chartData['gaji'][] = round($totalGajiBulan / 1000000, 1); // Dalam jutaan

@@ -29,7 +29,7 @@ class POExportController extends Controller
             if (!empty($selectedRaw)) {
                 $selected = is_array($selectedRaw) ? $selectedRaw : json_decode($selectedRaw, true);
                 if (is_array($selected) && !empty($selected)) {
-                    $posList = \App\Models\PO::with(['produkRel', 'kendaraanRel', 'pengirimRel', 'items.produk'])
+                    $posList = \App\Models\PO::with(['produkRel', 'pengirimRel', 'items.produk'])
                         ->whereIn('id', $selected)
                         ->orderBy('tanggal_po', 'asc')
                         ->get();
@@ -40,7 +40,7 @@ class POExportController extends Controller
             if (!$po) {
                 $noSuratJalan = $request->input('no_surat_jalan');
                 if ($noSuratJalan) {
-                    $po = \App\Models\PO::with(['produkRel', 'kendaraanRel', 'pengirimRel', 'items.produk'])->where('no_surat_jalan', $noSuratJalan)->first();
+                    $po = \App\Models\PO::with(['produkRel', 'pengirimRel', 'items.produk'])->where('no_surat_jalan', $noSuratJalan)->first();
                     if ($po) { $posList = collect([$po]); }
                 }
             }
@@ -269,13 +269,10 @@ class POExportController extends Controller
             $sheet->setCellValue('G2', $po->harga);
             $sheet->setCellValue('H2', $po->total);
 
-            // Kendaraan dan No Polisi
-            // Ambil nama kendaraan dari relasi; jika kosong, coba query langsung berdasarkan ID di kolom `kendaraan`;
-            // jika tetap tidak ada, pakai nilai mentah di kolom `kendaraan` (bisa jadi sudah berupa nama)
-            $kendaraanName = $po->kendaraanRel->nama
-                ?? (is_scalar($po->kendaraan) ? (string)$po->kendaraan : '');
+            // Kendaraan dan No Polisi - ambil langsung dari kolom tabel pos
+            $kendaraanName = $po->kendaraan ?? '';
             $sheet->setCellValue('L10', $kendaraanName);
-            $noPolisi = $po->no_polisi ?: ($po->kendaraanRel->no_polisi ?? '');
+            $noPolisi = $po->no_polisi ?? '';
             $sheet->setCellValue('K12', $noPolisi);
 
             // Tambahan alamat

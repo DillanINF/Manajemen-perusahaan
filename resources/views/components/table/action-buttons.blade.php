@@ -20,7 +20,7 @@
         @if($onEdit)
             <!-- Edit button -->
             <button type="button"
-                    @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!}; return false;" @endif
+                    @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!};" @endif
                     @if($onEdit) data-editcall='{!! $onEdit !!}' @endif
                     @if($editPayload) data-edit='@json($editPayload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)' @endif
                     class="js-edit-btn group relative z-10 pointer-events-auto cursor-pointer inline-flex items-center justify-center w-9 h-9 aspect-square min-w-[36px] min-h-[36px] rounded-full bg-[#2563EB] text-white shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -59,7 +59,7 @@
         <div class="flex items-stretch justify-center gap-2 @unless($forceFull) sm:hidden @endunless">
             @if($onEdit)
                 <button type="button"
-                        @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!}; return false;" @endif
+                        @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!};" @endif
                         @if($onEdit) data-editcall='{!! $onEdit !!}' @endif
                         @if($editPayload) data-edit='@json($editPayload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)' @endif
                         class="js-edit-btn relative z-10 pointer-events-auto cursor-pointer flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#2563EB] text-white shadow-sm hover:shadow-md transition-all duration-200 active:scale-[.99]"
@@ -105,7 +105,7 @@
                 <div class="py-1">
                     @if($onEdit)
                         <button type="button" @click='open=false'
-                                @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!}; return false;" @endif
+                                @if($onEdit) onclick="event.preventDefault(); event.stopPropagation(); {!! $onEdit !!};" @endif
                                 @if($editPayload) data-edit='@json($editPayload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)' @endif
                                 class="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#2563EB]">

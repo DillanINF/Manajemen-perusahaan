@@ -127,7 +127,7 @@
                             <i class="fa-solid fa-arrow-left"></i>
                             Kembali ke Data Invoice
                         </a>
-                        <a id="btn-next-po" href="{{ route('suratjalan.index', ['po_number' => request('po_number') ?? ($po->po_number ?? null)]) }}"
+                        <a id="btn-next-po" href="{{ route('suratjalan.index', ['invoice_number' => request('invoice_number') ?? ($po->no_invoice ?? null)]) }}"
                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 border border-indigo-700/70 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400">
                             <i class="fa-solid fa-arrow-right text-white"></i>
                             Lanjut ke Form Data PO
@@ -139,7 +139,7 @@
 
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 lg:p-8">
             <!-- Header dengan No Urut Invoice -->
-            @if(request('from') === 'invoice' && (request('po_number') || (isset($po) && $po->po_number)))
+            @if(request('from') === 'invoice' && (request('invoice_number') || (isset($po) && $po->no_invoice)))
             <div class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex items-center gap-3">
                     <div class="p-2 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
@@ -148,7 +148,7 @@
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Form Input PO</h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            No Invoice: <span class="font-bold text-orange-600 dark:text-orange-400">{{ request('po_number') ?? ($po->po_number ?? '-') }}</span>
+                            No Invoice: <span class="font-bold text-orange-600 dark:text-orange-400">{{ request('invoice_number') ?? ($po->no_invoice ?? '-') }}</span>
                         </p>
                     </div>
                 </div>
@@ -190,11 +190,11 @@
                     @method('PUT')
                 @endif
                 
-                <!-- Hidden field untuk po_number agar tetap konsisten -->
-                @if(request('po_number'))
-                    <input type="hidden" name="po_number" value="{{ request('po_number') }}">
-                @elseif(isset($po) && $po->po_number)
-                    <input type="hidden" name="po_number" value="{{ $po->po_number }}">
+                <!-- Hidden field untuk invoice_number agar tetap konsisten -->
+                @if(request('invoice_number'))
+                    <input type="hidden" name="invoice_number" value="{{ request('invoice_number') }}">
+                @elseif(isset($po) && $po->no_invoice)
+                    <input type="hidden" name="invoice_number" value="{{ $po->no_invoice }}">
                 @endif
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -431,10 +431,10 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const url = new URL(nextBtn.href, window.location.origin);
                 if (url.pathname.includes('/po/create')) {
-                    const poNum = (url.searchParams.get('po_number') || '').trim();
-                    if (!poNum) {
+                    const invoiceNum = (url.searchParams.get('invoice_number') || '').trim();
+                    if (!invoiceNum) {
                         e.preventDefault();
-                        alert('Nomor urut invoice (po_number) belum tersedia. Silakan buka dari halaman Data Invoice (double click pada nomor) agar po_number terisi.');
+                        alert('Nomor urut invoice belum tersedia. Silakan buka dari halaman Data Invoice (double click pada nomor) agar invoice_number terisi.');
                     }
                 }
             } catch (_) {
@@ -816,8 +816,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const month = (d.getMonth() + 1);
         const year = d.getFullYear();
         const base = "{{ route('suratjalan.index') }}";
-        const poNumber = "{{ request('po_number') }}";
-        btnSJ.href = base + `?month=${month}&year=${year}${poNumber ? '&po_number=' + poNumber : ''}`;
+        const invoiceNumber = "{{ request('invoice_number') }}";
+        btnSJ.href = base + `?month=${month}&year=${year}${invoiceNumber ? '&invoice_number=' + invoiceNumber : ''}`;
     }
     updateSuratJalanLink();
     tanggalInput?.addEventListener('change', updateSuratJalanLink);

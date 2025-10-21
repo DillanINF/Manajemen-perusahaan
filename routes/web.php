@@ -9,9 +9,8 @@ use App\Http\Controllers\{
     POExportController,
     ProdukController,
     CustomerController,
-    PengirimController, // Added PengirimController import
+    PengirimController,
     SuratJalanController,
-    // InvoiceController, // Tidak digunakan - data invoice di tabel POS
     JatuhTempoController,
     EmployeeController,
     SalaryController,
@@ -171,25 +170,6 @@ Route::middleware(['auth'])->group(function () {
         return response()->download($path, 'GAJI.xlsx');
     })->name('salary.template.download');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Invoice Management (CRUD) - DISABLED (menggunakan PO)
-    |--------------------------------------------------------------------------
-    | Route ini dinonaktifkan karena data invoice disimpan di tabel POS
-    | Akses invoice melalui: Route::get('/po/invoices', ...)
-    */
-    // Route::prefix('invoice')->name('invoice.')->group(function () {
-    //     Route::get('/', [InvoiceController::class, 'index'])->name('index');
-    //     Route::get('/create', [InvoiceController::class, 'create'])->name('create');
-    //     Route::post('/', [InvoiceController::class, 'store'])->name('store');
-    //     Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->name('edit');
-    //     Route::put('/{invoice}', [InvoiceController::class, 'update'])->name('update');
-    //     Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->name('destroy');
-    //     Route::patch('/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('update-status');
-    //     Route::delete('/all', [InvoiceController::class, 'destroyAll'])->name('destroy-all');
-    // });
-
-    // Seluruh route CRUD Tanda Terima dinonaktifkan (dipusatkan ke Surat Jalan)
     
     /*
     |--------------------------------------------------------------------------
@@ -247,6 +227,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{po}/edit', [POController::class, 'edit'])->name('edit');
         Route::put('/{po}', [POController::class, 'update'])->name('update');
         Route::delete('/{po}', [POController::class, 'destroy'])->name('destroy');
+        Route::put('/{po}/update-invoice', [POController::class, 'updateInvoice'])->name('update-invoice');
         
         // Export PO di-nonaktifkan. Gunakan export di menu Surat Jalan.
         // Route::get('/export', [POExportController::class, 'exportToExcel'])->name('export');

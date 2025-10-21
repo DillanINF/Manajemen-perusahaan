@@ -13,7 +13,6 @@ class Expense extends Model
         'tanggal',
         'jenis',
         'deskripsi',
-        'description',
         'amount',
         'user_id',
     ];
