@@ -29,6 +29,8 @@
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Laporan Pengeluaran</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">Gaji karyawan dan pengeluaran lain</p>
             </div>
+    
+    
             <div class="flex flex-wrap items-center gap-2">
                 <div class="relative">
                     <select x-model="filters.month" @change="onFilterChange" class="no-native-arrow no-arrow appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-lg pl-9 pr-9 py-2 shadow-sm hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:border-blue-400 dark:focus:ring-blue-400">
@@ -67,6 +69,52 @@
         </div>
     </div>
 
+    <!-- Modal: Daftar Gaji per Bulan (double-click) - placed outside sticky header for proper centering -->
+    <div x-show="monthSalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="closeMonthSalary()"></div>
+        <div class="relative bg-white w-[92vw] max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-lg dark:bg-gray-800 dark:text-gray-100">
+            <div class="px-5 py-3 border-b flex items-center justify-between dark:border-gray-700">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100" x-text="monthSalTitle"></h3>
+                <button class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" @click="closeMonthSalary()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5">
+                <template x-if="monthSalLoading">
+                    <div class="py-10 text-center text-gray-500 dark:text-gray-400">Memuat data gaji...</div>
+                </template>
+                <template x-if="!monthSalLoading">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-slate-50 text-slate-600 uppercase text-xs dark:bg-gray-900/40 dark:text-gray-300">
+                                <tr>
+                                    <th class="text-left px-3 py-2">Bulan</th>
+                                    <th class="text-left px-3 py-2">Tahun</th>
+                                    <th class="text-right px-3 py-2">Total Gaji</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                <template x-if="!monthSalRows.length">
+                                    <tr>
+                                        <td colspan="3" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
+                                    </tr>
+                                </template>
+                                <template x-for="(r, i) in monthSalRows" :key="i">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                        <td class="px-3 py-2 dark:text-gray-300" x-text="months[Number(r.bulan)-1] || '-' "></td>
+                                        <td class="px-3 py-2 dark:text-gray-300" x-text="r.tahun"></td>
+                                        <td class="px-3 py-2 text-right dark:text-gray-200" x-text="formatCurrency(r.total_gaji)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </div>
+            <div class="px-5 py-3 border-t bg-gray-50 text-right dark:border-gray-700 dark:bg-gray-900/40">
+                <button class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm bg-gray-700 text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600" @click="closeMonthSalary()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Summary cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         <div class="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-md border border-gray-100 transition dark:bg-gray-800 dark:border-gray-700">
@@ -97,8 +145,9 @@
     <!-- Rekap Tahunan -->
     <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
-            <div class="px-5 py-4">
+            <div class="px-5 py-4 flex justify-between items-center">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Rekap Gaji per Bulan ({{ $tahunNow }})</h3>
+                <div class="w-10 h-10"></div>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
@@ -106,17 +155,13 @@
                         <tr>
                             <th class="text-left px-5 py-3 font-semibold">Bulan</th>
                             <th class="text-right px-5 py-3 font-semibold">Total</th>
-                            <th class="px-5 py-3"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         <template x-for="(label, idx) in months" :key="idx">
-                            <tr>
+                            <tr @dblclick="openMonthSalary(idx+1, Number(filters.year))" title="Dua kali klik untuk melihat gaji bulan ini" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
                                 <td class="px-5 py-3 dark:text-gray-300" x-text="label"></td>
                                 <td class="px-5 py-3 text-right dark:text-gray-200" x-text="formatCurrency(salaryByMonth[idx+1]||0)"></td>
-                                <td class="px-5 py-3 text-right">
-                                    <a href="#" @click.prevent="openExpenseDetail('salary', idx+1, Number(filters.year))" class="text-xs text-blue-600 hover:underline dark:text-blue-400">Lihat detail</a>
-                                </td>
                             </tr>
                         </template>
                     </tbody>
@@ -138,17 +183,13 @@
                         <tr>
                             <th class="text-left px-5 py-3 font-semibold">Bulan</th>
                             <th class="text-right px-5 py-3 font-semibold">Total</th>
-                            <th class="text-right px-5 py-3 font-semibold"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         <template x-for="(label, idx) in months" :key="idx">
-                            <tr>
+                            <tr @dblclick="openMonthExpenses(idx+1, Number(filters.year))" title="Dua kali klik untuk melihat pengeluaran bulan ini" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
                                 <td class="px-5 py-3 dark:text-gray-300" x-text="label"></td>
                                 <td class="px-5 py-3 text-right dark:text-gray-200" x-text="formatCurrency(expensesByMonth[idx+1]||0)"></td>
-                                <td class="px-5 py-3 text-right">
-                                    <a href="#" @click.prevent="openExpenseDetail('other', idx+1, Number(filters.year))" class="text-xs text-blue-600 hover:underline dark:text-blue-400">Lihat detail</a>
-                                </td>
                             </tr>
                         </template>
                     </tbody>
@@ -157,79 +198,41 @@
         </div>
     </div>
     
-    <!-- Modal Detail (dipindah ke dalam scope x-data agar state Alpine terbaca) -->
-    <div x-show="detailOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center">
-        <div class="absolute inset-0 bg-black/40" @click="closeDetail()"></div>
-        <div class="relative bg-white w-[92vw] max-w-5xl rounded-2xl shadow-lg overflow-hidden dark:bg-gray-800 dark:text-gray-100">
+    <!-- Modal: Daftar Pengeluaran per Bulan (double-click) -->
+    <div x-show="monthExpOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @click="closeMonthExpenses()"></div>
+        <div class="relative bg-white w-[92vw] max-w-3xl rounded-2xl shadow-lg overflow-hidden dark:bg-gray-800 dark:text-gray-100">
             <div class="px-5 py-3 border-b flex items-center justify-between dark:border-gray-700">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100" x-text="detailTitle"></h3>
-                <button class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" @click="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100" x-text="monthExpTitle"></h3>
+                <button class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" @click="closeMonthExpenses()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5">
-                <template x-if="detailLoading">
-                    <div class="py-10 text-center text-gray-500 dark:text-gray-400">Memuat data...</div>
+                <template x-if="monthExpLoading">
+                    <div class="py-10 text-center text-gray-500 dark:text-gray-400">Memuat data pengeluaran...</div>
                 </template>
-                <template x-if="!detailLoading">
+                <template x-if="!monthExpLoading">
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead class="bg-slate-50 text-slate-600 uppercase text-xs dark:bg-gray-900/40 dark:text-gray-300">
-                                <tr x-show="detailType==='salary'">
-                                    <th class="text-left px-3 py-2">Tanggal</th>
-                                    <th class="text-left px-3 py-2">Bulan</th>
-                                    <th class="text-left px-3 py-2">Tahun</th>
-                                    <th class="text-right px-3 py-2">Total Gaji</th>
-                                </tr>
-                                <tr x-show="detailType==='other'">
+                                <tr>
                                     <th class="text-left px-3 py-2">Tanggal</th>
                                     <th class="text-left px-3 py-2">Jenis</th>
                                     <th class="text-left px-3 py-2">Deskripsi</th>
                                     <th class="text-right px-3 py-2">Jumlah</th>
-                                    <th class="text-center px-3 py-2">Aksi</th>
                                 </tr>
                             </thead>
-                            <!-- Tabel body untuk tipe salary -->
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700" x-show="detailType==='salary'">
-                                <template x-if="!detailRows.length">
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                <template x-if="!monthExpRows.length">
                                     <tr>
                                         <td colspan="4" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
                                     </tr>
                                 </template>
-                                <template x-for="(r, i) in detailRows" :key="i">
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        <td class="px-3 py-2 dark:text-gray-300" x-text="(() => { const d = r.tanggal_bayar ? new Date(r.tanggal_bayar) : null; return d ? String(d.getDate()).padStart(2,'0') : '-' })()"></td>
-                                        <td class="px-3 py-2 dark:text-gray-300" x-text="(() => { const d = r.tanggal_bayar ? new Date(r.tanggal_bayar) : null; return d ? months[d.getMonth()] : months[Number(filters.month)-1] })()"></td>
-                                        <td class="px-3 py-2 dark:text-gray-300" x-text="(() => { const d = r.tanggal_bayar ? new Date(r.tanggal_bayar) : null; return d ? d.getFullYear() : Number(filters.year) })()"></td>
-                                        <td class="px-3 py-2 text-right dark:text-gray-200" x-text="formatCurrency(r.total_gaji)"></td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                            <!-- Tabel body untuk tipe other -->
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700" x-show="detailType==='other'">
-                                <template x-if="!detailRows.length">
-                                    <tr>
-                                        <td colspan="5" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
-                                    </tr>
-                                </template>
-                                <template x-for="(r, i) in detailRows" :key="i">
+                                <template x-for="(r, i) in monthExpRows" :key="i">
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                         <td class="px-3 py-2 dark:text-gray-300" x-text="new Date(r.tanggal).toLocaleDateString('id-ID')"></td>
                                         <td class="px-3 py-2 dark:text-gray-300" x-text="r.jenis"></td>
                                         <td class="px-3 py-2 dark:text-gray-300" x-text="r.deskripsi"></td>
                                         <td class="px-3 py-2 text-right dark:text-gray-200" x-text="formatCurrency(r.amount)"></td>
-                                        <td class="px-3 py-2 text-center">
-                                            <div class="flex items-center justify-center gap-2">
-                                                <button @click="editExpense(r)" 
-                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-all duration-200"
-                                                        title="Edit">
-                                                    <i class="fa-solid fa-pen-to-square text-sm"></i>
-                                                </button>
-                                                <button @click="deleteExpense(r.id)" 
-                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-all duration-200"
-                                                        title="Hapus">
-                                                    <i class="fa-solid fa-trash text-sm"></i>
-                                                </button>
-                                            </div>
-                                        </td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -238,7 +241,7 @@
                 </template>
             </div>
             <div class="px-5 py-3 border-t bg-gray-50 text-right dark:border-gray-700 dark:bg-gray-900/40">
-                <button class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm bg-gray-700 text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600" @click="closeDetail()">Tutup</button>
+                <button class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm bg-gray-700 text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600" @click="closeMonthExpenses()">Tutup</button>
             </div>
         </div>
     </div>
@@ -410,6 +413,16 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
         expensesByMonth: expensesByMonth || {},
         monthlySalaryTotal: Number(salaryTotal||0),
         monthlyOtherExpenseTotal: Number(otherTotal||0),
+        // Double-click month expenses modal
+        monthExpOpen: false,
+        monthExpLoading: false,
+        monthExpTitle: '',
+        monthExpRows: [],
+        // Double-click month salary modal
+        monthSalOpen: false,
+        monthSalLoading: false,
+        monthSalTitle: '',
+        monthSalRows: [],
         // Modal state
         detailOpen: false,
         detailLoading: false,
@@ -427,6 +440,23 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
             amount_display: ''
         },
         init(){},
+        // Utility: fetch with timeout to prevent hanging loaders
+        async fetchWithTimeout(url, options = {}, timeoutMs = 8000){
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeoutMs);
+            try{
+                const res = await fetch(url, { ...options, signal: controller.signal });
+                return res;
+            } finally {
+                clearTimeout(id);
+            }
+        },
+        // Utility: stop any global loader element if present
+        stopGlobalLoader(){
+            const el = document.getElementById('global-loader');
+            if (el) el.style.display = 'none';
+            window.dispatchEvent(new CustomEvent('stop-loading'));
+        },
         formatCurrency(v){ try { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v||0); } catch(e){ return `Rp ${Number(v||0).toLocaleString('id-ID')}` } },
         filterUrl(){
             const p = new URLSearchParams();
@@ -435,16 +465,57 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
             return `{{ route('finance.expense') }}` + '?' + p.toString();
         },
         onFilterChange(){ /* noop: user must click Terapkan */ },
-        async openExpenseDetail(type, month, year){
+        async openMonthExpenses(month, year){
             try{
-                this.detailOpen = true; this.detailLoading = true; this.detailRows = []; this.detailType = type;
+                this.monthExpOpen = true; this.monthExpLoading = true; this.monthExpRows = [];
+                this.monthExpTitle = `Pengeluaran Lain · ${this.months[month-1]} ${year}`;
                 const p = new URLSearchParams();
-                p.set('type', type); p.set('month', month); p.set('year', year);
+                p.set('type','other'); p.set('month', month); p.set('year', year); p.set('page', 1); p.set('per_page', 50);
                 const url = `{{ route('finance.expense.detail') }}` + '?' + p.toString();
-                const res = await fetch(url, { headers: { 'Accept': 'application/json' }});
+                const res = await this.fetchWithTimeout(url, { headers: { 'Accept': 'application/json' }}, 8000);
                 const json = await res.json();
-                this.detailTitle = `Detail Pengeluaran - ${this.months[month-1]} ${year}` + (type==='salary'? ' · Gaji' : ' · Lainnya');
+                this.monthExpRows = Array.isArray(json.data)? json.data : [];
+            }catch(e){ console.error(e); }
+            finally{ this.monthExpLoading = false; }
+        },
+        closeMonthExpenses(){ this.monthExpOpen = false; this.monthExpRows = []; },
+        async openMonthSalary(month, year){
+            try{
+                this.monthSalOpen = true; this.monthSalLoading = true; this.monthSalRows = [];
+                this.monthSalTitle = `Gaji · ${this.months[month-1]} ${year}`;
+                const p = new URLSearchParams();
+                p.set('type','salary'); p.set('month', month); p.set('year', year); p.set('page', 1); p.set('per_page', 50);
+                const url = `{{ route('finance.expense.detail') }}` + '?' + p.toString();
+                const res = await this.fetchWithTimeout(url, { headers: { 'Accept': 'application/json' }}, 8000);
+                const json = await res.json();
+                this.monthSalRows = Array.isArray(json.data)? json.data : [];
+            }catch(e){ console.error(e); }
+            finally{ this.monthSalLoading = false; }
+        },
+        closeMonthSalary(){ this.monthSalOpen = false; this.monthSalRows = []; },
+        async openExpenseDetail(type, month, year){
+            this.detailOpen = true;
+            this.detailLoading = true;
+            this.detailRows = [];
+            this.detailType = type;
+            this.detailMonth = Number(month);
+            this.detailYear = Number(year);
+            this.detailPage = 1;
+            this.detailTitle = `Detail Pengeluaran - ${this.months[this.detailMonth-1]} ${this.detailYear}` + (type==='salary'? ' · Gaji' : ' · Lainnya');
+            await this.detailFetch(1);
+        },
+        async detailFetch(page){
+            try{
+                this.detailLoading = true;
+                const p = new URLSearchParams();
+                p.set('type', this.detailType); p.set('month', this.detailMonth); p.set('year', this.detailYear); p.set('page', page);
+                const url = `{{ route('finance.expense.detail') }}` + '?' + p.toString();
+                const res = await this.fetchWithTimeout(url, { headers: { 'Accept': 'application/json' }}, 8000);
+                const json = await res.json();
                 this.detailRows = Array.isArray(json.data)? json.data : [];
+                this.detailTotal = Number(json.total || this.detailRows.length);
+                this.detailTotalPages = Number(json.total_pages || 1);
+                this.stopGlobalLoader();
             }catch(e){ console.error(e); }
             finally{ this.detailLoading = false; }
         },

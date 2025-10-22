@@ -105,18 +105,9 @@ class FinanceController extends Controller
         $allYears = range(2020, 2035);
 
         // Gaji per karyawan bulan/tahun dipilih
-        $salaryByEmployee = Salary::with(['employee:id,nama_karyawan'])
-            ->where('bulan', $bulanNow)
-            ->where('tahun', $tahunNow)
-            ->selectRaw('employee_id, SUM(total_gaji) as salary')
-            ->groupBy('employee_id')
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'employee' => $row->employee->nama_karyawan ?? '-',
-                    'salary'   => (int) ($row->salary ?? 0),
-                ];
-            });
+        // Tabel salaries tidak memiliki kolom employee_id ataupun relasi ke employees.
+        // Agar tidak menyebabkan error 500, kosongkan daftar per karyawan dan hanya tampilkan agregat total.
+        $salaryByEmployee = collect();
 
         $monthlySalaryTotal = (int) Salary::where('bulan', $bulanNow)
             ->where('tahun', $tahunNow)
@@ -259,21 +250,19 @@ class FinanceController extends Controller
             ]);
         }
 
-        // default salary
-        $rows = Salary::with(['employee:id,nama_karyawan'])
-            ->where('bulan', $month)
+        // default salary (tanpa relasi dan tanpa kolom yang tidak ada)
+        $rows = Salary::where('bulan', $month)
             ->where('tahun', $year)
-            ->orderBy('employee_id')
-            ->get(['id','employee_id','total_gaji','tanggal_bayar','bulan','tahun']);
+            ->orderBy('id')
+            ->get(['id','total_gaji','bulan','tahun']);
 
         $mapped = $rows->map(function($r){
             return [
                 'id' => $r->id,
-                // tanggal_bayar dapat bernilai null, kirim sebagai string Y-m-d atau null
-                'tanggal_bayar' => $r->tanggal_bayar ? $r->tanggal_bayar->format('Y-m-d') : null,
+                'tanggal_bayar' => null, // kolom tidak ada pada schema
                 'bulan' => (int) ($r->bulan ?? 0),
                 'tahun' => (int) ($r->tahun ?? 0),
-                'employee' => $r->employee->nama_karyawan ?? '-',
+                'employee' => '-',
                 'total_gaji' => (int) $r->total_gaji,
             ];
         });

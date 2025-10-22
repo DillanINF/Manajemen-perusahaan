@@ -115,19 +115,10 @@ class DashboardController extends Controller
 
         // Pengeluaran: Gaji karyawan (pakai bulanNow/tahunNow)
 
-        // Bulanan: total gaji per karyawan pada bulan/tahun berjalan
-        $salaryByEmployee = Salary::with(['employee:id,nama_karyawan'])
-            ->where('bulan', $bulanNow)
-            ->where('tahun', $tahunNow)
-            ->selectRaw('employee_id, SUM(total_gaji) as salary')
-            ->groupBy('employee_id')
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'employee' => $row->employee->nama_karyawan ?? '-',
-                    'salary'   => (int) ($row->salary ?? 0),
-                ];
-            });
+        // Bulanan: daftar gaji per karyawan tidak tersedia karena tabel salaries
+        // tidak memiliki kolom/relasi ke karyawan. Hindari error 500 dengan
+        // mengembalikan koleksi kosong; gunakan hanya agregat total di kartu.
+        $salaryByEmployee = collect();
 
         $monthlySalaryTotal = (int) Salary::where('bulan', $bulanNow)
             ->where('tahun', $tahunNow)
