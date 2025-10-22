@@ -17,6 +17,13 @@
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(1.6);
 }
+/* Scoped white placeholders for expense modal */
+.expense-modal input::placeholder,
+.expense-modal textarea::placeholder {
+  color: rgb(100 116 139); /* slate-500 to match Produk */
+  opacity: 1;
+}
+.expense-modal select option { color: #fff; background-color: #0f172a; }
 </style>
 @endpush
 
@@ -219,12 +226,13 @@
                                     <th class="text-left px-3 py-2">Jenis</th>
                                     <th class="text-left px-3 py-2">Deskripsi</th>
                                     <th class="text-right px-3 py-2">Jumlah</th>
+                                    <th class="text-right pr-2 py-2">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                                 <template x-if="!monthExpRows.length">
                                     <tr>
-                                        <td colspan="4" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
+                                        <td colspan="5" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data.</td>
                                     </tr>
                                 </template>
                                 <template x-for="(r, i) in monthExpRows" :key="i">
@@ -233,6 +241,20 @@
                                         <td class="px-3 py-2 dark:text-gray-300" x-text="r.jenis"></td>
                                         <td class="px-3 py-2 dark:text-gray-300" x-text="r.deskripsi"></td>
                                         <td class="px-3 py-2 text-right dark:text-gray-200" x-text="formatCurrency(r.amount)"></td>
+                                        <td class="py-2 pr-2 text-right">
+                                            <div class="inline-flex items-center gap-2 justify-end">
+                                                <button @click="editExpense(r)"
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-colors dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                                        title="Edit">
+                                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                                </button>
+                                                <button @click="deleteExpense(r.id)" 
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                                                        title="Hapus">
+                                                    <i class="fa-solid fa-trash text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -280,7 +302,7 @@
         </div>
     </div>
 
-    <!-- Modal Tambah Pengeluaran -->
+    <!-- Modal Tambah/Edit Pengeluaran (gaya seperti form Produk) -->
     <div x-show="addExpenseModalOpen" x-cloak 
          x-transition:enter="transition ease-out duration-300" 
          x-transition:enter-start="opacity-0" 
@@ -297,115 +319,77 @@
              x-transition:leave="transition ease-in duration-200 transform" 
              x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
              x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-             class="relative z-10 pointer-events-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full border border-gray-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto"
+             class="expense-modal relative z-10 pointer-events-auto bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full border border-gray-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto"
              style="max-width: 28rem !important;">
             
-            <!-- Header dengan gradient -->
-            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-6">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                            <i class="fa-solid fa-receipt text-white text-lg"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white" x-text="expenseForm.id ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'"></h3>
-                            <p class="text-blue-100 text-sm" x-text="expenseForm.id ? 'Perbarui data pengeluaran' : 'Catat pengeluaran baru'"></p>
-                        </div>
-                    </div>
-                    <button @click="closeAddExpenseModal()" 
-                            class="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-all duration-200 flex items-center justify-center">
-                        <i class="fa-solid fa-times text-sm"></i>
-                    </button>
-                </div>
+            <!-- Header polos (tanpa gradient) -->
+            <div class="px-6 py-5 border-b border-slate-700 bg-slate-800 flex items-center justify-between rounded-t-xl">
+                <h3 class="text-lg font-semibold text-slate-100" x-text="expenseForm.id ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'"></h3>
+                <button @click="closeAddExpenseModal()" class="h-8 w-8 inline-flex items-center justify-center rounded hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
             
-            <!-- Form Content -->
-            <div class="p-6 bg-gray-50 dark:bg-slate-800">
-                <form @submit.prevent="submitExpense()" class="space-y-5">
+            <!-- Form Content (simple like Produk form) -->
+            <div class="p-6 bg-slate-800">
+                <form @submit.prevent="submitExpense()" class="space-y-4">
                     <!-- Tanggal -->
-                    <div class="space-y-2">
-                        <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            <i class="fa-solid fa-calendar-days text-blue-500 mr-2"></i>
-                            Tanggal Pengeluaran
-                        </label>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Tanggal Pengeluaran</label>
                         <input type="date" x-model="expenseForm.tanggal" required 
-                               class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200">
+                               class="w-full px-4 py-3 border border-slate-600 rounded-xl dark:bg-slate-800 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200">
                     </div>
-                    
                     <!-- Jenis -->
-                    <div class="space-y-2">
-                        <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            <i class="fa-solid fa-tags text-indigo-500 mr-2"></i>
-                            Jenis Pengeluaran
-                        </label>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Jenis Pengeluaran</label>
                         <div class="relative">
                             <select x-model="expenseForm.jenis" required 
-                                    class="no-native-arrow w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200 appearance-none">
+                                    class="no-native-arrow appearance-none w-full pr-10 px-4 py-3 border border-slate-600 rounded-xl dark:bg-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200">
                                 <option value="">Pilih Jenis Pengeluaran</option>
-                                <option value="Operasional">🏢 Operasional</option>
-                                <option value="Pemeliharaan">🔧 Pemeliharaan</option>
-                                <option value="Transportasi">🚗 Transportasi</option>
-                                <option value="Konsumsi">🍽️ Konsumsi</option>
-                                <option value="Utilitas">⚡ Utilitas</option>
-                                <option value="Peralatan">🛠️ Peralatan</option>
-                                <option value="Lain-lain">📋 Lain-lain</option>
+                                <template x-for="t in expenseTypes" :key="t">
+                                    <option :value="t" x-text="t"></option>
+                                </template>
                             </select>
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                         </div>
                     </div>
-                    
                     <!-- Deskripsi -->
-                    <div class="space-y-2">
-                        <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            <i class="fa-solid fa-file-text text-green-500 mr-2"></i>
-                            Deskripsi
-                        </label>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Deskripsi</label>
                         <textarea x-model="expenseForm.deskripsi" rows="3" required 
-                                  class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200 resize-none" 
+                                  class="w-full px-4 py-3 border border-slate-600 rounded-xl dark:bg-slate-800 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200 resize-none" 
                                   placeholder="Masukkan deskripsi pengeluaran..."></textarea>
                     </div>
-                    
                     <!-- Jumlah -->
-                    <div class="space-y-2">
-                        <label class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            <i class="fa-solid fa-money-bill-wave text-yellow-500 mr-2"></i>
-                            Jumlah (Rp)
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium pointer-events-none">Rp</span>
-                            <input type="text" x-model="expenseForm.amount_display" @input="formatAmountInput($event)" required 
-                                   class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 transition-all duration-200" 
-                                   placeholder="0">
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Jumlah (Rp)</label>
+                        <input type="text" x-model="expenseForm.amount_display" @input="formatAmountInput($event)" required 
+                               class="w-full px-4 py-3 border border-slate-600 rounded-xl dark:bg-slate-800 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200" 
+                               placeholder="0">
                     </div>
-                    
                     <!-- Action Buttons -->
-                    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-slate-600">
+                    <div class="flex justify-end space-x-3 mt-2 pt-6 border-t border-slate-700">
                         <button type="button" @click="closeAddExpenseModal()" 
-                                class="px-6 py-3 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition-all duration-200 font-medium">
-                            <i class="fa-solid fa-times mr-2"></i>Batal
+                                class="px-6 py-3 text-gray-700 dark:text-slate-200 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-all duration-200 font-medium">
+                            Batal
                         </button>
                         <button type="submit" :disabled="submitting" 
-                                class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg hover:shadow-xl">
-                            <span x-show="!submitting" class="flex items-center">
-                                <i class="fa-solid fa-save mr-2"></i>Simpan
-                            </span>
-                            <span x-show="submitting" class="flex items-center">
-                                <i class="fa-solid fa-spinner fa-spin mr-2"></i>Menyimpan...
-                            </span>
+                                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all duration-200 font-medium disabled:opacity-50">
+                            Simpan
                         </button>
                     </div>
                 </form>
             </div>
+            </div>
         </div>
     </div>
-</div>
 
 @push('scripts')
 <script>
 function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, otherTotal, salaryByMonth, expensesByMonth) {
     return {
         months: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+        expenseTypes: ['Operasional','Pemeliharaan','Transportasi','Konsumsi','Utilitas','Peralatan','Lain-lain'],
         allYears: @js($allYears ?? []),
         yearModalOpen: false,
         filters: { month: String(initialFilters.month), year: String(initialFilters.year) },
@@ -418,6 +402,9 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
         monthExpLoading: false,
         monthExpTitle: '',
         monthExpRows: [],
+        monthExpMonth: null,
+        monthExpYear: null,
+        monthExpIsCurrent: false,
         // Double-click month salary modal
         monthSalOpen: false,
         monthSalLoading: false,
@@ -468,6 +455,9 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
         async openMonthExpenses(month, year){
             try{
                 this.monthExpOpen = true; this.monthExpLoading = true; this.monthExpRows = [];
+                this.monthExpMonth = Number(month);
+                this.monthExpYear = Number(year);
+                this.monthExpIsCurrent = (Number(this.filters.month) === Number(month)) && (Number(this.filters.year) === Number(year));
                 this.monthExpTitle = `Pengeluaran Lain · ${this.months[month-1]} ${year}`;
                 const p = new URLSearchParams();
                 p.set('type','other'); p.set('month', month); p.set('year', year); p.set('page', 1); p.set('per_page', 50);
@@ -583,9 +573,19 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
                 });
                 
                 if (response.ok) {
+                    // Tutup modal form
                     this.closeAddExpenseModal();
-                    // Refresh page to show new data
-                    window.location.reload();
+                    if (this.expenseForm.id) {
+                        // Edit: segarkan data di dalam modal bulan yang sedang terbuka tanpa reload page
+                        if (this.monthExpOpen && this.monthExpMonth && this.monthExpYear) {
+                            // Tampilkan loader ringan
+                            this.monthExpLoading = true;
+                            await this.openMonthExpenses(this.monthExpMonth, this.monthExpYear);
+                        }
+                    } else {
+                        // Create: tetap reload agar kartu ringkasan & rekap tersinkron
+                        window.location.reload();
+                    }
                 } else {
                     const errorData = await response.json();
                     alert('Error: ' + (errorData.message || 'Gagal menyimpan pengeluaran'));
@@ -599,9 +599,26 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
         },
         // Edit expense
         editExpense(expense){
+            // Normalisasi tanggal ke format YYYY-MM-DD agar tampil di <input type="date">
+            let normalizedDate = '';
+            try {
+                if (typeof expense.tanggal === 'string') {
+                    // Jika sudah dalam format YYYY-MM-DD ambil 10 char pertama
+                    if (/^\d{4}-\d{2}-\d{2}/.test(expense.tanggal)) {
+                        normalizedDate = expense.tanggal.slice(0,10);
+                    } else {
+                        const d = new Date(expense.tanggal);
+                        if (!isNaN(d.getTime())) normalizedDate = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+                    }
+                } else {
+                    const d = new Date(expense.tanggal);
+                    if (!isNaN(d.getTime())) normalizedDate = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+                }
+            } catch(e){ normalizedDate = ''; }
+
             this.expenseForm = {
                 id: expense.id,
-                tanggal: expense.tanggal,
+                tanggal: normalizedDate || '',
                 jenis: expense.jenis,
                 deskripsi: expense.deskripsi,
                 amount: expense.amount,
@@ -630,8 +647,19 @@ function expensePage(initialFilters, salaryRows, otherExpRows, salaryTotal, othe
                 });
                 
                 if (response.ok) {
-                    // Refresh page to show updated data
-                    window.location.reload();
+                    // Ambil amount sebelum menghapus dari array
+                    const row = this.monthExpRows.find(r => r.id === id);
+                    const deletedAmount = Number(row?.amount || 0);
+                    // Hapus baris dari array monthExpRows tanpa reload halaman
+                    this.monthExpRows = this.monthExpRows.filter(r => r.id !== id);
+                    // Update total kartu jika bulan modal sama dengan filter aktif
+                    if (this.monthExpIsCurrent) {
+                        this.monthlyOtherExpenseTotal = Math.max(0, Number(this.monthlyOtherExpenseTotal || 0) - deletedAmount);
+                    }
+                    // Update rekap bulanan untuk bulan yang sedang dibuka
+                    if (this.monthExpMonth && this.expensesByMonth[this.monthExpMonth] != null) {
+                        this.expensesByMonth[this.monthExpMonth] = Math.max(0, Number(this.expensesByMonth[this.monthExpMonth] || 0) - deletedAmount);
+                    }
                 } else {
                     const errorData = await response.json();
                     alert('Error: ' + (errorData.message || 'Gagal menghapus pengeluaran'));

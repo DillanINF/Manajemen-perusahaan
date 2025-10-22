@@ -166,7 +166,7 @@ CREATE TABLE `customers` (
 
 --
 -- Dumping data for table `customers`
---
+-
 
 INSERT INTO `customers` (`id`, `name`, `email`, `address_1`, `address_2`, `payment_terms_days`, `created_at`, `updated_at`, `code_number`) VALUES
 (14, 'PT. BINAH PERKASA', NULL, 'Jl. Raya Bekasi KM.22 Blok KM 108', 'Cakung, Jakarta Timur', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-BP/2025'),
