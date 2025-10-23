@@ -196,9 +196,7 @@ class JatuhTempoController extends Controller
             'jumlah_terbayar' => 'nullable|integer|min:0',
             // Accept both UI terms and DB enums
             'status_pembayaran' => 'required|in:Belum Bayar,Sebagian,Lunas,Pending,Accept',
-            'status_approval' => 'nullable|in:Pending,ACC,Reject',
-            'denda' => 'nullable|integer|min:0',
-            'catatan' => 'nullable|string'
+            'status_approval' => 'nullable|in:Pending,ACC,Reject'
         ]);
 
         // Map UI values to DB enum values
@@ -263,10 +261,9 @@ class JatuhTempoController extends Controller
                         'tanggal_jatuh_tempo' => $jatuhTempo->tanggal_jatuh_tempo ? Carbon::parse($jatuhTempo->tanggal_jatuh_tempo)->format('Y-m-d') : null,
                         'jumlah_tagihan' => $jatuhTempo->jumlah_tagihan,
                         'jumlah_terbayar' => $jatuhTempo->jumlah_terbayar ?? 0,
-                        'denda' => $jatuhTempo->denda ?? 0,
                         'status_pembayaran' => $jatuhTempo->status_pembayaran === 'Lunas' ? 'Accept' : 'Pending',
                         'status_approval' => $jatuhTempo->status_approval ?? 'Pending',
-                        'catatan' => $jatuhTempo->catatan
+                        
                     ]
                 ]);
             }
@@ -305,9 +302,7 @@ class JatuhTempoController extends Controller
             'jumlah_terbayar' => 'nullable|integer|min:0',
             // Accept both UI terms and DB enums
             'status_pembayaran' => 'required|in:Belum Bayar,Sebagian,Lunas,Pending,Accept',
-            'status_approval' => 'nullable|in:Pending,ACC,Reject',
-            'denda' => 'nullable|integer|min:0',
-            'catatan' => 'nullable|string'
+            'status_approval' => 'nullable|in:Pending,ACC,Reject'
         ]);
 
         // Map UI values to DB enum values
@@ -384,14 +379,8 @@ class JatuhTempoController extends Controller
     public function sendReminder($id)
     {
         $jatuhTempo = JatuhTempo::findOrFail($id);
-        
-        // Update reminder status
-        $jatuhTempo->update([
-            'reminder_sent' => true,
-            'last_reminder_date' => Carbon::now()
-        ]);
-
-        return redirect()->route('jatuh-tempo.index')->with('success', 'Reminder berhasil dikirim.');
+        // Fitur reminder dinonaktifkan sementara karena kolom flag reminder dihapus.
+        return redirect()->route('jatuh-tempo.index')->with('success', 'Reminder diproses (flag kolom dinonaktifkan).');
     }
 
     public function updateStatus(Request $request, $id)

@@ -21,19 +21,12 @@ class JatuhTempo extends Model
         'sisa_tagihan',
         'status_pembayaran',
         // Approval status: Pending | ACC | Reject
-        'status_approval',
-        'hari_terlambat',
-        'denda',
-        'catatan',
-        'reminder_sent',
-        'last_reminder_date'
+        'status_approval'
     ];
 
     protected $casts = [
         'tanggal_invoice' => 'date',
         'tanggal_jatuh_tempo' => 'date',
-        'last_reminder_date' => 'date',
-        'reminder_sent' => 'boolean',
     ];
 
     // Accessor untuk warna status

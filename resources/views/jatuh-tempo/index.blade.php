@@ -556,7 +556,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Jumlah Tagihan</label>
                             <input type="number" name="jumlah_tagihan" id="jumlah_tagihan" required min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
@@ -564,10 +564,6 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Jumlah Terbayar</label>
                             <input type="number" name="jumlah_terbayar" id="jumlah_terbayar" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Denda</label>
-                            <input type="number" name="denda" id="denda" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100">
                         </div>
                     </div>
 
@@ -588,10 +584,7 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Catatan</label>
-                        <textarea name="catatan" id="catatan" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 bg-white dark:bg-slate-900 dark:border-slate-600 dark:text-slate-100"></textarea>
-                    </div>
+                    
 
                     <div class="flex justify-end space-x-3 pt-4">
                         <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700/50">
