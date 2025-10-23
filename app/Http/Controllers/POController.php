@@ -153,6 +153,29 @@ class POController extends Controller
         }
         $customerName = $customer?->name ?? (string) $request->input('customer', '');
 
+        // Perkuat resolusi customer: jika kosong, coba ambil dari PO sebelumnya dengan no_invoice yang sama
+        if (!is_string($customerName) || trim($customerName) === '') {
+            $invKey = (string) ($data['invoice_number'] ?? '');
+            if ($invKey !== '') {
+                $prev = PO::where('no_invoice', $invKey)
+                    ->whereNotNull('customer')
+                    ->whereRaw("TRIM(customer) != ''")
+                    ->orderByDesc('id')
+                    ->first();
+                if ($prev) {
+                    $customerName = (string) $prev->customer;
+                    if (empty($data['customer_id'])) {
+                        // Map nama customer ke master customers jika ada
+                        $matched = Customer::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($customerName))])->first();
+                        if ($matched) {
+                            $customer = $matched;
+                            $data['customer_id'] = $matched->id;
+                        }
+                    }
+                }
+            }
+        }
+
         if (empty($data['address_1']) || $data['address_1'] === '-') {
             $data['address_1'] = $customer->address_1 ?? '';
         }
@@ -612,6 +635,15 @@ class POController extends Controller
         $current = (string)($po->status_approval ?? 'Pending');
         $new = $current === 'Accept' ? 'Pending' : 'Accept';
 
+        // CEK: Jika ada Jatuh Tempo dengan status Lunas (Accept), BLOKIR perubahan status
+        $jatuhTempo = \App\Models\JatuhTempo::where('no_invoice', $invoiceKey)->first();
+        if ($jatuhTempo && $jatuhTempo->status_pembayaran === 'Lunas') {
+            return response()->json([
+                'success' => false,
+                'message' => '❌ Status tidak dapat diubah karena Jatuh Tempo sudah berstatus LUNAS (Accept).'
+            ], 403);
+        }
+
         DB::transaction(function () use ($po, $new, $invoiceKey) {
             // Update hanya baris PO yang diklik
             $po->update(['status_approval' => $new]);
@@ -725,6 +757,12 @@ class POController extends Controller
 
     public function update(Request $request, PO $po)
     {
+        // CEK: Jika ada Jatuh Tempo dengan status Lunas (Accept), BLOKIR edit
+        $jatuhTempo = \App\Models\JatuhTempo::where('no_invoice', $po->no_invoice)->first();
+        if ($jatuhTempo && $jatuhTempo->status_pembayaran === 'Lunas') {
+            return redirect()->back()->with('error', '❌ Data tidak dapat diubah karena Jatuh Tempo sudah berstatus LUNAS (Accept).');
+        }
+
         $data = $request->validate([
             'invoice_number'      => 'nullable|string|max:50',
             'no_surat_jalan_nomor' => 'required|string',
@@ -943,6 +981,12 @@ class POController extends Controller
 
     public function destroy(PO $po)
     {
+        // CEK: Jika ada Jatuh Tempo dengan status Lunas (Accept), BLOKIR hapus
+        $jatuhTempo = \App\Models\JatuhTempo::where('no_invoice', $po->no_invoice)->first();
+        if ($jatuhTempo && $jatuhTempo->status_pembayaran === 'Lunas') {
+            return redirect()->back()->with('error', '❌ Data tidak dapat dihapus karena Jatuh Tempo sudah berstatus LUNAS (Accept).');
+        }
+
         // Lepas nomor dari reserved cache & epoch agar bisa digunakan lagi
         $num = $po->no_invoice;
 
@@ -1157,35 +1201,46 @@ class POController extends Controller
             ->get()
             ->groupBy('no_invoice')
             ->map(function ($group) {
-                // Ambil baris pertama dari setiap grup no_invoice
-                $po = $group->first();
-                
-                // Saring nilai placeholder "Draft" agar tidak tampil di UI
-                $customer = $po->customer;
+                // Gunakan baris terbaru berdasarkan id untuk konsistensi
+                $poLatest = $group->sortByDesc('id')->first();
+
+                // Cari customer yang tidak kosong/dash/draft dengan prioritas terbaru
+                $customerFromGroup = $group
+                    ->sortByDesc('id')
+                    ->pluck('customer')
+                    ->first(function ($val) {
+                        $v = is_string($val) ? trim(strtolower($val)) : '';
+                        return $v !== '' && $v !== '-' && $v !== 'draft';
+                    });
+
+                $customer = $customerFromGroup ?? ($poLatest->customer ?? '');
                 if (is_string($customer) && strtolower(trim($customer)) === 'draft') {
+                    $customer = '-';
+                }
+                if (!is_string($customer) || trim($customer) === '') {
                     $customer = '-';
                 }
 
                 // Hitung total PO dengan no_invoice yang sama dan no_po valid (bukan placeholder)
                 $totalPO = PO::query()
-                    ->where('no_invoice', $po->no_invoice)
+                    ->where('no_invoice', $poLatest->no_invoice)
                     ->whereNotNull('no_po')
                     ->where('no_po', '!=', '-')
                     ->whereRaw("TRIM(no_po) != ''")
                     ->count();
 
                 return (object) [
-                    'id'        => $po->id,
-                    'tanggal'   => $po->tanggal_po ? \Carbon\Carbon::parse($po->tanggal_po)->format('d/m/Y') : '-',
-                    'no_urut'   => $po->no_invoice,
+                    'id'        => $poLatest->id,
+                    'tanggal'   => $poLatest->tanggal_po ? \Carbon\Carbon::parse($poLatest->tanggal_po)->format('d/m/Y') : '-',
+                    'no_urut'   => $poLatest->no_invoice,
                     'customer'  => $customer,
-                    'no_po'     => $po->no_po,
+                    'no_po'     => $poLatest->no_po,
                     'total_po'  => $totalPO,
                     'barang'    => null, // Tidak perlu tampil individual
-                    'qty'       => $po->qty,
-                    'harga'     => $po->harga,
-                    'total'     => $po->total,
-                    'status_approval' => $po->status_approval ?? 'Pending',
+                    'qty'       => $poLatest->qty,
+                    'harga'     => $poLatest->harga,
+                    'total'     => $poLatest->total,
+                    'status_approval' => $poLatest->status_approval ?? 'Pending',
                 ];
             })
             ->sortBy(function ($invoice) {
@@ -1388,50 +1443,54 @@ class POController extends Controller
      */
     public function updateInvoice(Request $request, PO $po)
     {
+        // CEK: Jika ada Jatuh Tempo dengan status Lunas (Accept), BLOKIR update invoice
+        $jatuhTempo = \App\Models\JatuhTempo::where('no_invoice', $po->no_invoice)->first();
+        if ($jatuhTempo && $jatuhTempo->status_pembayaran === 'Lunas') {
+            return redirect()->back()->with('error', '❌ Invoice tidak dapat diubah karena Jatuh Tempo sudah berstatus LUNAS (Accept).');
+        }
+
         $request->validate([
-            'customer_id' => 'required|exists:customers,id',
+            'no_invoice' => 'required|integer|min:1',
             'tanggal_invoice' => 'required|date',
         ]);
 
         try {
-            // Ambil customer name dari customer_id
-            $customer = Customer::find($request->customer_id);
-            $customerName = $customer ? $customer->name : '';
-            
-            // Update semua PO dengan no_invoice yang sama
-            $invoiceNumber = $po->no_invoice;
-            
-            DB::transaction(function() use ($invoiceNumber, $request, $customerName, $customer) {
-                $updates = [
-                    'customer' => $customerName,
-                    'tanggal_po' => $request->tanggal_invoice,
-                ];
-                
-                // Update semua PO dengan invoice number yang sama
-                PO::where('no_invoice', $invoiceNumber)->update($updates);
-                
-                // Update JatuhTempo: recalculate due date based on payment terms
-                $tanggalInvoice = \Carbon\Carbon::parse($request->tanggal_invoice);
-                $termsDays = (int) ($customer->payment_terms_days ?? 0);
-                
-                if ($termsDays > 0) {
-                    $tanggalJatuhTempo = (clone $tanggalInvoice)->addDays($termsDays);
-                } else {
-                    $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
+            $oldInvoice = (string) $po->no_invoice;
+            $newInvoice = (string) $request->input('no_invoice');
+            $newDate    = (string) $request->input('tanggal_invoice');
+
+            // Jika nomor invoice berubah, pastikan belum dipakai grup lain
+            if ($newInvoice !== $oldInvoice) {
+                $exists = PO::where('no_invoice', $newInvoice)->exists();
+                if ($exists) {
+                    return redirect()->back()->with('error', 'No Invoice ' . $newInvoice . ' sudah digunakan. Silakan pilih nomor lain.');
                 }
-                
-                JatuhTempo::where('no_invoice', $invoiceNumber)->update([
-                    'customer' => $customerName,
-                    'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
+            }
+
+            DB::transaction(function () use ($oldInvoice, $newInvoice, $newDate) {
+                // Update semua baris dalam grup invoice lama
+                PO::where('no_invoice', $oldInvoice)->update([
+                    'no_invoice' => $newInvoice,
+                    'tanggal_po' => $newDate,
                 ]);
+
+                // Update/relokasi entri JatuhTempo ke nomor baru (jika ada)
+                $existingJT = JatuhTempo::where('no_invoice', $oldInvoice)->first();
+                if ($existingJT) {
+                    // Recalculate due date: +1 bulan (tanpa ketergantungan customer di sini)
+                    $tanggalInvoice = \Carbon\Carbon::parse($newDate);
+                    $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
+                    $existingJT->update([
+                        'no_invoice' => $newInvoice,
+                        'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
+                        'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
+                    ]);
+                }
             });
 
-            return redirect()->route('invoice.index')
-                ->with('success', 'Invoice berhasil diupdate!');
-                
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Gagal update invoice: ' . $e->getMessage());
+            return redirect()->route('invoice.index')->with('success', 'Invoice berhasil diupdate!');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Gagal update invoice: ' . $e->getMessage());
         }
     }
 }

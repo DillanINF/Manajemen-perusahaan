@@ -14,6 +14,32 @@ use Illuminate\Support\Facades\Mail;
 class JatuhTempoController extends Controller
 {
     /**
+     * Cek apakah invoice terkait sudah berstatus Accept di tabel POS
+     */
+    private function isInvoiceAccepted($jt): bool
+    {
+        try {
+            $noInvoice = trim((string) ($jt->no_invoice ?? ''));
+            $noPo = trim((string) ($jt->no_po ?? ''));
+
+            $q = PO::query()->where('status_approval', 'Accept');
+            if ($noInvoice !== '') {
+                // Match ke kolom no_invoice di POS
+                $q->where('no_invoice', $noInvoice);
+            } elseif ($noPo !== '' && $noPo !== '-') {
+                $q->where(function ($qq) use ($noPo) {
+                    $qq->where('no_po', $noPo)
+                       ->orWhereRaw('TRIM(no_po) = ?', [$noPo]);
+                });
+            } else {
+                return false;
+            }
+            return $q->exists();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+    /**
      * Helper method untuk mendapatkan total pembayaran dari tabel invoice
      */
     private function getTotalPembayaranFromInvoice($jatuhTempo)
@@ -64,9 +90,18 @@ class JatuhTempoController extends Controller
 
         $jatuhTempos = $query->orderBy('tanggal_jatuh_tempo', 'asc')->get();
         
+        // Filter out items dengan tanggal null untuk mencegah error
+        $jatuhTempos = $jatuhTempos->filter(function($jt) {
+            return !empty($jt->tanggal_invoice) && !empty($jt->tanggal_jatuh_tempo);
+        });
+        
         // Untuk setiap jatuh tempo, ambil total pembayaran dari tabel POS (bukan invoices)
         $jatuhTempos = $jatuhTempos->map(function($jt) {
-            $jt->jumlah_tagihan_display = $this->getTotalPembayaranFromInvoice($jt);
+            try {
+                $jt->jumlah_tagihan_display = $this->getTotalPembayaranFromInvoice($jt);
+            } catch (\Exception $e) {
+                $jt->jumlah_tagihan_display = $jt->jumlah_tagihan ?? 0;
+            }
             return $jt;
         });
 
@@ -82,11 +117,17 @@ class JatuhTempoController extends Controller
         for ($i = 1; $i <= 12; $i++) {
             $monthQuery = clone $statsBuilder;
             $monthItems = $monthQuery->whereMonth('tanggal_invoice', $i)->get();
+            // Hanya pertimbangkan item yang invoice-nya sudah Accept untuk notifikasi/statistik
+            $monthItemsAccepted = $monthItems->filter(fn($jt) => $this->isInvoiceAccepted($jt));
             
             // Hitung total menggunakan helper method
             $totalSum = 0;
-            foreach ($monthItems as $item) {
-                $totalSum += $this->getTotalPembayaranFromInvoice($item);
+            foreach ($monthItemsAccepted as $item) {
+                try {
+                    $totalSum += $this->getTotalPembayaranFromInvoice($item);
+                } catch (\Exception $e) {
+                    $totalSum += $item->jumlah_tagihan ?? 0;
+                }
             }
             
             $monthData = (object) [
@@ -97,12 +138,15 @@ class JatuhTempoController extends Controller
             // Overdue indicator diselaraskan dengan bulan INVOICE (bukan bulan deadline):
             // ambil item dengan bulan `tanggal_invoice` = $i (tahun aktif), status bukan Lunas,
             // dan `tanggal_jatuh_tempo` sudah lewat atau hari ini.
-            $overdueCount = JatuhTempo::query()
+            // Hitung overdue hanya untuk invoice yang sudah Accept
+            $overdueCandidates = JatuhTempo::query()
                 ->whereYear('tanggal_invoice', $tahun)
                 ->whereMonth('tanggal_invoice', $i)
                 ->where('status_pembayaran', '!=', 'Lunas')
+                ->whereNotNull('tanggal_jatuh_tempo')
                 ->whereDate('tanggal_jatuh_tempo', '<=', Carbon::today())
-                ->count();
+                ->get();
+            $overdueCount = $overdueCandidates->filter(fn($jt) => $this->isInvoiceAccepted($jt))->count();
 
             $monthlyStats[$i] = (object) [
                 'total_count' => (int) ($monthData->total_count ?? 0),
@@ -112,18 +156,18 @@ class JatuhTempoController extends Controller
             ];
         }
 
-        // Statistik sesuai kebutuhan user
-        // Total Tagihan Pending (hanya yang status Belum Bayar/Sebagian) - gunakan jumlah_tagihan_display
-        $totalTagihanPending = $jatuhTempos->where('status_pembayaran', '!=', 'Lunas')->sum('jumlah_tagihan_display');
-        
-        // Total Terbayar (hanya yang status Lunas/Accept) - gunakan jumlah_tagihan_display
-        $totalTerbayar = $jatuhTempos->where('status_pembayaran', 'Lunas')->sum('jumlah_tagihan_display');
+        // Statistik sesuai kebutuhan user (hanya invoice Accepted yang dihitung untuk notifikasi)
+        $acceptedItems = $jatuhTempos->filter(fn($jt) => $this->isInvoiceAccepted($jt));
+        // Total Tagihan Pending (Belum Lunas) dari Accepted only
+        $totalTagihanPending = $acceptedItems->where('status_pembayaran', '!=', 'Lunas')->sum('jumlah_tagihan_display');
+        // Total Terbayar (Lunas) dari Accepted only
+        $totalTerbayar = $acceptedItems->where('status_pembayaran', 'Lunas')->sum('jumlah_tagihan_display');
         
         // Total Customer Pending (unique customer dengan status pending)
-        $totalCustomerPending = $jatuhTempos->where('status_pembayaran', '!=', 'Lunas')->unique('customer')->count();
+        $totalCustomerPending = $acceptedItems->where('status_pembayaran', '!=', 'Lunas')->unique('customer')->count();
         
         // Total Customer Accept (unique customer dengan status accept)
-        $totalCustomerAccept = $jatuhTempos->where('status_pembayaran', 'Lunas')->unique('customer')->count();
+        $totalCustomerAccept = $acceptedItems->where('status_pembayaran', 'Lunas')->unique('customer')->count();
 
         // Get customers for dropdown
         $customers = Customer::orderBy('name')->get();
@@ -433,10 +477,11 @@ class JatuhTempoController extends Controller
             // Hanya boleh kirim jika sudah jatuh tempo dan belum Lunas
             $today = Carbon::today();
             $deadline = Carbon::parse($jt->tanggal_jatuh_tempo);
-            if (!($jt->status_pembayaran !== 'Lunas' && $deadline->lte($today))) {
+            // Tambahan syarat: hanya jika invoice sudah Accept di POS
+            if (!($jt->status_pembayaran !== 'Lunas' && $deadline->lte($today) && $this->isInvoiceAccepted($jt))) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Hanya bisa mengirim email untuk tagihan yang sudah jatuh tempo dan belum Lunas.'
+                    'message' => 'Hanya bisa mengirim email untuk tagihan yang sudah jatuh tempo, belum Lunas, dan invoice sudah Accept.'
                 ], 400);
             }
 
