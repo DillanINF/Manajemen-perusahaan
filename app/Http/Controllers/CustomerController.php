@@ -25,9 +25,15 @@ class CustomerController extends Controller
             'name' => 'required|string|max:255',
             'code_number' => 'nullable|string|max:100',
             'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:50',
             'address_1' => 'nullable|string|max:500',
             'address_2' => 'nullable|string|max:500',
+            'payment_terms_days' => 'nullable|integer|min:1|max:365',
         ]);
+        
+        if (!isset($validated['payment_terms_days'])) {
+            $validated['payment_terms_days'] = 30;
+        }
         
         Customer::create($validated);
 
@@ -56,8 +62,10 @@ class CustomerController extends Controller
                 'name' => 'required|string|max:255',
                 'code_number' => 'nullable|string|max:100',
                 'email' => 'nullable|email|max:255',
+                'phone' => 'nullable|string|max:50',
                 'address_1' => 'nullable|string|max:500',
                 'address_2' => 'nullable|string|max:500',
+                'payment_terms_days' => 'nullable|integer|min:1|max:365',
             ]);
 
             $customer->update($validated);

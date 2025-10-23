@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 22, 2025 at 01:44 AM
+-- Generation Time: Oct 23, 2025 at 09:09 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.3.16
 
@@ -27,7 +27,6 @@ SET time_zone = "+00:00";
 -- Table structure for table `annual_summaries`
 --
 
-DROP TABLE IF EXISTS `annual_summaries`;
 CREATE TABLE `annual_summaries` (
   `id` bigint UNSIGNED NOT NULL,
   `year` smallint UNSIGNED NOT NULL,
@@ -50,7 +49,6 @@ CREATE TABLE `annual_summaries` (
 -- Table structure for table `barang_keluars`
 --
 
-DROP TABLE IF EXISTS `barang_keluars`;
 CREATE TABLE `barang_keluars` (
   `id` bigint UNSIGNED NOT NULL,
   `tanggal` date NOT NULL,
@@ -81,15 +79,14 @@ INSERT INTO `barang_keluars` (`id`, `tanggal`, `produk_id`, `qty`, `qty_jenis`, 
 (158, '2025-05-13', 7, 3, 'PCS', 'Auto Keluar dari PO 3424', 5, '2025-10-13 01:35:25', '2025-10-13 01:35:25'),
 (164, '2025-10-16', 10, 23, 'PCS', 'Auto Keluar dari PO PO.48932', 5, '2025-10-15 23:57:52', '2025-10-15 23:57:52'),
 (165, '2025-10-16', 10, 32, 'PCS', 'Auto Keluar dari PO PO.484354', 5, '2025-10-16 00:14:35', '2025-10-16 00:14:35'),
-(166, '2025-10-16', 11, 30, 'PCS', 'Auto Keluar dari PO 432234/CAM-WPB/2025', 5, '2025-10-16 00:17:20', '2025-10-16 00:17:20'),
-(167, '2025-10-16', 11, 30, 'PCS', 'Auto Keluar dari PO PO.0342342', 5, '2025-10-16 00:20:49', '2025-10-16 00:20:49'),
 (169, '2025-10-17', 10, 3, 'PCS', 'Auto Keluar dari PO PO.43234', 5, '2025-10-16 20:55:58', '2025-10-16 20:55:58'),
 (170, '2025-10-18', 10, 62, 'PCS', 'Auto Keluar dari PO PO.432423', 5, '2025-10-18 02:41:14', '2025-10-18 02:41:14'),
 (171, '2025-10-20', 11, 34, 'PCS', 'Auto Keluar dari PO PO.5694234', 5, '2025-10-19 19:45:20', '2025-10-19 19:45:20'),
-(172, '2025-10-20', 11, 42, 'PCS', 'Auto Keluar dari PO 432423', 5, '2025-10-19 19:55:41', '2025-10-19 19:55:41'),
-(173, '2025-10-20', 11, 42, 'PCS', 'Auto Keluar dari PO 432423', 5, '2025-10-19 19:55:42', '2025-10-19 19:55:42'),
 (174, '2025-10-20', 11, 3, 'PCS', 'Auto Keluar dari PO PO.432432', 5, '2025-10-19 19:56:38', '2025-10-19 19:56:38'),
-(175, '2025-10-20', 11, 3, 'PCS', 'Auto Keluar dari PO PO.8347534', 5, '2025-10-19 21:08:29', '2025-10-19 21:08:29');
+(175, '2025-10-20', 11, 3, 'PCS', 'Auto Keluar dari PO PO.8347534', 5, '2025-10-19 21:08:29', '2025-10-19 21:08:29'),
+(198, '2025-10-23', 17, 23, 'PCS', 'Auto Keluar dari PO po.342', 5, '2025-10-22 19:18:48', '2025-10-22 19:18:48'),
+(199, '2025-06-23', 17, 3, 'PCS', 'Auto Keluar dari PO po.432432', 5, '2025-10-22 23:11:55', '2025-10-22 23:11:55'),
+(200, '2025-04-23', 17, 2, 'PCS', 'Auto Keluar dari PO 2345324', 5, '2025-10-22 23:20:40', '2025-10-22 23:20:40');
 
 -- --------------------------------------------------------
 
@@ -97,7 +94,6 @@ INSERT INTO `barang_keluars` (`id`, `tanggal`, `produk_id`, `qty`, `qty_jenis`, 
 -- Table structure for table `barang_masuks`
 --
 
-DROP TABLE IF EXISTS `barang_masuks`;
 CREATE TABLE `barang_masuks` (
   `id` bigint UNSIGNED NOT NULL,
   `tanggal` date NOT NULL,
@@ -117,7 +113,8 @@ INSERT INTO `barang_masuks` (`id`, `tanggal`, `produk_id`, `qty`, `qty_jenis`, `
 (13, '2025-10-16', 10, 123, 'PCS', 5, '2025-10-15 20:21:42', '2025-10-15 20:21:42'),
 (14, '2025-10-16', 11, 300, 'PCS', 5, '2025-10-15 23:31:34', '2025-10-15 23:31:34'),
 (15, '2025-10-21', 12, 323, 'PCS', 5, '2025-10-20 18:44:35', '2025-10-20 18:44:35'),
-(16, '2025-10-21', 10, 233, 'PCS', 5, '2025-10-20 18:58:48', '2025-10-20 18:58:48');
+(16, '2025-10-21', 10, 233, 'PCS', 5, '2025-10-20 18:58:48', '2025-10-20 18:58:48'),
+(17, '2025-10-22', 17, 344, 'PCS', 9, '2025-10-22 02:37:01', '2025-10-22 02:37:01');
 
 -- --------------------------------------------------------
 
@@ -125,7 +122,6 @@ INSERT INTO `barang_masuks` (`id`, `tanggal`, `produk_id`, `qty`, `qty_jenis`, `
 -- Table structure for table `cache`
 --
 
-DROP TABLE IF EXISTS `cache`;
 CREATE TABLE `cache` (
   `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `value` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -138,7 +134,6 @@ CREATE TABLE `cache` (
 -- Table structure for table `cache_locks`
 --
 
-DROP TABLE IF EXISTS `cache_locks`;
 CREATE TABLE `cache_locks` (
   `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `owner` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -151,7 +146,6 @@ CREATE TABLE `cache_locks` (
 -- Table structure for table `customers`
 --
 
-DROP TABLE IF EXISTS `customers`;
 CREATE TABLE `customers` (
   `id` bigint UNSIGNED NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -166,30 +160,10 @@ CREATE TABLE `customers` (
 
 --
 -- Dumping data for table `customers`
--
+--
 
 INSERT INTO `customers` (`id`, `name`, `email`, `address_1`, `address_2`, `payment_terms_days`, `created_at`, `updated_at`, `code_number`) VALUES
-(14, 'PT. BINAH PERKASA', NULL, 'Jl. Raya Bekasi KM.22 Blok KM 108', 'Cakung, Jakarta Timur', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-BP/2025'),
-(15, 'PT. KINOPRATAMA INDONESIA', NULL, 'Blok N-3 / Cikarang Barat, Bekasi Indonesia', 'MM2100 Industrial Town', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-KII/2025'),
-(16, 'PT. GARUDA METALINDO (GM2)', NULL, 'Jalan Industri Jatiwangi No.20, Jatiasih', 'Mekarwangi, Cikarang, Bekasi, Jawa Barat', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-JX/2025'),
-(17, 'PT. GARUDA METALINDO (GM4)', NULL, 'Jl. Industri Kawasan MM2100', 'Blok D5-1 Mekar Wangi, Cikarang Barat', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-GM/2025'),
-(18, 'PT. SOZOCO ECOLOGONES', NULL, 'Jl. Raya Segama KM.12,5, Banten Jaya', 'Cikupa, Tangerang', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-TES/2025'),
-(19, 'PT. SULINDAFIN (Tangerang)', NULL, 'Jl. Ki Hajar Dewantara No.27, Rawa Buntu', 'Kec. Cikupa, Kab. Tangerang, Banten 15710', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-SDI/2025'),
-(20, 'PT. KIMIA SUKSES ABADI', NULL, 'Telagam Asih, Cikarang Barat', 'Kabupaten Bekasi, Jawa Barat 17530', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-KSA/2025'),
-(21, 'PT. SUNGAI SIRAYA NUGRAHA', NULL, 'Raya Serang KM. 18', 'Karawaci, Tangerang', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-SDN/2025'),
-(22, 'PT. GROBERT INDONESIA', NULL, 'Kawasan Industri KIIC Lot A-17', 'Jatiuwung, Kota Tangerang, Banten 15135', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-GI/2025'),
-(23, 'PT. VALVA INDUSTRY', NULL, 'Jl. Raya Pluit Selatan Blok C1, Kemayoran', 'Penjaringan, Jakarta Utara 14440', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-ASA/2025'),
-(24, 'PT. TOP TUBE INDONESIA', NULL, 'Jl. Alternatif Cibubur No. X', 'Sentul, Babakan Madang, Kab. Bogor', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-TTI/2025'),
-(25, 'PT. INTERKUALA MEDIA', NULL, 'Green Sedayu Biz Park, Blok D10', 'Sawah Besar, Jakarta Pusat, DKI Jakarta', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-BELT/2025'),
-(26, 'PT. PRIMA KENCANA', NULL, 'JL. Mutiara Gading Timur Blok Z No.3', 'Cikarang Barat, Kab. Bekasi, Jawa Barat', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-SAMB/2025'),
-(27, 'PT. IMI INDUSTRY', NULL, 'WorKoship DC Cikarang', 'JALAN DAAN MOGOT KM. 18', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-IMI/2025'),
-(28, 'PT. PJA INDONESIA', NULL, 'Jl. KBN Marunda', 'Jakarta Utara, Indonesia', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-PJA/2025'),
-(29, 'PT. BAI INDONESIA', NULL, 'Pasir Raya, Bekasi', 'Bekasi – Indonesia', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-BAI/2025'),
-(30, 'PT. PK INDUSTRIES', NULL, 'Pasar Kemis', 'Kabupaten Tangerang, Banten 15710', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-PK/2025'),
-(31, 'PT. VAI INDONESIA', NULL, 'No.8 Lippo, Cibatu, Cikarang Selatan', 'Kab. Bekasi', 30, '2025-10-16 02:13:10', '2025-10-16 02:13:10', 'CAM-VAI/2025'),
-(32, 'KAYU PUTIH PULO GADUNG', NULL, 'Jl. P. Kemerdekaan No. 13', 'Kayu Putih, Pulo Gadung', 30, '2025-10-16 02:13:10', '2025-10-15 21:30:10', 'CAM/SJS'),
-(34, 'mursidiu25 rahayu', NULL, 'jln.moersidi', 'jln.moersidi', 30, '2025-10-15 20:47:59', '2025-10-15 21:28:20', 'cam-23/2025'),
-(54, 'dayatttt', 'dilaninf6@gmail.com', 'dayay', 'dauat', 30, '2025-10-18 10:59:06', '2025-10-20 02:14:10', 'i3r-u9342/3298ue');
+(55, 'dayat', 'dilaninf6@gmail.com', 'JLN.DAYAT', 'KAB.DAYAT', 30, '2025-10-22 02:35:33', '2025-10-22 02:35:33', '32-DYT/2025');
 
 -- --------------------------------------------------------
 
@@ -197,7 +171,6 @@ INSERT INTO `customers` (`id`, `name`, `email`, `address_1`, `address_2`, `payme
 -- Table structure for table `employees`
 --
 
-DROP TABLE IF EXISTS `employees`;
 CREATE TABLE `employees` (
   `id` bigint UNSIGNED NOT NULL,
   `nama_karyawan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -208,25 +181,12 @@ CREATE TABLE `employees` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `employees`
---
-
-INSERT INTO `employees` (`id`, `nama_karyawan`, `no_telepon`, `alamat`, `posisi`, `created_at`, `updated_at`) VALUES
-(6, 'dayat', '08432864', 'dayat', 'dauat', '2025-10-18 04:22:40', '2025-10-18 04:22:40'),
-(7, 'rudi', '084324862', 'jalan rudi', 'rudi', '2025-10-18 10:54:50', '2025-10-18 10:54:50'),
-(8, 'ujang', '98239402', 'dayat', 'dauay', '2025-10-18 11:00:11', '2025-10-18 11:00:11'),
-(9, 'Test User', '08123456789', 'Alamat Test', 'Staff', NULL, NULL),
-(10, 'Budi Test', '08999888777', 'Jakarta Selatann', 'Manager', '2025-10-18 20:32:40', '2025-10-20 02:24:17'),
-(11, 'dilan', '08493782', 'dilan', 'dilan', '2025-10-20 02:28:45', '2025-10-20 02:28:45');
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `excel_sheet_edits`
 --
 
-DROP TABLE IF EXISTS `excel_sheet_edits`;
 CREATE TABLE `excel_sheet_edits` (
   `id` bigint UNSIGNED NOT NULL,
   `user_id` bigint UNSIGNED NOT NULL,
@@ -245,7 +205,6 @@ CREATE TABLE `excel_sheet_edits` (
 -- Table structure for table `expenses`
 --
 
-DROP TABLE IF EXISTS `expenses`;
 CREATE TABLE `expenses` (
   `id` bigint UNSIGNED NOT NULL,
   `tanggal` date NOT NULL,
@@ -263,9 +222,7 @@ CREATE TABLE `expenses` (
 --
 
 INSERT INTO `expenses` (`id`, `tanggal`, `jenis`, `deskripsi`, `amount`, `user_id`, `status`, `created_at`, `updated_at`) VALUES
-(4, '2025-10-18', 'Operasional', 'bel man', '329.00', 5, 'approved', '2025-10-18 11:00:49', '2025-10-18 11:00:49'),
-(5, '2025-10-21', 'Peralatan', 'DAYAT NEGRO', '30000000.00', 5, 'approved', '2025-10-20 19:01:11', '2025-10-20 19:01:11'),
-(6, '2025-10-21', 'Konsumsi', 'makan req', '200000.00', 5, 'approved', '2025-10-20 19:06:26', '2025-10-20 19:06:26');
+(9, '2025-10-22', 'Transportasi', 'dayat', '200000.00', 5, 'approved', '2025-10-21 20:56:23', '2025-10-21 20:56:23');
 
 -- --------------------------------------------------------
 
@@ -273,7 +230,6 @@ INSERT INTO `expenses` (`id`, `tanggal`, `jenis`, `deskripsi`, `amount`, `user_i
 -- Table structure for table `failed_jobs`
 --
 
-DROP TABLE IF EXISTS `failed_jobs`;
 CREATE TABLE `failed_jobs` (
   `id` bigint UNSIGNED NOT NULL,
   `uuid` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -290,7 +246,6 @@ CREATE TABLE `failed_jobs` (
 -- Table structure for table `jatuh_tempos`
 --
 
-DROP TABLE IF EXISTS `jatuh_tempos`;
 CREATE TABLE `jatuh_tempos` (
   `id` bigint UNSIGNED NOT NULL,
   `no_invoice` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -302,13 +257,7 @@ CREATE TABLE `jatuh_tempos` (
   `jumlah_terbayar` bigint NOT NULL DEFAULT '0',
   `sisa_tagihan` bigint NOT NULL,
   `status_pembayaran` enum('Belum Bayar','Sebagian','Lunas') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Belum Bayar',
-  `email_sent_at` timestamp NULL DEFAULT NULL,
   `status_approval` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Pending',
-  `hari_terlambat` int NOT NULL DEFAULT '0',
-  `denda` bigint DEFAULT NULL,
-  `catatan` text COLLATE utf8mb4_unicode_ci,
-  `reminder_sent` tinyint(1) NOT NULL DEFAULT '0',
-  `last_reminder_date` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -317,10 +266,10 @@ CREATE TABLE `jatuh_tempos` (
 -- Dumping data for table `jatuh_tempos`
 --
 
-INSERT INTO `jatuh_tempos` (`id`, `no_invoice`, `no_po`, `customer`, `tanggal_invoice`, `tanggal_jatuh_tempo`, `jumlah_tagihan`, `jumlah_terbayar`, `sisa_tagihan`, `status_pembayaran`, `email_sent_at`, `status_approval`, `hari_terlambat`, `denda`, `catatan`, `reminder_sent`, `last_reminder_date`, `created_at`, `updated_at`) VALUES
-(119, '1', 'PO.48932', 'PT. WAHANA PENDIWAH BAKTI', '2025-10-16', '2025-11-15', 460000, 0, 460000, 'Belum Bayar', NULL, 'Pending', 0, NULL, NULL, 0, NULL, '2025-10-17 01:31:03', '2025-10-17 01:31:03'),
-(120, '3', 'PO.432423, PO.432432', 'PT. GARUDA METALINDO (GM4)', '2025-10-20', '2025-11-19', 1360000, 0, 1360000, 'Belum Bayar', NULL, 'Pending', 0, NULL, NULL, 0, NULL, '2025-10-19 19:44:38', '2025-10-19 21:09:03'),
-(121, '4', 'PO.5694234', 'PT. SULINDAFIN (Tangerang)', '2025-10-20', '2025-11-19', 1360000, 0, 1360000, 'Belum Bayar', NULL, 'Pending', 0, NULL, NULL, 0, NULL, '2025-10-19 19:56:01', '2025-10-19 19:56:01');
+INSERT INTO `jatuh_tempos` (`id`, `no_invoice`, `no_po`, `customer`, `tanggal_invoice`, `tanggal_jatuh_tempo`, `jumlah_tagihan`, `jumlah_terbayar`, `sisa_tagihan`, `status_pembayaran`, `status_approval`, `created_at`, `updated_at`) VALUES
+(129, '1', 'po.342', 'dayat', '2025-08-23', '2025-09-23', 4600000, 0, 4600000, 'Lunas', 'Pending', '2025-10-22 19:39:51', '2025-10-22 20:44:47'),
+(131, '2', 'po.432432', 'dayat', '2025-06-23', '2025-07-23', 600000, 0, 600000, 'Belum Bayar', 'Pending', '2025-10-22 23:12:50', '2025-10-22 23:18:31'),
+(132, '3', '2345324', 'dayat', '2025-04-23', '2025-05-23', 400000, 0, 400000, 'Belum Bayar', 'Pending', '2025-10-22 23:20:47', '2025-10-22 23:20:47');
 
 -- --------------------------------------------------------
 
@@ -328,7 +277,6 @@ INSERT INTO `jatuh_tempos` (`id`, `no_invoice`, `no_po`, `customer`, `tanggal_in
 -- Table structure for table `jobs`
 --
 
-DROP TABLE IF EXISTS `jobs`;
 CREATE TABLE `jobs` (
   `id` bigint UNSIGNED NOT NULL,
   `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -345,7 +293,6 @@ CREATE TABLE `jobs` (
 -- Table structure for table `job_batches`
 --
 
-DROP TABLE IF EXISTS `job_batches`;
 CREATE TABLE `job_batches` (
   `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -362,65 +309,9 @@ CREATE TABLE `job_batches` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `laporan_produksi_pallet`
---
-
-DROP TABLE IF EXISTS `laporan_produksi_pallet`;
-CREATE TABLE `laporan_produksi_pallet` (
-  `id` bigint UNSIGNED NOT NULL,
-  `perusahaan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PT. CAM JAYA ABADI',
-  `jenis_laporan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'REALISASI BELANJA BAHAN TANPA LIN',
-  `tanggal_laporan` date NOT NULL,
-  `periode` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `kode_item` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `deskripsi` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `hari_5` int NOT NULL DEFAULT '0',
-  `hari_6` int NOT NULL DEFAULT '0',
-  `hari_7` int NOT NULL DEFAULT '0',
-  `hari_8` int NOT NULL DEFAULT '0',
-  `hari_9` int NOT NULL DEFAULT '0',
-  `hari_10` int NOT NULL DEFAULT '0',
-  `hari_11` int NOT NULL DEFAULT '0',
-  `hari_12` int NOT NULL DEFAULT '0',
-  `hari_13` int NOT NULL DEFAULT '0',
-  `hari_14` int NOT NULL DEFAULT '0',
-  `hari_15` int NOT NULL DEFAULT '0',
-  `hari_16` int NOT NULL DEFAULT '0',
-  `hari_17` int NOT NULL DEFAULT '0',
-  `hari_18` int NOT NULL DEFAULT '0',
-  `hari_19` int NOT NULL DEFAULT '0',
-  `hari_20` int NOT NULL DEFAULT '0',
-  `jumlah` int NOT NULL DEFAULT '0',
-  `satuan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PCS',
-  `harga_satuan` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `total_harga` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `keterangan` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `kategori` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
-  `dibuat_oleh` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `disetujui_oleh` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tanggal_persetujuan` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `laporan_produksi_pallet`
---
-
-INSERT INTO `laporan_produksi_pallet` (`id`, `perusahaan`, `jenis_laporan`, `tanggal_laporan`, `periode`, `kode_item`, `deskripsi`, `hari_5`, `hari_6`, `hari_7`, `hari_8`, `hari_9`, `hari_10`, `hari_11`, `hari_12`, `hari_13`, `hari_14`, `hari_15`, `hari_16`, `hari_17`, `hari_18`, `hari_19`, `hari_20`, `jumlah`, `satuan`, `harga_satuan`, `total_harga`, `keterangan`, `kategori`, `status`, `dibuat_oleh`, `disetujui_oleh`, `tanggal_persetujuan`, `created_at`, `updated_at`) VALUES
-(1, 'PT. CAM JAYA ABADI', 'REALISASI BELANJA BAHAN TANPA LIN', '2024-09-18', '18-Sep-24', 'PLT001', 'PALLET FURNITURE 1.2X1.0 M KAYU SENGON', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 20, 'PCS', '35000.00', '700000.00', NULL, 'PALLET', 'APPROVED', 'System', NULL, NULL, '2025-09-18 01:49:47', '2025-09-18 01:49:47'),
-(2, 'PT. CAM JAYA ABADI', 'REALISASI BELANJA BAHAN TANPA LIN', '2024-09-18', '18-Sep-24', 'PLT002', 'PALLET FURNITURE 1.2X1.0 M KAYU MERANTI', 0, 0, 0, 0, 0, 21, 20, 0, 0, 12, 16, 0, 0, 0, 0, 0, 69, 'PCS', '45000.00', '3105000.00', NULL, 'PALLET', 'APPROVED', 'System', NULL, NULL, '2025-09-18 01:49:47', '2025-09-18 01:49:47'),
-(3, 'PT. CAM JAYA ABADI', 'REALISASI BELANJA BAHAN TANPA LIN', '2024-09-18', '18-Sep-24', 'FUR001', 'KURSI KAYU JATI MINIMALIS', 23, 27, 0, 0, 0, 0, 0, 0, 16, 36, 0, 0, 0, 0, 0, 0, 102, 'PCS', '150000.00', '15300000.00', NULL, 'FURNITURE', 'DRAFT', 'System', NULL, NULL, '2025-09-18 01:49:47', '2025-09-18 01:49:47'),
-(4, 'PT. CAM JAYA ABADI', 'REALISASI BELANJA BAHAN TANPA LIN', '2024-09-18', '18-Sep-24', 'LNY001', 'LOKAL 1M X 1M KG3', 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 'PCS', '85000.00', '3400000.00', NULL, 'LAINNYA', 'APPROVED', 'System', NULL, NULL, '2025-09-18 01:49:47', '2025-09-18 01:49:47');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `migrations`
 --
 
-DROP TABLE IF EXISTS `migrations`;
 CREATE TABLE `migrations` (
   `id` int UNSIGNED NOT NULL,
   `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -519,7 +410,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (85, '2025_09_18_150700_add_jenis_gaji_to_salaries_table', 29),
 (90, '2025_09_23_140600_create_excel_sheet_edits_table', 30),
 (91, '2025_10_07_080712_add_email_sent_at_to_jatuh_tempos_table', 30),
-(92, '2025_10_07_091200_make_employee_id_nullable_in_salaries_table', 30);
+(92, '2025_10_07_091200_make_employee_id_nullable_in_salaries_table', 30),
+(94, '2025_10_07_131700_add_email_to_customers_table', 31),
+(95, '2025_10_22_020500_add_performance_indexes', 32);
 
 -- --------------------------------------------------------
 
@@ -527,7 +420,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 -- Table structure for table `otp_codes`
 --
 
-DROP TABLE IF EXISTS `otp_codes`;
 CREATE TABLE `otp_codes` (
   `id` bigint UNSIGNED NOT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -543,7 +435,7 @@ CREATE TABLE `otp_codes` (
 --
 
 INSERT INTO `otp_codes` (`id`, `email`, `otp_code`, `expires_at`, `is_used`, `created_at`, `updated_at`) VALUES
-(5, 'dilaninf6@gmail.com', '196691', '2025-09-23 04:02:59', 1, '2025-09-23 03:52:59', '2025-09-23 03:54:51');
+(7, 'dilaninf6@gmail.com', '537447', '2025-10-22 01:05:01', 1, '2025-10-22 00:55:01', '2025-10-22 00:55:17');
 
 -- --------------------------------------------------------
 
@@ -551,7 +443,6 @@ INSERT INTO `otp_codes` (`id`, `email`, `otp_code`, `expires_at`, `is_used`, `cr
 -- Table structure for table `password_reset_tokens`
 --
 
-DROP TABLE IF EXISTS `password_reset_tokens`;
 CREATE TABLE `password_reset_tokens` (
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -564,7 +455,6 @@ CREATE TABLE `password_reset_tokens` (
 -- Table structure for table `pengirim`
 --
 
-DROP TABLE IF EXISTS `pengirim`;
 CREATE TABLE `pengirim` (
   `id` bigint UNSIGNED NOT NULL,
   `nama` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -579,10 +469,7 @@ CREATE TABLE `pengirim` (
 --
 
 INSERT INTO `pengirim` (`id`, `nama`, `kendaraan`, `no_polisi`, `created_at`, `updated_at`) VALUES
-(11, 'MURSIDI', 'MURSIDIi', 'M 1 RIS', '2025-10-15 20:19:54', '2025-10-15 21:57:50'),
-(12, 'ABDUL ROHIM', 'JAZZ MERAH', 'B 789 CAM', '2025-10-16 00:14:13', '2025-10-16 00:14:13'),
-(13, 'dayat', 'dayat', 'D 4 YAT', '2025-10-18 01:57:25', '2025-10-18 01:57:25'),
-(15, 'tatang', 'tatang', 'T 4 TANG', '2025-10-18 10:59:55', '2025-10-18 10:59:55');
+(16, 'DAYAT', 'DAYAT', 'D 4 YAT', '2025-10-22 02:36:01', '2025-10-22 02:36:01');
 
 -- --------------------------------------------------------
 
@@ -590,7 +477,6 @@ INSERT INTO `pengirim` (`id`, `nama`, `kendaraan`, `no_polisi`, `created_at`, `u
 -- Table structure for table `pos`
 --
 
-DROP TABLE IF EXISTS `pos`;
 CREATE TABLE `pos` (
   `id` bigint UNSIGNED NOT NULL,
   `no_surat_jalan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -618,17 +504,9 @@ CREATE TABLE `pos` (
 --
 
 INSERT INTO `pos` (`id`, `no_surat_jalan`, `no_po`, `no_invoice`, `customer`, `pengirim`, `status_approval`, `alamat_1`, `alamat_2`, `tanggal_po`, `produk_id`, `qty`, `qty_jenis`, `harga`, `total`, `created_at`, `updated_at`, `kendaraan`, `no_polisi`) VALUES
-(350, '2343/CAM-WPB/2025', 'PO.48932', '1', 'PT. WAHANA PENDIWAH BAKTI', 'MURSIDI', 'Accept', 'Cikarang Industrial Estate, Jalan Jababeka XI', 'Blok H-16, Harja Mekar, Kec. Cikarang Utara', '2025-10-16', 10, 23, 'PCS', 20000, 460000, '2025-10-15 23:57:33', '2025-10-17 01:31:03', 'MURSIDIi', 'M 1 RIS'),
-(351, '2343/CAM-WPB/2025', '234/CAM-WPB/2025', '1', 'PT. WAHANA PENDIWAH BAKTI', 'ABDUL ROHIM', 'Pending', 'Cikarang Industrial Estate, Jalan Jababeka XI', 'Blok H-16, Harja Mekar, Kec. Cikarang Utara', '2025-10-16', 10, 32, 'PCS', 20000, 640000, '2025-10-16 00:14:35', '2025-10-16 00:16:46', 'MURSIDIi', 'M 1 RIS'),
-(352, '2343342/CAM-WPB/2025', '432234/CAM-WPB/2025', '1', 'PT. WAHANA PENDIWAH BAKTI', 'ABDUL ROHIM', 'Pending', 'Cikarang Industrial Estate, Jalan Jababeka XI', 'Blok H-16, Harja Mekar, Kec. Cikarang Utara', '2025-10-16', 11, 30, 'PCS', 40000, 1200000, '2025-10-16 00:17:20', '2025-10-16 00:17:20', 'JAZZ MERAH', 'B 789 CAM'),
-(353, '234332/CAM-WPB/2025', 'PO.0342342', '1', 'PT. WAHANA PENDIWAH BAKTI', 'ABDUL ROHIM', 'Pending', 'Cikarang Industrial Estate, Jalan Jababeka XI', 'Blok H-16, Harja Mekar, Kec. Cikarang Utara', '2025-10-16', 11, 30, 'PCS', 40000, 1200000, '2025-10-16 00:20:49', '2025-10-16 00:20:49', 'JAZZ MERAH', 'B 789 CAM'),
-(354, '342234/CAM-WPB/2025', 'PO.123456789', '1', 'PT. WAHANA PENDIWAH BAKTI', 'ABDUL ROHIM', 'Pending', 'Cikarang Industrial Estate, Jalan Jababeka XI', 'Blok H-16, Harja Mekar, Kec. Cikarang Utara', '2025-10-16', 10, 3, 'PCS', 20000, 60000, '2025-10-16 00:49:10', '2025-10-16 00:49:10', 'JAZZ MERAH', 'B 789 CAM'),
-(356, '32342/CAM-GM/2025', 'PO.432423', '3', 'PT. GARUDA METALINDO (GM4)', 'MURSIDI', 'Accept', 'Jl. Industri Kawasan MM2100', 'Blok D5-1 Mekar Wangi, Cikarang Barat', '2025-10-18', 10, 62, 'PCS', 20000, 1240000, '2025-10-18 02:40:49', '2025-10-19 19:44:37', 'MURSIDIi', 'M 1 RIS'),
-(357, '432/CAM-SDI/2025', 'PO.5694234', '4', 'PT. SULINDAFIN (Tangerang)', 'dayat', 'Accept', 'Jl. Ki Hajar Dewantara No.27, Rawa Buntu', 'Kec. Cikupa, Kab. Tangerang, Banten 15710', '2025-10-20', 11, 34, 'PCS', 40000, 1360000, '2025-10-18 10:46:17', '2025-10-19 19:56:01', 'dayat', 'D 4 YAT'),
-(358, '3454/CAM-SDI/2025', '432423', '4', 'PT. SULINDAFIN (Tangerang)', 'tatang', 'Pending', 'Jl. Ki Hajar Dewantara No.27, Rawa Buntu', 'Kec. Cikupa, Kab. Tangerang, Banten 15710', '2025-10-20', 11, 42, 'PCS', 40000, 1680000, '2025-10-19 19:55:41', '2025-10-19 19:55:41', 'tatang', 'T 4 TANG'),
-(359, '3454/CAM-SDI/2025', '432423', '4', 'PT. SULINDAFIN (Tangerang)', 'tatang', 'Pending', 'Jl. Ki Hajar Dewantara No.27, Rawa Buntu', 'Kec. Cikupa, Kab. Tangerang, Banten 15710', '2025-10-20', 11, 42, 'PCS', 40000, 1680000, '2025-10-19 19:55:42', '2025-10-19 19:55:42', 'tatang', 'T 4 TANG'),
-(360, '431254/CAM-GM/2025', 'PO.432432', '3', 'PT. GARUDA METALINDO (GM4)', 'MURSIDI', 'Accept', 'Jl. Industri Kawasan MM2100', 'Blok D5-1 Mekar Wangi, Cikarang Barat', '2025-10-20', 11, 3, 'PCS', 40000, 120000, '2025-10-19 19:56:38', '2025-10-19 21:09:03', 'MURSIDIi', 'M 1 RIS'),
-(409, '-', '-', '5', 'PT. BINAH PERKASA', NULL, 'Pending', NULL, NULL, '2025-10-21', NULL, 0, 'PCS', 0, 0, '2025-10-21 02:22:29', '2025-10-21 02:22:29', NULL, NULL);
+(424, '3245/32-DYT/2025', 'po.342', '1', 'dayat', 'DAYAT', 'Accept', 'JLN.DAYAT', 'KAB.DAYAT', '2025-08-23', 17, 23, 'PCS', 200000, 4600000, '2025-10-22 19:18:32', '2025-10-22 19:39:51', 'DAYAT', 'D 4 YAT'),
+(425, '289344/32-DYT/2025', 'po.432432', '2', 'dayat', 'DAYAT', 'Accept', 'JLN.DAYAT', 'KAB.DAYAT', '2025-06-23', 17, 3, 'PCS', 200000, 600000, '2025-10-22 19:30:29', '2025-10-22 23:12:50', 'DAYAT', 'D 4 YAT'),
+(426, '3425/32-DYT/2025', '2345324', '3', 'dayat', 'DAYAT', 'Accept', 'JLN.DAYAT', 'KAB.DAYAT', '2025-04-23', 17, 2, 'PCS', 200000, 400000, '2025-10-22 23:20:21', '2025-10-22 23:20:47', 'DAYAT', 'D 4 YAT');
 
 -- --------------------------------------------------------
 
@@ -636,7 +514,6 @@ INSERT INTO `pos` (`id`, `no_surat_jalan`, `no_po`, `no_invoice`, `customer`, `p
 -- Table structure for table `po_items`
 --
 
-DROP TABLE IF EXISTS `po_items`;
 CREATE TABLE `po_items` (
   `id` bigint UNSIGNED NOT NULL,
   `po_id` bigint UNSIGNED NOT NULL,
@@ -654,16 +531,9 @@ CREATE TABLE `po_items` (
 --
 
 INSERT INTO `po_items` (`id`, `po_id`, `produk_id`, `qty`, `qty_jenis`, `harga`, `total`, `created_at`, `updated_at`) VALUES
-(177, 350, 10, 23, 'PCS', '20000.00', '460000.00', '2025-10-15 23:57:52', '2025-10-15 23:57:52'),
-(178, 351, 10, 32, 'PCS', '20000.00', '640000.00', '2025-10-16 00:14:35', '2025-10-16 00:14:35'),
-(179, 352, 11, 30, 'PCS', '40000.00', '1200000.00', '2025-10-16 00:17:20', '2025-10-16 00:17:20'),
-(180, 353, 11, 30, 'PCS', '40000.00', '1200000.00', '2025-10-16 00:20:49', '2025-10-16 00:20:49'),
-(181, 354, 10, 3, 'PCS', '20000.00', '60000.00', '2025-10-16 00:49:10', '2025-10-16 00:49:10'),
-(183, 356, 10, 62, 'PCS', '20000.00', '1240000.00', '2025-10-18 02:41:14', '2025-10-18 02:41:14'),
-(184, 357, 11, 34, 'PCS', '40000.00', '1360000.00', '2025-10-19 19:45:20', '2025-10-19 19:45:20'),
-(185, 358, 11, 42, 'PCS', '40000.00', '1680000.00', '2025-10-19 19:55:41', '2025-10-19 19:55:41'),
-(186, 359, 11, 42, 'PCS', '40000.00', '1680000.00', '2025-10-19 19:55:42', '2025-10-19 19:55:42'),
-(187, 360, 11, 3, 'PCS', '40000.00', '120000.00', '2025-10-19 19:56:38', '2025-10-19 19:56:38');
+(211, 424, 17, 23, 'PCS', '200000.00', '4600000.00', '2025-10-22 19:18:48', '2025-10-22 19:18:48'),
+(212, 425, 17, 3, 'PCS', '200000.00', '600000.00', '2025-10-22 23:11:55', '2025-10-22 23:11:55'),
+(213, 426, 17, 2, 'PCS', '200000.00', '400000.00', '2025-10-22 23:20:40', '2025-10-22 23:20:40');
 
 -- --------------------------------------------------------
 
@@ -671,7 +541,6 @@ INSERT INTO `po_items` (`id`, `po_id`, `produk_id`, `qty`, `qty_jenis`, `harga`,
 -- Table structure for table `produks`
 --
 
-DROP TABLE IF EXISTS `produks`;
 CREATE TABLE `produks` (
   `id` bigint UNSIGNED NOT NULL,
   `kode_produk` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -689,10 +558,7 @@ CREATE TABLE `produks` (
 --
 
 INSERT INTO `produks` (`id`, `kode_produk`, `nama_produk`, `name`, `harga`, `harga_pcs`, `harga_set`, `created_at`, `updated_at`) VALUES
-(10, 'PRD0009', 'PALLET PELLETTT', 'PALLET MT MTTH2', '20000.00', '20000.00', '0.00', '2025-10-15 20:21:07', '2025-10-20 18:51:36'),
-(11, 'PRD0005', 'PALLET PELLE', 'PALLET PELLE', '40000.00', '40000.00', '0.00', '2025-10-15 23:31:22', '2025-10-15 23:31:22'),
-(12, 'PRD0006', 'dayat', 'dayat', '20.00', '20.00', '0.00', '2025-10-18 10:59:36', '2025-10-18 10:59:36'),
-(14, 'PRD0012', 'dudung', 'dudung', '2309000.00', '0.00', '2309000.00', '2025-10-21 02:33:43', '2025-10-21 02:33:51');
+(17, 'PRD0001', 'DAYAT', 'DAYAT', '200000.00', '200000.00', '0.00', '2025-10-22 02:35:48', '2025-10-22 02:35:48');
 
 -- --------------------------------------------------------
 
@@ -700,7 +566,6 @@ INSERT INTO `produks` (`id`, `kode_produk`, `nama_produk`, `name`, `harga`, `har
 -- Table structure for table `salaries`
 --
 
-DROP TABLE IF EXISTS `salaries`;
 CREATE TABLE `salaries` (
   `id` bigint UNSIGNED NOT NULL,
   `bulan` tinyint UNSIGNED NOT NULL,
@@ -719,10 +584,7 @@ CREATE TABLE `salaries` (
 --
 
 INSERT INTO `salaries` (`id`, `bulan`, `tahun`, `gaji_pokok`, `potongan`, `total_gaji`, `status_pembayaran`, `status`, `created_at`, `updated_at`) VALUES
-(1, 5, 2025, '430000.00', '0.00', '430000.00', 'dibayar', 'paid', '2025-10-15 20:35:28', '2025-10-20 02:58:15'),
-(2, 10, 2025, '200000.00', '0.00', '200000.00', 'dibayar', 'paid', '2025-10-18 11:00:25', '2025-10-18 11:00:25'),
-(3, 10, 2025, '2000000.00', '0.00', '2000000.00', 'dibayar', 'paid', '2025-10-20 02:34:44', '2025-10-20 02:34:44'),
-(4, 10, 2025, '300000.00', '0.00', '300000.00', 'dibayar', 'paid', '2025-10-21 02:40:55', '2025-10-21 02:40:55');
+(5, 10, 2025, '2300000.00', '0.00', '2300000.00', 'dibayar', 'paid', '2025-10-23 01:14:06', '2025-10-23 01:14:06');
 
 -- --------------------------------------------------------
 
@@ -730,7 +592,6 @@ INSERT INTO `salaries` (`id`, `bulan`, `tahun`, `gaji_pokok`, `potongan`, `total
 -- Table structure for table `sessions`
 --
 
-DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` bigint UNSIGNED DEFAULT NULL,
@@ -745,8 +606,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('C7E07OZBMwx5uosJOyf4pKdPMsT8XQWktVtIVmeC', 5, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'ZXlKcGRpSTZJa2xNY3k5SFZVeEZaemtyTDBOb1kxY3JNMU5MTTJjOVBTSXNJblpoYkhWbElqb2lVM0JNT0RGR1QyOXBaRGhSY0hSdVdFSnFiRE5NZEhRMU1UQTJlblp2YkVGMVJ6WTJZU3R4VVhKcFdHUnFlalIzUVdZcmRXOW1iRTFJWjJwNlprZFlWMUpoUzJJMFJucFJjRXAxVGtWSGQxZzRZamxDZWxGVFMwRjNNMFJMVjA1S2J6Z3lhamhyUjNWVmFIcFdkVmwwVG5JeFVuTllWVko1V1hOWmJqZEhTbXRxTVhoc2VFeFRNMGwwUWk5TWIwVlRVRk00VkRrMU5HRldlRGx4TjB4SlZHaGxlVlpXTlVVek4yMWhUSEpWUjJkaFVsaHJkRlo0Um1OelRWaHZXbGhZZW1RM09WWnJSWEI0TUd0VWMwaGhWbU56UTJGeU5sUlhjVmR2ZWs1elFXaHFPSGd4WkRCSWJsQlZaRnBqYlRkck5YaGFMM0JLVDJ4clVUQm9XRVUzU2pOc2QzRjRTMGRZYmxObFozVnlUR3BqT0c5T2RYZERZaTlYYzNkaVkwWnFkVkJ6U0ZVd2NWUmtNMEozZFU1RFNtODFUM0Z1Y1ZOSE5UVk1UVkI1U1VacU9UTTVWR3RzT1V4NmNYWkNWMHBaWlZOUVVVazNNVUpqWkhWSVZVa3pkMDB2ZURod1NISm1NazEwVUdONWJWVk9TVGxaWVRZM05EQnBZa3haVDJzNVZrMHdNbVF6VEZkM1NHZGpWVUo2Wm5kdWMyRjJZVTR6YUhWbVYxVlFURGhITUZKdFV5dFdaWGh5Wm1OM2FYRnlNR1ZQTnk5blVFa3JhVzlTUTNoeGJpSXNJbTFoWXlJNklqWmhPR016TWpGaU9XWTBPV1E0WVRjd05UUmtPVFZsTkRVeU56RmxNbVE0T0dOa09Ea3dOVE0xWTJVeU5XTm1PV1F4T1RNME1HUTFOR1V4WkRFeE9XSWlMQ0owWVdjaU9pSWlmUT09', 1761040488),
-('pizuLoh5p3rWA15PizjHnVIFezNa6FCby7wnBwdw', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'ZXlKcGRpSTZJbXhTY21KcU9FMVlSWFp4UVhVeFUwVkZaR3h2U1hjOVBTSXNJblpoYkhWbElqb2lWRUpNYzFoblJqa3pTRUpLU3pGNGFqRkpZMWgzTjNvclZHRjJkakVyVTAxbmRGcFJkVXBoT0VKMFYwUm9SMjFVWTFCUldrTkVjbk41WkZWb0sxZEZhVmREZG0xa1VUTjFRVUp0Wmsxd00wWTFVSGMzZUZFMVdqRm9SREZWV0U1SGRtdFZRMHg1S3paa09ITlFVMDVsYUhaMFdreGpNWEpKTDBwd1dsaFdRVGhNZWsxd2FGVlhXbkp3ZVU5QlJuWXhRa05NUWtkUmJrbHZNMmRPWWs5QloxcGlRVEZRVFZSbFVYWXlibXRRYmxSVU5rcExNREk0ZDBWbGVVc3ZhV1pHV2tZNUwxSk9PWEprU25SQlVtMUtOa1V5SzJ3elNuYzFZVEpGT1ZCaVZtbEhSRk01U21kUldXZE1kelppWmxCWGVFcFlkMmxoWTJkaFVISTNXbFZVT1dSd1pFZ3dja2hwVFZWVmNUQTJWMXB5TTBSRVQxRTlQU0lzSW0xaFl5STZJalEyWVRZME9USmxZV1k1WkdZeFpqSXhaRGs1TnpSalltUXdOamcyTnpSak56SXlZVGRsT1RRM05EazJZV1kwWVdJek1qSXlaRFZsTUdJeE1XUXdOamNpTENKMFlXY2lPaUlpZlE9PQ==', 1761097210);
+('RmMrr5ZY7qUzZqZdGkYf1A1iKXls7Z5Z3TFjXZ17', 5, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'ZXlKcGRpSTZJbmx1TjB0blpHVmtZV1oyWlV0V1RHSm9TbEl5V0hjOVBTSXNJblpoYkhWbElqb2lia0pRVGl0T1dEbE1aMGxxU2t4WmJYTXZTMFZ0WldwVWVVMUlNbFJWV2xWdlMwUXlUWEV3WWtoVGJHTnRZVVpETHpKSFVYSkROM05CYWt0V09HUjRiMVZ3VkdsRGVIaG1TVTlsY1ZGd1QyMWlVWGQ0UTNsdFZrNXJNV1l6ZHpRMWNVZzFOemR1VWs5TFRITlhZMUpVUVhGUFRHNUVNM2tyY21KdVRUaHdOMG96VjJJMEwwMXZWSHBtV2tsU1VscHZTbXd2ZEV4MmQweDZTV1I2YVcxM09WcFJVakF3YkZwRGF6SjJWbVJZYXpOQllrbHZRamh6VmtSSGRIWmtWalIzY1ZWNmVWUlJhRmRsS3pKeGRWWmhOalpKY1ZKeWEwUkhZMWhWUWpJNFRpOUNlV2xEVVZKRmJXdzVTazFOVDNGbGRFcE9SV3RCWTNCaU1WTndkRU13VjIxbFJYWm9UbkpZYmpnM01WaFlkVFZtZDNjMVNFOWlXRWRSYTBSeFdTOW9TbkF5U2t0Q2JtWlhVa0pMYlhjMVZpOUdRa0V6Y1ZGbmFrbEdSVE5NWldaQ01FVnFZMUJqTjNWelNVRndUMk4wTlZoelRVUllObXhtWWxkak1tVTNUVXR1UlhneFZtRlZjVXRVUjI1VFVEQlZkRUZPV1hGbE1uTkJWbGQwVlcwNVVUWklXWFIyWmxnNGREaGlZMVo2T1hOVlRVMVRVWFJHZDBNelZqZGhOMDF6ZVc5bFVrZDBUVGRxYkRseVdub3dhRFJFVm1sVmRHVlBaRWhFVDBWaVN5SXNJbTFoWXlJNklqZGlORFJrT1RoaVltUTNZV0pqTWpZNVpEVXpPVFkwWm1FM05qaGlOMkppWmpZMU1HRXdabVppTW1NeFlqVXlZMlUyWWprNVltWXpNV00xTnpVd01HWWlMQ0owWVdjaU9pSWlmUT09', 1761210563);
 
 -- --------------------------------------------------------
 
@@ -754,7 +614,6 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 -- Table structure for table `settings`
 --
 
-DROP TABLE IF EXISTS `settings`;
 CREATE TABLE `settings` (
   `id` bigint UNSIGNED NOT NULL,
   `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -769,7 +628,7 @@ CREATE TABLE `settings` (
 --
 
 INSERT INTO `settings` (`id`, `key`, `value`, `next_invoice_number`, `created_at`, `updated_at`) VALUES
-(1, 'next_invoice_number', '3', 1000, '2025-09-11 00:27:24', '2025-10-21 01:38:21');
+(1, 'next_invoice_number', '3001', 1000, '2025-09-11 00:27:24', '2025-10-23 01:19:06');
 
 -- --------------------------------------------------------
 
@@ -777,7 +636,6 @@ INSERT INTO `settings` (`id`, `key`, `value`, `next_invoice_number`, `created_at
 -- Table structure for table `sisa_po_items`
 --
 
-DROP TABLE IF EXISTS `sisa_po_items`;
 CREATE TABLE `sisa_po_items` (
   `id` bigint UNSIGNED NOT NULL,
   `no_po` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -796,25 +654,16 @@ CREATE TABLE `sisa_po_items` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `sisa_po_items`
---
-
-INSERT INTO `sisa_po_items` (`id`, `no_po`, `produk_id`, `qty_diminta`, `qty_tersedia`, `qty_sisa`, `qty_jenis`, `harga`, `total_sisa`, `customer`, `tanggal_po`, `status`, `keterangan`, `created_at`, `updated_at`) VALUES
-(43, 'PO.432423', 10, 100, 62, 38, 'PCS', '20000.00', '760000.00', 'PT. GARUDA METALINDO (GM4)', '2025-10-18', 'pending', 'Auto-split dari PO karena stok tidak mencukupi', '2025-10-18 02:41:14', '2025-10-18 02:41:14');
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `users`
 --
 
-DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` bigint UNSIGNED NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `profile_photo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `is_admin` tinyint(1) NOT NULL DEFAULT '0',
@@ -827,9 +676,9 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `profile_photo`, `email_verified_at`, `password`, `is_admin`, `remember_token`, `created_at`, `updated_at`) VALUES
-(5, 'Super Admin', 'roidkubro86@gmail.com', NULL, '2025-09-16 06:51:40', '$2y$12$fOjjwYmryAY5wT52nWPpFOA5SViPgEqfW5TCtUR4uzH1z8DNk/xmC', 1, NULL, '2025-09-16 06:51:40', '2025-09-16 06:51:40'),
-(8, 'Dillan Inf', 'dilaninf6@gmail.com', NULL, NULL, '$2y$12$ItY8/1XiTiXl6CN7SsUe1OdWn7T1A4z9uG6OMNTx22HX.dDpYXIuG', 0, NULL, '2025-10-16 23:38:27', '2025-10-16 23:38:27');
+INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `is_admin`, `remember_token`, `created_at`, `updated_at`) VALUES
+(5, 'Super Admin', 'roidkubro86@gmail.com', '2025-09-16 06:51:40', '$2y$12$fOjjwYmryAY5wT52nWPpFOA5SViPgEqfW5TCtUR4uzH1z8DNk/xmC', 1, NULL, '2025-09-16 06:51:40', '2025-09-16 06:51:40'),
+(9, 'DILAN', 'dilaninf6@gmail.com', NULL, '$2y$12$4uuYSjG2HuhSNAoB3jOu4OvAA7rKg.Q5rFv.AXEl9q7dyljLf64LG', 0, NULL, '2025-10-22 00:40:20', '2025-10-22 00:55:28');
 
 --
 -- Indexes for dumped tables
@@ -847,14 +696,18 @@ ALTER TABLE `annual_summaries`
 --
 ALTER TABLE `barang_keluars`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `barang_keluars_user_id_foreign` (`user_id`);
+  ADD KEY `barang_keluars_user_id_foreign` (`user_id`),
+  ADD KEY `barang_keluars_tanggal_index` (`tanggal`),
+  ADD KEY `barang_keluars_produk_id_index` (`produk_id`);
 
 --
 -- Indexes for table `barang_masuks`
 --
 ALTER TABLE `barang_masuks`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `barang_masuks_user_id_foreign` (`user_id`);
+  ADD KEY `barang_masuks_user_id_foreign` (`user_id`),
+  ADD KEY `barang_masuks_tanggal_index` (`tanggal`),
+  ADD KEY `barang_masuks_produk_id_index` (`produk_id`);
 
 --
 -- Indexes for table `cache`
@@ -894,7 +747,10 @@ ALTER TABLE `excel_sheet_edits`
 -- Indexes for table `expenses`
 --
 ALTER TABLE `expenses`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `expenses_tanggal_index` (`tanggal`),
+  ADD KEY `expenses_user_id_index` (`user_id`),
+  ADD KEY `idx_expenses_tanggal` (`tanggal`);
 
 --
 -- Indexes for table `failed_jobs`
@@ -923,15 +779,6 @@ ALTER TABLE `jobs`
 --
 ALTER TABLE `job_batches`
   ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `laporan_produksi_pallet`
---
-ALTER TABLE `laporan_produksi_pallet`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `laporan_produksi_pallet_tanggal_laporan_index` (`tanggal_laporan`),
-  ADD KEY `laporan_produksi_pallet_kategori_index` (`kategori`),
-  ADD KEY `laporan_produksi_pallet_status_index` (`status`);
 
 --
 -- Indexes for table `migrations`
@@ -963,15 +810,18 @@ ALTER TABLE `pengirim`
 --
 ALTER TABLE `pos`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `pos_produk_id_foreign` (`produk_id`);
+  ADD KEY `pos_produk_id_foreign` (`produk_id`),
+  ADD KEY `pos_tanggal_po_index` (`tanggal_po`),
+  ADD KEY `pos_customer_index` (`customer`),
+  ADD KEY `pos_no_invoice_index` (`no_invoice`);
 
 --
 -- Indexes for table `po_items`
 --
 ALTER TABLE `po_items`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `po_items_po_id_foreign` (`po_id`),
-  ADD KEY `po_items_produk_id_foreign` (`produk_id`);
+  ADD KEY `po_items_po_id_index` (`po_id`),
+  ADD KEY `po_items_produk_id_index` (`produk_id`);
 
 --
 -- Indexes for table `produks`
@@ -985,7 +835,9 @@ ALTER TABLE `produks`
 --
 ALTER TABLE `salaries`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `salaries_employee_id_bulan_tahun_index` (`bulan`,`tahun`);
+  ADD KEY `salaries_employee_id_bulan_tahun_index` (`bulan`,`tahun`),
+  ADD KEY `salaries_bulan_tahun_index` (`bulan`,`tahun`),
+  ADD KEY `idx_salaries_tahun_bulan` (`tahun`,`bulan`);
 
 --
 -- Indexes for table `sessions`
@@ -1032,19 +884,19 @@ ALTER TABLE `annual_summaries`
 -- AUTO_INCREMENT for table `barang_keluars`
 --
 ALTER TABLE `barang_keluars`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=184;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=201;
 
 --
 -- AUTO_INCREMENT for table `barang_masuks`
 --
 ALTER TABLE `barang_masuks`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `employees`
@@ -1062,7 +914,7 @@ ALTER TABLE `excel_sheet_edits`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1074,7 +926,7 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `jatuh_tempos`
 --
 ALTER TABLE `jatuh_tempos`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=123;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -1083,52 +935,46 @@ ALTER TABLE `jobs`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `laporan_produksi_pallet`
---
-ALTER TABLE `laporan_produksi_pallet`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
 
 --
 -- AUTO_INCREMENT for table `otp_codes`
 --
 ALTER TABLE `otp_codes`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `pengirim`
 --
 ALTER TABLE `pengirim`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `pos`
 --
 ALTER TABLE `pos`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=410;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=428;
 
 --
 -- AUTO_INCREMENT for table `po_items`
 --
 ALTER TABLE `po_items`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=197;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=214;
 
 --
 -- AUTO_INCREMENT for table `produks`
 --
 ALTER TABLE `produks`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `salaries`
 --
 ALTER TABLE `salaries`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `settings`
@@ -1146,7 +992,7 @@ ALTER TABLE `sisa_po_items`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables

@@ -323,52 +323,52 @@
              style="max-width: 28rem !important;">
             
             <!-- Header polos (tanpa gradient) -->
-            <div class="px-6 py-5 border-b border-slate-700 bg-slate-800 flex items-center justify-between rounded-t-xl">
-                <h3 class="text-lg font-semibold text-slate-100" x-text="expenseForm.id ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'"></h3>
-                <button @click="closeAddExpenseModal()" class="h-8 w-8 inline-flex items-center justify-center rounded hover:bg-slate-800">
+            <div class="px-6 py-5 border-b bg-white border-gray-200 dark:bg-slate-900 dark:border-slate-700 flex items-center justify-between rounded-t-xl">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-100" x-text="expenseForm.id ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'"></h3>
+                <button @click="closeAddExpenseModal()" class="h-8 w-8 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-slate-800">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             
             <!-- Form Content (simple like Produk form) -->
-            <div class="p-6 bg-slate-800">
+            <div class="p-6 bg-white dark:bg-slate-900">
                 <form @submit.prevent="submitExpense()" class="space-y-4">
                     <!-- Tanggal -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Tanggal Pengeluaran</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Tanggal Pengeluaran</label>
                         <input type="date" x-model="expenseForm.tanggal" required 
-                               class="w-full px-4 py-3 border border-slate-600 rounded-xl dark:bg-slate-800 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200">
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder-slate-500 dark:focus:ring-blue-400">
                     </div>
                     <!-- Jenis -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Jenis Pengeluaran</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Jenis Pengeluaran</label>
                         <div class="relative">
                             <select x-model="expenseForm.jenis" required 
-                                    class="no-native-arrow appearance-none w-full pr-10 px-4 py-3 border border-slate-600 rounded-xl dark:bg-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200">
+                                    class="no-native-arrow appearance-none w-full pr-10 px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:focus:ring-blue-400">
                                 <option value="">Pilih Jenis Pengeluaran</option>
                                 <template x-for="t in expenseTypes" :key="t">
                                     <option :value="t" x-text="t"></option>
                                 </template>
                             </select>
-                            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 pointer-events-none"></i>
                         </div>
                     </div>
                     <!-- Deskripsi -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Deskripsi</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Deskripsi</label>
                         <textarea x-model="expenseForm.deskripsi" rows="3" required 
-                                  class="w-full px-4 py-3 border border-slate-600 rounded-xl dark:bg-slate-800 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200 resize-none" 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder-slate-500 dark:focus:ring-blue-400" 
                                   placeholder="Masukkan deskripsi pengeluaran..."></textarea>
                     </div>
                     <!-- Jumlah -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Jumlah (Rp)</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Jumlah (Rp)</label>
                         <input type="text" x-model="expenseForm.amount_display" @input="formatAmountInput($event)" required 
-                               class="w-full px-4 py-3 border border-slate-600 rounded-xl dark:bg-slate-800 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder-slate-500 dark:focus:ring-blue-400" 
                                placeholder="0">
                     </div>
                     <!-- Action Buttons -->
-                    <div class="flex justify-end space-x-3 mt-2 pt-6 border-t border-slate-700">
+                    <div class="flex justify-end space-x-3 mt-2 pt-6 border-t border-gray-200 dark:border-slate-700">
                         <button type="button" @click="closeAddExpenseModal()" 
                                 class="px-6 py-3 text-gray-700 dark:text-slate-200 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-all duration-200 font-medium">
                             Batal

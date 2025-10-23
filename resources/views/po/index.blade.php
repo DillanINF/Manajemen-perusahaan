@@ -228,24 +228,6 @@
                                required>
                     </div>
 
-                    <!-- Tanggal PO -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            <i class="fas fa-calendar text-red-500 mr-1"></i>Tanggal PO
-                        </label>
-                        <div class="relative">
-                            <input type="date" name="tanggal_po" class="date-input w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg pl-3 pr-12 sm:pl-4 sm:pr-12 py-2 sm:py-3 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200" value="{{
-                                old('tanggal_po',
-                                    request('from') === 'invoice'
-                                        ? now()->format('Y-m-d')
-                                        : (isset($po) && $po->tanggal_po ? \Carbon\Carbon::parse($po->tanggal_po)->format('Y-m-d') : (request('tanggal_po') ?? ''))
-                                )
-                            }}" required>
-                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-200">
-                                <i class="fa-regular fa-calendar text-base"></i>
-                            </span>
-                        </div>
-                    </div>
 
 
                     <!-- No Surat Jalan -->
@@ -473,8 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pengirimSelect = document.getElementById('pengirim');
 
-    const tanggalPOInput = document.querySelector('input[name="tanggal_po"]');
-
     function getCustomerData() {
         if (!customerSelect) return {};
         if (customerSelect.tagName === 'SELECT') {
@@ -535,18 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Auto-fill Tahun dari Tanggal PO
-    function fillYearFromTanggalPO() {
-        if (!tanggalPOInput || !tanggalPOInput.value) return;
-        const d = new Date(tanggalPOInput.value);
-        if (isNaN(d.getTime())) return;
-        const year = d.getFullYear();
-
-        if (deliveryTahunInput && (!deliveryTahunInput.value || deliveryTahunInput.value === '')) {
-            deliveryTahunInput.value = year;
-            addAutoFillEffect(deliveryTahunInput);
-        }
-    }
+    // Input tanggal_po dihapus; Tahun Surat Jalan tidak lagi di-autofill dari tanggal
 
     // Dynamic multi-item logic
     const itemsContainer = document.getElementById('items-container');
@@ -728,12 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Prefill No Surat Jalan jika #customer bukan SELECT
     updateCustomerAddresses();
 
-    // Hook: saat tanggal PO berubah, isi Tahun otomatis
-    if (tanggalPOInput) {
-        tanggalPOInput.addEventListener('change', fillYearFromTanggalPO);
-        // Prefill sekali di awal jika ada nilai
-        fillYearFromTanggalPO();
-    }
+    // Tidak ada hook tanggal_po karena field dihapus
 });
 </script>
 
@@ -806,31 +770,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // No PO sudah menjadi satu input (name="no_po"), tidak perlu penggabungan bagian
 
-    // Update link Data PO (Surat Jalan) mengikuti tanggal_po
-    const tanggalInput = document.querySelector('input[name="tanggal_po"]');
-    const btnSJ = document.getElementById('btn-to-sj');
-    function updateSuratJalanLink() {
-        if (!tanggalInput || !btnSJ || !tanggalInput.value) return;
-        const d = new Date(tanggalInput.value);
-        if (isNaN(d.getTime())) return;
-        const month = (d.getMonth() + 1);
-        const year = d.getFullYear();
-        const base = "{{ route('suratjalan.index') }}";
-        const invoiceNumber = "{{ request('invoice_number') }}";
-        btnSJ.href = base + `?month=${month}&year=${year}${invoiceNumber ? '&invoice_number=' + invoiceNumber : ''}`;
-    }
-    updateSuratJalanLink();
-    tanggalInput?.addEventListener('change', updateSuratJalanLink);
+    // Field tanggal_po dihapus, tidak ada update link berdasarkan tanggal
 
     const form = document.getElementById('po-form');
     if (!form) return;
     form.addEventListener('submit', (e) => {
-        // Pastikan No PO digabungkan sebelum submit
-        combineNoPO();
-        
         const customer = document.getElementById('customer');
         const noPo = form.querySelector('input[name="no_po"]');
-        const tgl = form.querySelector('input[name="tanggal_po"]');
         const rows = document.querySelectorAll('.item-row');
         let itemValid = false;
         rows.forEach(r => {
@@ -844,7 +790,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const errors = [];
         if (!customer || !customer.value) errors.push('Customer wajib dipilih');
         if (!noPo || !noPo.value || noPo.value.trim() === '-' ) errors.push('No PO wajib diisi dan tidak boleh "-"');
-        if (!tgl || !tgl.value) errors.push('Tanggal PO wajib diisi');
         if (!itemValid) errors.push('Minimal 1 item produk dengan Qty > 0');
 
         if (errors.length > 0) {

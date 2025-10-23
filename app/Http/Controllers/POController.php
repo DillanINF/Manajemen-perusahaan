@@ -129,7 +129,7 @@ class POController extends Controller
             'no_invoice_tahun'     => 'nullable|integer',
             // customer_id was removed from pos schema; make it optional for backward-compatible forms
             'customer_id'          => 'nullable|exists:customers,id',
-            'tanggal_po'           => 'required|date',
+            'tanggal_po'           => 'nullable|date',
             'kendaraan'            => 'nullable|string',
             'no_polisi'            => 'nullable|string',
             'address_1'            => 'required|string|max:255',
@@ -142,6 +142,11 @@ class POController extends Controller
             'items.*.harga'        => 'nullable|integer|min:0',
             'items.*.total'        => 'nullable|integer|min:0',
         ]);
+
+        // Default tanggal_po ke hari ini jika tidak dikirim dari form
+        if (empty($data['tanggal_po'])) {
+            $data['tanggal_po'] = now()->format('Y-m-d');
+        }
 
         // Gabungkan nomor surat jalan
         $noSuratJalan = "{$data['no_surat_jalan_nomor']}/{$data['no_surat_jalan_pt']}/{$data['no_surat_jalan_tahun']}";

@@ -565,43 +565,6 @@
 </script>
 @endpush
 
-<!-- Modal Edit Invoice (No Invoice & Tanggal Invoice) -->
-<div id="modal-edit-invoice" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl w-full rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden modal-employee" style="max-width: 28rem !important;">
-            <div class="px-6 py-5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
-                <h3 class="text-lg font-bold">Edit Invoice</h3>
-                <p class="text-indigo-100 text-sm">Ubah No Invoice dan Tanggal Invoice</p>
-            </div>
-            <form id="form-edit-invoice" method="POST" action="#" class="p-6 space-y-4">
-                @csrf
-                @method('PUT')
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                        <i class="fas fa-hashtag text-indigo-500 mr-1"></i>No Invoice
-                    </label>
-                    <input type="number" name="no_invoice" id="edit-no-invoice" min="1" required class="w-full h-11 px-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Pastikan unik. Jika sudah dipakai, akan muncul peringatan.</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                        <i class="fas fa-calendar text-blue-500 mr-1"></i>Tanggal Invoice
-                    </label>
-                    <input type="date" name="tanggal_invoice" id="edit-tanggal-invoice" required class="w-full h-11 px-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-                </div>
-                <div class="pt-2 flex items-center justify-end gap-3">
-                    <button type="button" id="btn-cancel-edit-invoice" class="px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <input type="hidden" id="route-update-invoice-template" value="{{ route('po.update-invoice', 0) }}" />
-    <input type="hidden" id="state-edit-po-id" value="" />
-    <input type="hidden" id="state-edit-no-invoice-old" value="" />
-    <input type="hidden" id="state-edit-tanggal-display" value="" />
-    <input type="hidden" id="state-edit-customer" value="" />
     <input type="hidden" id="state-edit-customer-id" value="" />
     <script>
     (function(){
@@ -633,23 +596,7 @@
             return '';
         }
 
-        function openEditModal(id, noUrut, customerName, tanggalDisplay, customerId){
-            try {
-                stateId.value = String(id || '');
-                stateNoOld.value = String(noUrut || '');
-                inputNo.value = String(noUrut || '').replace(/\D+/g,'');
-                const ymd = parseTanggalDisplayToYmd(tanggalDisplay || '');
-                inputTgl.value = ymd || '';
-                const action = (routeTpl.value || '').replace('/0', '/' + String(id));
-                form.setAttribute('action', action);
-                modal.classList.remove('hidden');
-            } catch(e) { console.error('openEditModal error', e); }
-        }
-        window.openEditModal = openEditModal;
-
-        btnCancel?.addEventListener('click', function(){ modal.classList.add('hidden'); });
-        // Close on backdrop click
-        modal?.addEventListener('click', function(e){ if (e.target === modal) modal.classList.add('hidden'); });
+        // Dihapus: versi lama openEditModal agar tidak bentrok dengan versi terbaru di bawah
     })();
     </script>
 </div>
@@ -1337,21 +1284,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('edit-invoice-id').value = id;
             document.getElementById('edit-invoice-number').value = invoiceNumber;
             
-            // Set customer dropdown - PENTING: set value setelah delay kecil
-            const customerSelect = document.getElementById('edit-customer-id');
-            if (customerSelect) {
-                // Reset dulu
-                customerSelect.value = '';
-                
-                // Set value dengan delay kecil untuk memastikan DOM ready
-                setTimeout(() => {
-                    if (customerId && customerId !== 'null') {
-                        customerSelect.value = customerId;
-                        console.log('Set customer ID:', customerId, 'Selected:', customerSelect.value);
-                    }
-                }, 50);
-            }
-            
             // Set tanggal invoice (format Y-m-d untuk input date)
             if (tanggalInvoice) {
                 // Convert dari d/m/Y ke Y-m-d
@@ -1404,24 +1336,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             No Invoice
                         </label>
-                        <input type="text" id="edit-invoice-number" name="invoice_number" readonly
+                        <input type="text" id="edit-invoice-number" name="no_invoice" readonly
                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white cursor-not-allowed">
                     </div>
 
-                    <!-- Customer Dropdown -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Customer <span class="text-red-500">*</span>
-                        </label>
-                        <select id="edit-customer-id" name="customer_id" required
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                style="color-scheme: dark;">
-                            <option value="">-- Pilih Customer --</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    
 
                     <!-- Tanggal Invoice -->
                     <div>

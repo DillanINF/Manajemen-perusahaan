@@ -108,6 +108,16 @@
                                 <span>Email</span>
                             </div>
                         </th>
+                        <th class="px-3 md:px-6 py-3 md:py-4 text-left font-semibold text-xs md:text-sm min-w-[120px] border-b divider">
+                            <div class="flex items-center space-x-1 md:space-x-2">
+                                <span>Telepon</span>
+                            </div>
+                        </th>
+                        <th class="px-3 md:px-6 py-3 md:py-4 text-left font-semibold text-xs md:text-sm min-w-[120px] border-b divider">
+                            <div class="flex items-center space-x-1 md:space-x-2">
+                                <span>Terms</span>
+                            </div>
+                        </th>
                         <!-- Made address columns responsive with min-width -->
                         <th class="px-3 md:px-6 py-3 md:py-4 text-left font-semibold text-xs md:text-sm min-w-[120px] border-b divider">
                             <div class="flex items-center space-x-1 md:space-x-2">
@@ -161,6 +171,16 @@
                                     {{ $customer->email ?? '-' }}
                                 </span>
                             </td>
+                            <td class="px-3 md:px-6 py-3 md:py-4">
+                                <span class="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 md:px-3 py-1 rounded-full text-xs font-medium">
+                                    {{ $customer->phone ?? '-' }}
+                                </span>
+                            </td>
+                            <td class="px-3 md:px-6 py-3 md:py-4">
+                                <span class="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 md:px-3 py-1 rounded-full text-xs font-medium">
+                                    {{ $customer->payment_terms_days ? ($customer->payment_terms_days . ' hari') : '-' }}
+                                </span>
+                            </td>
                             
                             <td class="px-3 md:px-6 py-3 md:py-4">
                                 <span class="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 md:px-3 py-1 rounded-full text-xs font-medium">
@@ -174,7 +194,7 @@
                             </td>
                             <td class="px-3 md:px-6 py-3 md:py-4">
                                 <x-table.action-buttons 
-                                    onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!})"
+                                    onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->phone) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!}, {!! json_encode($customer->payment_terms_days) !!})"
                                     deleteAction="{{ route('customer.destroy', $customer->id) }}"
                                     confirmText="Yakin ingin menghapus customer ini?"
                                 />
@@ -220,7 +240,7 @@
                     </div>
                     <div class="flex flex-col gap-2">
                         <x-table.action-buttons 
-                            onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!})"
+                            onEdit="window.openEditModal({{ $customer->id }}, {!! json_encode($customer->name) !!}, {!! json_encode($customer->email) !!}, {!! json_encode($customer->phone) !!}, {!! json_encode($customer->address_1) !!}, {!! json_encode($customer->address_2) !!}, {!! json_encode($customer->code_number) !!}, {!! json_encode($customer->payment_terms_days) !!})"
                             deleteAction="{{ route('customer.destroy', $customer->id) }}"
                             confirmText="Yakin ingin menghapus customer ini?"
                         />
@@ -270,25 +290,29 @@
                 </div>
 
                 <div>
-                    <label for="add_email" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Email Perusahaan</label>
+                    <label for="add_email" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Email Perusahaan (Opsional)</label>
                     <input type="email" id="add_email" name="email"
                            class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
                            placeholder="contoh: finance@perusahaan.com">
                 </div>
+                <div>
+                    <label for="add_phone" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Telepon (Opsional)</label>
+                    <input type="text" id="add_phone" name="phone"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
+                           placeholder="contoh: 021-xxxxxxx / 08xx-xxxx-xxxx">
+                </div>
 
-                <!-- Kode Number (3 input dengan pemisah '-' dan '/') -->
+                <!-- Kode Number (2 input: BAG1-BAG2) -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Kode Number</label>
                     <div class="flex items-center gap-2">
                         <input type="text" id="add_code_1" class="w-20 px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg text-sm" placeholder="XXX">
                         <span class="text-gray-500 dark:text-slate-400">-</span>
                         <input type="text" id="add_code_2" class="w-24 px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg text-sm" placeholder="YYY">
-                        <span class="text-gray-500 dark:text-slate-400">/</span>
-                        <input type="text" id="add_code_3" class="w-20 px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg text-sm" placeholder="ZZZ">
                     </div>
                     <!-- Hidden field untuk gabungan -->
                     <input type="hidden" name="code_number" id="add_code_number" value="">
-                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Format: BAG1-BAG2/BAG3</p>
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Format: BAG1-BAG2</p>
                 </div>
 
                 
@@ -383,8 +407,6 @@
                         <input type="text" id="edit_code_1" class="w-20 px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg text-sm" placeholder="XXX">
                         <span class="text-gray-500 dark:text-slate-400">-</span>
                         <input type="text" id="edit_code_2" class="w-24 px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg text-sm" placeholder="YYY">
-                        <span class="text-gray-500 dark:text-slate-400">/</span>
-                        <input type="text" id="edit_code_3" class="w-20 px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg text-sm" placeholder="ZZZ">
                     </div>
                     <input type="hidden" name="code_number" id="edit_code_number" value="">
                 </div>
@@ -398,6 +420,12 @@
                 
                 <div class="space-y-2">
                     <div>
+                        <label for="edit_phone" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Telepon (Opsional)</label>
+                        <input type="text" id="edit_phone" name="phone"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                               placeholder="contoh: 021-xxxxxxx / 08xx-xxxx-xxxx">
+                    </div>
+                    <div>
                         <label for="edit_address_1" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Alamat 1</label>
                         <input type="text" id="edit_address_1" name="address_1"
                                class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
@@ -408,6 +436,18 @@
                         <input type="text" id="edit_address_2" name="address_2"
                                class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
                                placeholder="Masukkan alamat 2">
+                    </div>
+                    <div>
+                        <label for="edit_payment_terms_days" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Terms Pembayaran (Hari)</label>
+                        <div class="relative">
+                            <input type="number" id="edit_payment_terms_days" name="payment_terms_days" min="1" max="365"
+                                   class="w-full px-3 py-2 pr-12 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 transition-colors duration-200 text-sm"
+                                   placeholder="30">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <span class="text-gray-500 dark:text-slate-400 text-sm">hari</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Atur jangka waktu pembayaran untuk customer ini</p>
                     </div>
                 </div>
             </div>
@@ -476,7 +516,7 @@ function closeAddModal() {
     }, 300);
 }
 
-function openEditModal(id, name, email, address1, address2, codeNumber) {
+function openEditModal(id, name, email, phone, address1, address2, codeNumber, paymentTermsDays) {
     document.getElementById('editModal').classList.remove('hidden');
     document.getElementById('editModal').classList.add('flex');
     // Set action menggunakan route Laravel yang benar
@@ -492,28 +532,28 @@ function openEditModal(id, name, email, address1, address2, codeNumber) {
     if (nameEl) nameEl.value = name;
     const emailEl = document.getElementById('edit_email');
     if (emailEl) emailEl.value = email || '';
+    const phoneEl = document.getElementById('edit_phone');
+    if (phoneEl) phoneEl.value = phone || '';
     const addr1El = document.getElementById('edit_address_1');
     if (addr1El) addr1El.value = address1 || '';
     const addr2El = document.getElementById('edit_address_2');
     if (addr2El) addr2El.value = address2 || '';
-    // Prefill Kode Number jika ada (format: PART1-PART2/PART3)
+    const termsEl = document.getElementById('edit_payment_terms_days');
+    if (termsEl) termsEl.value = paymentTermsDays || 30;
+    // Prefill Kode Number jika ada (format: PART1-PART2)
     try {
         const ec1 = document.getElementById('edit_code_1');
         const ec2 = document.getElementById('edit_code_2');
-        const ec3 = document.getElementById('edit_code_3');
         const hidden = document.getElementById('edit_code_number');
         const str = (codeNumber || '').toString();
         if (str) {
-            const [left, part3 = ''] = str.split('/');
-            const [part1 = '', part2 = ''] = (left || '').split('-');
+            const [part1 = '', part2 = ''] = str.split('-');
             if (ec1) ec1.value = part1 || '';
             if (ec2) ec2.value = part2 || '';
-            if (ec3) ec3.value = part3 || '';
-            if (hidden) hidden.value = str;
+            if (hidden) hidden.value = [part1, part2].filter(Boolean).join('-');
         } else {
             if (ec1) ec1.value = '';
             if (ec2) ec2.value = '';
-            if (ec3) ec3.value = '';
             if (hidden) hidden.value = '';
         }
     } catch (e) { console.warn('Gagal set kode number:', e); }
@@ -667,32 +707,28 @@ window.addEventListener('DOMContentLoaded', function() {
     // Listener untuk menyusun kode number (Add)
     const ac1 = document.getElementById('add_code_1');
     const ac2 = document.getElementById('add_code_2');
-    const ac3 = document.getElementById('add_code_3');
     const addHidden = document.getElementById('add_code_number');
     function combineAdd() {
         if (!addHidden) return;
         const p1 = (ac1?.value || '').trim();
         const p2 = (ac2?.value || '').trim();
-        const p3 = (ac3?.value || '').trim();
-        addHidden.value = [p1, p2].filter(Boolean).join('-') + (p3 ? '/' + p3 : '');
+        addHidden.value = [p1, p2].filter(Boolean).join('-');
     }
     window.combineAddCodeNumber = combineAdd;
-    [ac1, ac2, ac3].forEach(el => el && el.addEventListener('input', combineAdd));
+    [ac1, ac2].forEach(el => el && el.addEventListener('input', combineAdd));
 
     // Listener untuk menyusun kode number (Edit)
     const ec1 = document.getElementById('edit_code_1');
     const ec2 = document.getElementById('edit_code_2');
-    const ec3 = document.getElementById('edit_code_3');
     const editHidden = document.getElementById('edit_code_number');
     function combineEdit() {
         if (!editHidden) return;
         const p1 = (ec1?.value || '').trim();
         const p2 = (ec2?.value || '').trim();
-        const p3 = (ec3?.value || '').trim();
-        editHidden.value = [p1, p2].filter(Boolean).join('-') + (p3 ? '/' + p3 : '');
+        editHidden.value = [p1, p2].filter(Boolean).join('-');
     }
     window.combineEditCodeNumber = combineEdit;
-    [ec1, ec2, ec3].forEach(el => el && el.addEventListener('input', combineEdit));
+    [ec1, ec2].forEach(el => el && el.addEventListener('input', combineEdit));
 });
 
 // Delegasi klik: pastikan tombol Edit selalu memanggil handler

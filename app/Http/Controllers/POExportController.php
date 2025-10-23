@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Models\JatuhTempo;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Customer;
 
 class POExportController extends Controller
 {
@@ -115,17 +116,98 @@ class POExportController extends Controller
                         // Customer dari PO pertama
                         $active->setCellValue('J14', $po->customer ?? '');
                         
-                        // Isi J15 dengan nomor depan dari no_invoice (sebelum '/')
+                        // Format J15/K15: {no_inv_nomor}/{kode_customer}-{bulan}/{tahun}
+                        // Contoh: 2/CAM-WBP-10/2025
                         $nomorInv = '';
-                        $sisaInv = ''; // Untuk K15: isi setelah '/' pertama
                         if (!empty($po->no_invoice)) {
-                            $parts = explode('/', $po->no_invoice);
-                            $nomorInv = trim((string)($parts[0] ?? '')); // Tanpa spasi
-                            $sisaParts = array_slice($parts, 1);
-                            $sisaInv = '/ ' . implode(' / ', $sisaParts); // Format: '/ dg / 8 / 2025'
+                            $partsInv = explode('/', $po->no_invoice);
+                            $nomorInv = trim((string)($partsInv[0] ?? ''));
                         }
+
+                        // Ambil code_number customer: format seperti 'CAM-WBP/2025'
+                        $code = '';
+                        $codeYear = '';
+                        try {
+                            $custModel = null;
+                            if (!empty($po->customer_id)) {
+                                $custModel = Customer::find($po->customer_id);
+                            }
+                            if (!$custModel && !empty($po->customer)) {
+                                $custModel = Customer::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim((string)$po->customer))])->first();
+                            }
+                            $codeNumber = $custModel?->code_number;
+                            if (is_string($codeNumber) && trim($codeNumber) !== '') {
+                                $slashParts = array_values(array_filter(array_map('trim', explode('/', $codeNumber)), fn($v) => $v !== ''));
+                                if (!empty($slashParts)) {
+                                    if (count($slashParts) > 1) { $codeYear = array_pop($slashParts); }
+                                    $code = implode('/', $slashParts); // biasanya tersisa 'CAM-WBP'
+                                }
+                            }
+                        } catch (\Throwable $e) { /* ignore */ }
+
+                        // Tentukan bulan & tahun: PRIORITAS dari no_invoice (bagian ke-3 & ke-4),
+                        // lalu dari JatuhTempo.tanggal_invoice, lalu tanggal_po, lalu now()
+                        $month = null;
+                        $year = null;
+                        // 1) Ambil dari no_invoice: pola umum nomor / KODE / BULAN / TAHUN
+                        if (!empty($po->no_invoice)) {
+                            $parts = array_values(array_filter(array_map('trim', explode('/', $po->no_invoice))));
+                            if (isset($parts[2]) && ctype_digit($parts[2])) {
+                                $m = (int)$parts[2];
+                                if ($m >= 1 && $m <= 12) { $month = $m; }
+                            }
+                            if (isset($parts[3]) && ctype_digit($parts[3])) {
+                                $year = (int)$parts[3];
+                            }
+                        }
+                        // 2) JatuhTempo.tanggal_invoice jika belum lengkap
+                        if ($month === null || $year === null) {
+                            try {
+                                $invoiceKey = $po->no_invoice ?: $po->no_surat_jalan;
+                                $jt = $invoiceKey ? JatuhTempo::where('no_invoice', $invoiceKey)->first() : null;
+                                if ($jt && !empty($jt->tanggal_invoice)) {
+                                    $d = Carbon::parse($jt->tanggal_invoice);
+                                    if ($month === null) { $month = (int)$d->format('n'); }
+                                    if ($year === null) { $year = (int)$d->format('Y'); }
+                                }
+                            } catch (\Throwable $e) { /* ignore */ }
+                        }
+                        if ($month === null || $year === null) {
+                            try {
+                                if (!empty($po->tanggal_po)) {
+                                    $d = Carbon::parse($po->tanggal_po);
+                                } else {
+                                    $d = Carbon::now();
+                                }
+                                if ($month === null) { $month = (int)$d->format('n'); }
+                                if ($year === null) { $year = (int)$d->format('Y'); }
+                            } catch (\Throwable $e) {
+                                if ($month === null) { $month = (int) date('n'); }
+                                if ($year === null) { $year = (int) date('Y'); }
+                            }
+                        }
+
+                        // Jika code/year kosong dari master, fallback ke pecahan no_invoice setelah bagian pertama
+                        if ($code === '' || $codeYear === '') {
+                            if (!empty($po->no_invoice)) {
+                                $parts = array_values(array_filter(array_map('trim', explode('/', $po->no_invoice))));
+                                // pola umum: nomor / KODE / BULAN / TAHUN
+                                $code = $code ?: ($parts[1] ?? '');
+                                $codeYear = $codeYear ?: (string)($parts[3] ?? $year);
+                            } else {
+                                $code = $code ?: '';
+                                $codeYear = $codeYear ?: (string)$year;
+                            }
+                        }
+
+                        // Bentuk string kanan: '/ CODE / MONTH / YEAR'
+                        $right = '';
+                        if ($code !== '' || $codeYear !== '') {
+                            $right = '/ ' . trim($code) . ' / ' . (int)$month . ' / ' . trim((string)$codeYear);
+                        }
+
                         $active->setCellValue('J15', $nomorInv);
-                        $active->setCellValue('K15', $sisaInv);
+                        $active->setCellValue('K15', $right);
                         
                         // Hitung sub total dari semua PO terpilih (seperti Invoice)
                         $subTotal = 0;

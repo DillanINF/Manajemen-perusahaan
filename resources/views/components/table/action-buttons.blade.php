@@ -35,10 +35,11 @@
 
         @if($deleteAction)
             <!-- Delete button -->
-            <form method="POST" action="{{ $deleteAction }}" class="inline-flex" onsubmit="return confirm('{{ $confirmText }}')">
+            <form method="POST" action="{{ $deleteAction }}" class="inline-flex">
                 @csrf
                 @method('DELETE')
-                <button type="submit"
+                <button type="button"
+                        onclick="event.preventDefault(); event.stopPropagation(); if (confirm('{{ $confirmText }}')) { this.disabled = true; this.classList.add('opacity-60','cursor-not-allowed'); this.closest('form').submit(); }"
                         class="group relative inline-flex items-center justify-center w-9 h-9 aspect-square min-w-[36px] min-h-[36px] rounded-full bg-[#DC2626] text-white shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#B91C1C] focus:outline-none focus:ring-2 focus:ring-red-300">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
                         <polyline points="3 6 5 6 21 6"/>
@@ -72,10 +73,11 @@
                 </button>
             @endif
             @if($deleteAction)
-                <form method="POST" action="{{ $deleteAction }}" class="flex-1" onsubmit="return confirm('{{ $confirmText }}')">
+                <form method="POST" action="{{ $deleteAction }}" class="flex-1">
                     @csrf
                     @method('DELETE')
-                    <button type="submit"
+                    <button type="button"
+                            onclick="event.preventDefault(); event.stopPropagation(); if (confirm('{{ $confirmText }}')) { this.disabled = true; this.classList.add('opacity-60','cursor-not-allowed'); this.closest('form').submit(); }"
                             class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#DC2626] text-white shadow-sm hover:shadow-md transition-all duration-200 active:scale-[.99]">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                             <polyline points="3 6 5 6 21 6"/>
@@ -116,10 +118,10 @@
                         </button>
                     @endif
                     @if($deleteAction)
-                        <form method="POST" action="{{ $deleteAction }}" onsubmit="return confirm('{{ $confirmText }}')">
+                        <form method="POST" action="{{ $deleteAction }}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 flex items-center gap-2">
+                            <button type="button" onclick="event.preventDefault(); if (confirm('{{ $confirmText }}')) { this.disabled = true; this.classList.add('opacity-60','cursor-not-allowed'); this.closest('form').submit(); }" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#DC2626]">
                                     <polyline points="3 6 5 6 21 6"/>
                                     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
