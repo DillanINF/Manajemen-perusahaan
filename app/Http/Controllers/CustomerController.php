@@ -9,7 +9,7 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $customers = Customer::latest()->get();
+        $customers = Customer::oldest()->get();
         return view('customer.index', compact('customers'));
     }
 

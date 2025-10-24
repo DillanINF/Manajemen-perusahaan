@@ -636,11 +636,27 @@ document.getElementById('editCustomerForm').addEventListener('submit', function(
 
 // Close modal when clicking outside
 document.getElementById('addModal').addEventListener('click', function(e) {
-    if (e.target === this) closeAddModal();
+    if (e.target !== this) return;
+    try {
+        const sel = window.getSelection ? String(window.getSelection().toString()) : '';
+        if (sel && sel.length > 0) {
+            e.preventDefault();
+            return; // Jangan tutup modal saat ada teks terseleksi (drag keluar)
+        }
+    } catch (_) {}
+    closeAddModal();
 });
 
 document.getElementById('editModal').addEventListener('click', function(e) {
-    if (e.target === this) closeEditModal();
+    if (e.target !== this) return;
+    try {
+        const sel = window.getSelection ? String(window.getSelection().toString()) : '';
+        if (sel && sel.length > 0) {
+            e.preventDefault();
+            return; // Jangan tutup modal saat ada teks terseleksi (kasus drag keluar)
+        }
+    } catch (_) {}
+    closeEditModal();
 });
 
 // Close modal with Escape key
