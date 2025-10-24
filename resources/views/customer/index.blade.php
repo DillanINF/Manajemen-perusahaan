@@ -287,6 +287,7 @@
                     <input type="text" id="add_name" name="name" required
                            class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors duration-200 text-sm"
                            placeholder="Masukkan nama customer">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">💡 Nama customer boleh sama/duplikat</p>
                 </div>
 
                 <div>
@@ -398,6 +399,7 @@
                     <input type="text" id="edit_name" name="name" required
                            class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200"
                            placeholder="Masukkan nama customer">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">💡 Nama customer boleh sama/duplikat</p>
                 </div>
 
                 <!-- Kode Number (Edit) -->

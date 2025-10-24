@@ -21,6 +21,8 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         // Validasi field yang ada di database
+        // NOTE: Nama customer BOLEH DUPLIKAT (tidak ada validasi unique)
+        // Ini memungkinkan input customer dengan nama yang sama berkali-kali
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code_number' => 'nullable|string|max:100',
@@ -58,6 +60,7 @@ class CustomerController extends Controller
     {
         try {
             // Validasi field yang ada di database
+            // NOTE: Nama customer BOLEH DUPLIKAT (tidak ada validasi unique)
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'code_number' => 'nullable|string|max:100',

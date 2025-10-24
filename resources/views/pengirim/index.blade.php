@@ -224,6 +224,7 @@
                            class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200 @error('nama') border-red-500 @enderror"
                            placeholder="Masukkan nama pengirim"
                            value="{{ old('nama') }}">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">💡 Nama pengirim boleh sama/duplikat</p>
                     @error('nama')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -303,6 +304,7 @@
                     <input type="text" id="editNama" name="nama" required
                            class="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-all duration-200"
                            placeholder="Masukkan nama pengirim">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">💡 Nama pengirim boleh sama/duplikat</p>
                 </div>
 
                 <div class="space-y-2">

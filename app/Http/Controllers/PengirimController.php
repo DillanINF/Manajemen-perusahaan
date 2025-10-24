@@ -19,19 +19,13 @@ class PengirimController extends Controller
 
     public function store(Request $request)
     {
+        // NOTE: Nama pengirim BOLEH DUPLIKAT (tidak ada validasi unique)
+        // Ini memungkinkan input pengirim dengan nama yang sama berkali-kali
         $request->validate([
             'nama' => 'required|string|max:255',
             'kendaraan' => 'nullable|string|max:255',
             'no_polisi' => 'nullable|string|max:50',
         ]);
-
-        $exists = DB::table('pengirim')
-            ->where('nama', $request->nama)
-            ->exists();
-
-        if ($exists) {
-            return redirect()->route('pengirim.index')->with('error', 'Nama pengirim sudah ada');
-        }
 
         DB::table('pengirim')->insert([
             'nama' => $request->nama,
