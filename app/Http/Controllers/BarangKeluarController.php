@@ -19,9 +19,11 @@ class BarangKeluarController extends Controller
 
         $query = BarangKeluar::query()
             ->with('produk')
-            // Join ke POS berdasarkan pola keterangan standar "Auto Keluar dari PO {no_po}"
+            // Join ke POS berdasarkan pola keterangan standar
+            // Perkuat matching: TRIM dan LIKE untuk variasi spasi/format
             ->leftJoin('pos', function($join) {
-                $join->on(DB::raw("barang_keluars.keterangan"), '=', DB::raw("CONCAT('Auto Keluar dari PO ', pos.no_po)"));
+                $join->on(DB::raw("TRIM(barang_keluars.keterangan)"), '=', DB::raw("TRIM(CONCAT('Auto Keluar dari PO ', pos.no_po))"))
+                     ->orOn(DB::raw("TRIM(barang_keluars.keterangan)"), 'LIKE', DB::raw("CONCAT('%PO ', TRIM(pos.no_po), '%')"));
             })
             ->select('barang_keluars.*', DB::raw('pos.customer as customer_name'));
 
@@ -79,6 +81,7 @@ class BarangKeluarController extends Controller
      */
     public function destroy(BarangKeluar $keluar)
     {
-        abort(403, 'Hapus Barang Keluar dinonaktifkan.');
+        $keluar->delete();
+        return redirect()->route('barang.keluar.index')->with('success', 'Data barang keluar berhasil dihapus');
     }
 }

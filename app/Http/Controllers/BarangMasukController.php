@@ -50,6 +50,14 @@ class BarangMasukController extends Controller
 
         BarangMasuk::create($data);
 
+        // Jika AJAX request, kembalikan JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Barang Masuk berhasil ditambahkan.'
+            ]);
+        }
+
         return redirect()->route('barang.masuk.index')->with('success', 'Barang Masuk berhasil ditambahkan.');
     }
 

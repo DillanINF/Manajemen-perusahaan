@@ -27,11 +27,11 @@
                     </svg>
                     <span>Tambah Barang</span>
                 </button>
-                <a href="{{ route('barang.masuk.create') }}" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>
+                <a href="{{ route('barang.masuk.index') }}" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                     <span>Barang Masuk</span>
                 </a>
-                <a href="{{ route('barang.keluar.create') }}" class="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                <a href="{{ route('barang.keluar.index') }}" class="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-rose-500">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 8v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2m13 6l-5-5m0 0l-5 5m5-5v12"/></svg>
                     <span>Barang Keluar</span>
                 </a>
@@ -184,11 +184,22 @@
                                         {{ number_format($produk->sisa_stok, 0, ',', '.') }}
                                     </span>
                                 </td>
-                                <td class="px-3 sm:px-6 py-3 sm:py-4 text-center">
-                                    <x-table.action-buttons 
-                                        onEdit="window.openEditModal({{ $produk->id }}, '{{ addslashes($produk->nama_produk) }}', {{ $produk->harga_pcs ?? 0 }}, {{ $produk->harga_set ?? 0 }})"
-                                        deleteAction="{{ route('produk.destroy', $produk->id) }}"
-                                        confirmText="Yakin ingin menghapus produk ini?" />
+                                <td class="px-3 sm:px-6 py-3 sm:py-4">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button type="button" onclick="openStokMasukModal({{ $produk->id }}, '{{ addslashes($produk->nama_produk) }}', {{ $produk->sisa_stok }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 transition-colors dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40" title="Tambah Stok">
+                                            <i class="fa-solid fa-plus text-xs"></i>
+                                        </button>
+                                        <button type="button" onclick="openEditModal({{ $produk->id }}, '{{ addslashes($produk->nama_produk) }}', {{ $produk->harga_pcs ?? 0 }}, {{ $produk->harga_set ?? 0 }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-colors dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40" title="Edit">
+                                            <i class="fa-solid fa-pen text-xs"></i>
+                                        </button>
+                                        <form action="{{ route('produk.destroy', $produk->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?');" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40" title="Hapus">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -370,7 +381,207 @@
     </div>
 </div>
 
+<!-- Modal Tambah Barang Masuk -->
+<div id="stokMasukModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full mx-auto max-h-[90vh] overflow-y-auto" style="max-width: 560px;">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
+            <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center space-x-2">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span>Tambah Stock</span>
+            </h3>
+            <button onclick="closeStokMasukModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors duration-200">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <form id="stokMasukForm" method="POST" class="p-6">
+            @csrf
+            <input type="hidden" id="stok_produk_id" name="produk_id">
+            <div class="space-y-6">
+                <!-- Nama Barang (readonly) -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                        <span>Nama Barang</span>
+                    </label>
+                    <input type="text" id="stok_nama_produk" readonly
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-lg text-sm cursor-not-allowed">
+                </div>
+
+                <!-- Sisa Stock Saat Ini (readonly) -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                        <span>Sisa Stock Saat Ini</span>
+                    </label>
+                    <input type="text" id="stok_sisa_current" readonly
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-lg text-sm font-semibold cursor-not-allowed">
+                </div>
+
+                <!-- Tambah Stock -->
+                <div class="space-y-2">
+                    <label for="stok_qty" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                        <span>Tambah Stock</span>
+                    </label>
+                    <input type="number" id="stok_qty" name="qty" value="1" min="1" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 transition-colors duration-200 text-sm"
+                           placeholder="Masukkan jumlah">
+                </div>
+
+                <!-- Tanggal -->
+                <div class="space-y-2">
+                    <label for="stok_tanggal" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                        <span>Tanggal</span>
+                    </label>
+                    <input type="date" id="stok_tanggal" name="tanggal" value="{{ now()->toDateString() }}" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 transition-colors duration-200 text-sm">
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-4 pt-3 border-t border-gray-200 dark:border-slate-700">
+                <button type="button" onclick="closeStokMasukModal()" 
+                        class="px-4 py-2 text-gray-700 dark:text-slate-200 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg font-medium transition-colors duration-200 text-sm order-2 sm:order-1">
+                    Batal
+                </button>
+                <button type="submit" id="stokMasukSubmitBtn"
+                        class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2 text-sm order-1 sm:order-2 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                    <span>Simpan</span>
+                    <div id="stokMasukLoading" class="hidden">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast Success Notification -->
+<div id="successToast" class="fixed top-4 right-4 bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-2xl hidden z-50 transform translate-x-full transition-transform duration-300">
+    <div class="flex items-center space-x-3">
+        <i class="fa-solid fa-check-circle text-2xl"></i>
+        <div>
+            <p class="font-semibold">Berhasil!</p>
+            <p class="text-sm text-emerald-100">Barang masuk berhasil ditambahkan</p>
+        </div>
+    </div>
+    <a href="{{ route('barang.masuk.index') }}" class="mt-2 inline-block text-sm text-emerald-100 hover:text-white underline">
+        Lihat Tabel Barang Masuk →
+    </a>
+</div>
+
 <script>
+// Modal Stok Masuk functions
+function openStokMasukModal(produkId = null, namaProduk = null, sisaStok = 0) {
+    const modal = document.getElementById('stokMasukModal');
+    
+    // Reset form
+    document.getElementById('stokMasukForm').reset();
+    document.getElementById('stok_tanggal').value = '{{ now()->toDateString() }}';
+    
+    // Set data produk
+    if (produkId) {
+        document.getElementById('stok_produk_id').value = produkId;
+        document.getElementById('stok_nama_produk').value = namaProduk || '';
+        document.getElementById('stok_sisa_current').value = (sisaStok || 0).toLocaleString('id-ID');
+    }
+    
+    // Tampilkan modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    
+    // Focus ke input tambah stock
+    setTimeout(() => {
+        document.getElementById('stok_qty').focus();
+        document.getElementById('stok_qty').select();
+    }, 100);
+}
+
+function closeStokMasukModal() {
+    const modal = document.getElementById('stokMasukModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.getElementById('stokMasukForm').reset();
+    // Restore body scroll
+    document.body.style.overflow = '';
+}
+
+// Handle Stok Masuk Form Submit dengan AJAX
+document.getElementById('stokMasukForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('stokMasukSubmitBtn');
+    const loading = document.getElementById('stokMasukLoading');
+    const formData = new FormData(this);
+    
+    // Disable button dan tampilkan loading
+    submitBtn.disabled = true;
+    loading.classList.remove('hidden');
+    
+    fetch('{{ route("barang.masuk.store") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Tutup modal
+            closeStokMasukModal();
+            
+            // Tampilkan toast
+            showSuccessToast();
+            
+            // Reload halaman setelah 2 detik
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            alert(data.message || 'Terjadi kesalahan');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat menyimpan data');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        loading.classList.add('hidden');
+    });
+});
+
+function showSuccessToast() {
+    const toast = document.getElementById('successToast');
+    toast.classList.remove('hidden');
+    
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+        toast.classList.add('translate-x-0');
+    }, 100);
+    
+    // Auto hide setelah 5 detik
+    setTimeout(() => {
+        toast.classList.remove('translate-x-0');
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 300);
+    }, 5000);
+}
+
+// Close modal when clicking outside
+document.getElementById('stokMasukModal').addEventListener('click', function(e) {
+    if (e.target === this) closeStokMasukModal();
+});
+
 // Modal functions dengan animasi
 function openAddModal() {
     const modal = document.getElementById('addModal');

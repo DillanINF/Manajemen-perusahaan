@@ -152,6 +152,31 @@
         }
         /* Hapus semua batasan max-width dari utilitas Tailwind (max-w-*) di seluruh halaman */
         [class*="max-w-"] { max-width: none !important; }
+
+        /* Dark mode: paksa ikon kalender putih dengan replace native indicator */
+        .dark input[type="date"],
+        .dark input[type="datetime-local"],
+        .dark input[type="month"],
+        .dark input[type="week"] {
+            color-scheme: dark;
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 18px 18px;
+            padding-right: 2.5rem !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+        }
+        /* Sembunyikan native calendar indicator */
+        .dark input[type="date"]::-webkit-calendar-picker-indicator,
+        .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        .dark input[type="month"]::-webkit-calendar-picker-indicator,
+        .dark input[type="week"]::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            cursor: pointer;
+            position: absolute;
+            right: 0;
+            width: 2.5rem;
+            height: 100%;
+        }
     </style>
     <script>
         // Utilitas untuk menerapkan tema TANPA transisi visual (instan)
@@ -515,7 +540,7 @@
                     <span>Data Customer</span>
                 </a>
                 <a href="{{ route('produk.index') }}"
-                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('produk.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                   class="group flex items-center gap-2 px-3 py-1 rounded transition-all duration-200 {{ request()->routeIs('produk.*') || request()->routeIs('barang.masuk.*') || request()->routeIs('barang.keluar.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                     <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V7a2 2 0 00-2-2h-3V3H9v2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0H4"/></svg>
                     <span>Data Barang</span>
                 </a>
@@ -1002,17 +1027,49 @@
                     showLoading();
                 }
             }
+        });
+        
+        // Auto show loading saat submit form - HANYA jika benar-benar submit
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
             
-            // Show loading saat klik button submit
-            const button = e.target.closest('button[type="submit"]');
-            if (button) {
-                showLoading();
+            // SKIP loading untuk form DELETE (form hapus) - prosesnya cepat
+            const hasDeleteMethod = form.querySelector('input[name="_method"][value="DELETE"]');
+            if (hasDeleteMethod) {
+                return; // Jangan show loading untuk form delete
+            }
+            
+            // SKIP loading jika form punya onsubmit dengan confirm
+            if (form.hasAttribute('onsubmit') && form.getAttribute('onsubmit').includes('confirm')) {
+                return; // Jangan show loading untuk form dengan confirm
+            }
+            
+            // Jangan show loading jika form di-prevent
+            if (e.defaultPrevented) {
+                return;
+            }
+            
+            // Hanya show loading untuk form yang benar-benar perlu (create/update)
+            showLoading();
+        });
+        
+        // Hide loading jika user tekan ESC atau click Cancel
+        let lastClickTime = 0;
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' || e.keyCode === 27) {
+                hideLoading();
             }
         });
         
-        // Auto show loading saat submit form
-        document.addEventListener('submit', function(e) {
-            showLoading();
+        // Detect jika confirm dialog di-cancel (click outside atau cancel button)
+        document.addEventListener('click', function(e) {
+            // Track click time untuk detect confirm cancel
+            const now = Date.now();
+            if (now - lastClickTime < 500) {
+                // Double click cepat = kemungkinan cancel confirm
+                hideLoading();
+            }
+            lastClickTime = now;
         });
         
         // Hide loading saat halaman selesai dimuat (untuk back button browser)

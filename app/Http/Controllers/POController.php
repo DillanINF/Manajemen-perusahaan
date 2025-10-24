@@ -408,15 +408,18 @@ class POController extends Controller
                     foreach ($items as $it) {
                         // Hanya catat barang keluar jika qty > 0
                         if ((int) $it['qty'] > 0) {
+                            $noPoStd = trim((string)($data['no_po'] ?? ''));
                             BarangKeluar::create([
                                 'produk_id' => $it['produk_id'],
                                 'qty'       => (int) $it['qty'],
                                 'tanggal'   => $data['tanggal_po'],
-                                'keterangan'=> 'Auto Keluar dari PO ' . ($data['no_po'] ?? ''),
+                                'keterangan'=> 'Auto Keluar dari PO ' . $noPoStd,
                                 'user_id'   => auth()->id(),
                             ]);
                         }
                     }
+                    // Batasi total data Barang Keluar agar hanya menyimpan 50 terbaru
+                    $this->pruneBarangKeluarLimit(50);
                 }
             } else {
                 // CREATE baris baru meskipun no_invoice sama (mendukung input >1x untuk No Urut yang sama)
@@ -462,6 +465,8 @@ class POController extends Controller
                             ]);
                         }
                     }
+                    // Batasi total data Barang Keluar agar hanya menyimpan 50 terbaru
+                    $this->pruneBarangKeluarLimit(50);
                 }
             }
 
@@ -920,14 +925,17 @@ class POController extends Controller
                 ])->delete();
             } catch (\Throwable $e) { /* ignore */ }
             foreach ($items as $it) {
+                $noPoStd = trim((string)($data['no_po'] ?? $po->no_po));
                 BarangKeluar::create([
                     'produk_id' => $it['produk_id'],
                     'qty'       => (int) $it['qty'],
                     'tanggal'   => $data['tanggal_po'],
-                    'keterangan'=> 'Auto Keluar dari PO ' . ($data['no_po'] ?? $po->no_po),
+                    'keterangan'=> 'Auto Keluar dari PO ' . $noPoStd,
                     'user_id'   => auth()->id(),
                 ]);
             }
+            // Batasi total data Barang Keluar agar hanya menyimpan 50 terbaru
+            $this->pruneBarangKeluarLimit(50);
         });
 
         // Bersihkan reserved jika nomor ini ada di cache (nomor sudah resmi tersimpan)
@@ -1496,6 +1504,28 @@ class POController extends Controller
             return redirect()->route('invoice.index')->with('success', 'Invoice berhasil diupdate!');
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', 'Gagal update invoice: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Pangkas tabel barang_keluars agar hanya menyimpan <limit> data terbaru.
+     */
+    private function pruneBarangKeluarLimit(int $limit = 50): void
+    {
+        try {
+            $total = \App\Models\BarangKeluar::count();
+            if ($total > $limit) {
+                $toDelete = $total - $limit;
+                // Ambil ID terlama lalu hapus
+                $ids = \App\Models\BarangKeluar::orderBy('id', 'asc')
+                    ->limit($toDelete)
+                    ->pluck('id');
+                if ($ids->isNotEmpty()) {
+                    \App\Models\BarangKeluar::whereIn('id', $ids)->delete();
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Prune BarangKeluar gagal: ' . $e->getMessage());
         }
     }
 }
