@@ -30,6 +30,7 @@ class NotificationController extends Controller
                 'id' => $item->id,
                 'no_invoice' => $item->no_invoice,
                 'customer' => $item->customer,
+                'tanggal_invoice' => $item->tanggal_invoice ? $item->tanggal_invoice->format('d/m/Y') : null,
                 'tanggal_jatuh_tempo' => $dueDate->format('d/m/Y'),
                 'daysLeft' => $daysLeft,
                 'jumlah_tagihan' => $item->jumlah_tagihan

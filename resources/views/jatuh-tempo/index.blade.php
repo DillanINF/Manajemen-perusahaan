@@ -154,10 +154,10 @@
                 <a href="{{ route('jatuh-tempo.index', ['month' => $m, 'year' => $tahunTerpilihLocal, 'status' => request('status')]) }}" class="block focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
                     <div class="p-2 rounded-lg border text-xs sm:text-sm transition-colors hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700/40
                                 {{ $hasOverdueMonth
-                                    ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700'
-                                    : ($isActive
-                                        ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-600'
-                                        : 'bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700') }}">
+                                    ? ($isActive ? 'border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-900/20' : 'border-red-200 dark:border-red-700')
+                                    : ($isActive ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-600 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700')
+                                }}
+                                {{ ($isActive && request('from_notif')) ? 'ring-2 ring-yellow-400 animate-pulse' : '' }}">
                         <div class="flex items-center justify-between">
                             <span class="font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1">
                                 {{ $namaBulanFull[$m-1] }}

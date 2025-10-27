@@ -657,14 +657,24 @@
                 <span>Jatuh Tempo</span>
             </a>
 
+            <!-- Settings link in sidebar -->
+            <a href="{{ route('settings') }}"
+               class="group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('settings') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.607 2.296.07 2.573-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>Settings</span>
+            </a>
+
             
         </nav>
 
         <!-- Sidebar bottom: User + Logout -->
         <div class="mt-auto px-4 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60">
             <div class="flex items-center justify-between">
-                <!-- Klik bagian profil untuk membuka Pengaturan -->
-                <a href="{{ route('settings') }}" class="flex items-center gap-3 min-w-0 hover:bg-gray-100 dark:hover:bg-gray-700/60 rounded-lg -mx-2 px-2 py-2" title="Buka Pengaturan">
+                <!-- Profil (non-clickable) -->
+                <div class="flex items-center gap-3 min-w-0 rounded-lg px-2 py-2" title="Profil">
                     <div class="h-10 w-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold">
                         {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                     </div>
@@ -672,7 +682,7 @@
                         <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ auth()->user()->name }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ auth()->user()->email }}</div>
                     </div>
-                </a>
+                </div>
                 <form method="POST" action="{{ route('logout') }}" x-data="{ running:false }">
                     @csrf
                     <button type="submit"
@@ -806,7 +816,8 @@
                         <div class="max-h-80 overflow-y-auto">
                             <!-- Overdue notifications -->
                             <template x-for="item in overdueItems" :key="item.id">
-                                <div class="p-3 border-b border-gray-100 dark:border-gray-700 bg-red-50 dark:bg-red-900/20">
+                                <div class="p-3 border-b border-gray-100 dark:border-gray-700 bg-red-50 dark:bg-red-900/20 cursor-pointer select-none"
+                                     @dblclick="goToItem(item)" title="Double-click untuk lihat di daftar">
                                     <div class="flex items-start gap-3">
                                         <i class="fa-solid fa-exclamation-triangle text-red-500 mt-1"></i>
                                         <div class="flex-1 min-w-0">
@@ -820,7 +831,8 @@
                             
                             <!-- Today notifications -->
                             <template x-for="item in todayItems" :key="item.id">
-                                <div class="p-3 border-b border-gray-100 dark:border-gray-700 bg-orange-50 dark:bg-orange-900/20">
+                                <div class="p-3 border-b border-gray-100 dark:border-gray-700 bg-orange-50 dark:bg-orange-900/20 cursor-pointer select-none"
+                                     @dblclick="goToItem(item)" title="Double-click untuk lihat di daftar">
                                     <div class="flex items-start gap-3">
                                         <i class="fa-solid fa-clock text-orange-500 mt-1"></i>
                                         <div class="flex-1 min-w-0">
@@ -834,7 +846,8 @@
                             
                             <!-- Upcoming notifications -->
                             <template x-for="item in upcomingItems" :key="item.id">
-                                <div class="p-3 border-b border-gray-100 dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/20">
+                                <div class="p-3 border-b border-gray-100 dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/20 cursor-pointer select-none"
+                                     @dblclick="goToItem(item)" title="Double-click untuk lihat di daftar">
                                     <div class="flex items-start gap-3">
                                         <i class="fa-solid fa-calendar-days text-yellow-500 mt-1"></i>
                                         <div class="flex-1 min-w-0">
@@ -934,6 +947,40 @@
                 hasToday: false,
                 hasUpcoming: false,
                 totalNotifications: 0,
+                goToItem(item) {
+                    try {
+                        this.dropdownOpen = false;
+                        // Prioritas: gunakan bulan/tahun dari tanggal_invoice (karena index filter berdasarkan tanggal_invoice)
+                        let month = (new Date()).getMonth() + 1;
+                        let year = (new Date()).getFullYear();
+                        const pickDate = (raw) => {
+                            const s = (raw || '').toString();
+                            const p = s.split('/');
+                            if (p.length === 3) {
+                                const mm = parseInt(p[1], 10);
+                                const yy = parseInt(p[2], 10);
+                                if (!isNaN(mm)) month = mm;
+                                if (!isNaN(yy)) year = yy;
+                            }
+                        };
+                        if (item && item.tanggal_invoice) {
+                            pickDate(item.tanggal_invoice);
+                        } else if (item && item.tanggal_jatuh_tempo) {
+                            pickDate(item.tanggal_jatuh_tempo);
+                        }
+                        const base = `{{ route('jatuh-tempo.index') }}`;
+                        const params = new URLSearchParams();
+                        params.set('month', String(month));
+                        params.set('year', String(year));
+                        // Fokus ke yang belum lunas (Pending)
+                        params.set('status', 'Belum Bayar');
+                        // Tandai navigasi berasal dari notifikasi
+                        params.set('from_notif', '1');
+                        window.location.href = `${base}?${params.toString()}`;
+                    } catch (e) {
+                        console.error('Failed to navigate to jatuh tempo list:', e);
+                    }
+                },
 
                 init() {
                     this.fetchNotifications();
