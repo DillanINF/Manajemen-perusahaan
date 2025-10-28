@@ -747,18 +747,20 @@
                 @php(
                     $labelMap = [
                         'dashboard' => 'Dashboard',
-                        'invoice' => 'Invoice',
+                        'invoice' => 'Data Invoice',
                         'sisa-data-po' => 'PO Belum Terkirim',
-                        'po' => 'Purchase Order',
+                        'po' => 'Data Purchase Order',
                         'suratjalan' => 'Surat Jalan',
-                        'customer' => 'Customer',
-                        'produk' => 'Barang',
-                        'pengirim' => 'Pengirim',
-                        'employee' => 'Karyawan',
+                        'barang' => 'Data Barang',
+                        'customer' => 'Data Customer',
+                        'produk' => 'Data Barang',
+                        'pengirim' => 'Data Pengirim',
+                        'employee' => 'Data Karyawan',
                         'salary' => 'Gaji Karyawan',
                         'finance' => 'Finance',
-                        'users' => 'Users',
+                        'users' => 'Manajemen Pengguna',
                         'jatuh-tempo' => 'Jatuh Tempo',
+                        'settings' => 'Pengaturan Akun',
                     ]
                 )
                 @php(
@@ -779,13 +781,58 @@
                     $showSection = $sectionLabel && $sectionLabel !== 'Dashboard'
                 )
                 <nav class="hidden sm:flex text-xs md:text-sm text-gray-600 dark:text-gray-300 items-center gap-1 md:gap-2 mr-2">
-                    <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $userRoleLabel }}</span>
-                    <span class="opacity-40">/</span>
-                    <a href="{{ route('dashboard') }}" class="font-semibold hover:text-indigo-600 dark:hover:text-indigo-400">Dashboard</a>
-                    @if($showSection)
-                        <span class="opacity-40">/</span>
-                        <span>{{ $sectionLabel }}</span>
+                    @php($crumbs = [])
+                    @php($inv = request('invoice_number'))
+                    @if(request()->routeIs('dashboard'))
+                        @php($crumbs = [ ['t' => 'Dashboard', 'u' => route('dashboard')] ])
+                    @elseif(request()->routeIs('po.create'))
+                        @php($crumbs = [
+                            ['t' => 'Data Invoice', 'u' => route('invoice.index')],
+                            ['t' => 'Input Purchase Order', 'u' => route('po.create', array_filter(['invoice_number' => $inv, 'from' => 'invoice']))],
+                        ])
+                    @elseif(request()->routeIs('po.edit'))
+                        @php($crumbs = [
+                            ['t' => 'Data Invoice', 'u' => route('invoice.index')],
+                            ['t' => 'Edit Purchase Order', 'u' => url()->current()],
+                        ])
+                    @elseif(request()->routeIs('po.index'))
+                        @php($crumbs = [ ['t' => 'Data Purchase Order', 'u' => route('suratjalan.index', array_filter(['invoice_number' => $inv, 'from' => request('from')]))] ])
+                    @elseif(request()->routeIs('invoice.*'))
+                        @php($crumbs = [ ['t' => 'Data Invoice', 'u' => route('invoice.index')] ])
+                    @elseif(request()->routeIs('suratjalan.*'))
+                        @php($hasInvoiceContext = request()->has('invoice_number') || request()->get('from') === 'invoice')
+                        @if($hasInvoiceContext)
+                            @php($crumbs = [
+                                ['t' => 'Data Invoice', 'u' => route('invoice.index')],
+                                ['t' => 'Input Purchase Order', 'u' => route('po.create', array_filter(['invoice_number' => $inv, 'from' => 'invoice']))],
+                                ['t' => 'Data Purchase Order', 'u' => route('suratjalan.index', array_filter(['invoice_number' => $inv, 'from' => 'invoice']))],
+                            ])
+                        @else
+                            @php($crumbs = [ ['t' => 'Data Purchase Order', 'u' => route('suratjalan.index')] ])
+                        @endif
+                    @elseif(request()->routeIs('barang.masuk.*'))
+                        @php($crumbs = [
+                            ['t' => 'Data Barang', 'u' => route('produk.index')],
+                            ['t' => 'Barang Masuk', 'u' => route('barang.masuk.index')],
+                        ])
+                    @elseif(request()->routeIs('barang.keluar.*'))
+                        @php($crumbs = [
+                            ['t' => 'Data Barang', 'u' => route('produk.index')],
+                            ['t' => 'Barang Keluar', 'u' => route('barang.keluar.index')],
+                        ])
+                    @elseif(request()->routeIs('barang.*'))
+                        @php($crumbs = [ ['t' => 'Data Barang', 'u' => route('produk.index')] ])
+                    @elseif(request()->routeIs('sisa-data-po.*'))
+                        @php($crumbs = [ ['t' => 'PO Belum Terkirim', 'u' => route('sisa-data-po.index')] ])
+                    @elseif($sectionLabel)
+                        @php($crumbs = [ ['t' => $sectionLabel, 'u' => url()->current()] ])
                     @endif
+
+                    <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $userRoleLabel }}</span>
+                    @foreach($crumbs as $i => $c)
+                        <span class="opacity-40">/</span>
+                        <a href="{{ $c['u'] }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 max-w-[38vw] md:max-w-[24rem] truncate" title="{{ $c['t'] }}">{{ $c['t'] }}</a>
+                    @endforeach
                 </nav>
                 <!-- Notification Bell -->
                 <div x-data="notificationBell()" x-init="init()" class="relative">

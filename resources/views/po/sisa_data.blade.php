@@ -28,7 +28,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-gray-100">
-                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>PO Belum Terkirim
+                        <i class="fas fa-exclamation-triangle text-gray-500 dark:text-gray-400 mr-2"></i>PO Belum Terkirim
                     </h1>
                     <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
                         Monitoring barang yang belum terinput lengkap ke data PO
@@ -42,12 +42,12 @@
             </div>
         </div>
 
-        <!-- Action Bar: Back + Export -->
+        <!-- Action Bar: Info -->
         <div class="mb-4">
-            <div class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-gradient-to-r from-white to-blue-50/60 dark:from-slate-900/60 dark:to-slate-800/60 shadow-sm p-3 sm:p-4">
+            <div class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white/95 dark:bg-white/5 backdrop-blur-sm shadow-sm p-3 sm:p-4">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                        <i class="fa-solid fa-circle-info text-blue-600"></i>
+                        <i class="fa-solid fa-circle-info text-gray-500 dark:text-gray-400"></i>
                         <span>Data menampilkan barang yang permintaan PO melebihi stok tersedia.</span>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                     <!-- Filter Customer (Autocomplete kustom, tanpa panah dropdown) -->
                     <div class="flex-1 relative">
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                            <i class="fas fa-user text-blue-500 mr-1"></i>Customer
+                            <i class="fas fa-user text-gray-500 dark:text-gray-400 mr-1"></i>Customer
                         </label>
                         <input type="text" name="customer" id="customerSearch" value="{{ $customer ?? '' }}" 
                                placeholder="Ketik nama customer..." 
@@ -77,7 +77,7 @@
                     <!-- Filter Produk -->
                     <div class="flex-1">
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                            <i class="fas fa-boxes text-green-500 mr-1"></i>Produk
+                            <i class="fas fa-boxes text-gray-500 dark:text-gray-400 mr-1"></i>Produk
                         </label>
                         <select name="produk_id" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
                             <option value="">-- Semua Produk --</option>
@@ -102,14 +102,14 @@
 
         <!-- Statistics Cards -->
         <div class="mb-6">
-            <div class="bg-gradient-to-r from-yellow-400 to-orange-400 dark:from-yellow-600 dark:to-orange-600 rounded-xl p-6 shadow-lg">
+            <div class="rounded-xl p-6 shadow-sm bg-white/95 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-800 dark:text-white text-sm font-medium mb-1">Total Items</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $sisaData->total() }}</p>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Total Items</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $sisaData->total() }}</p>
                     </div>
-                    <div class="bg-white/30 dark:bg-white/20 rounded-full p-4">
-                        <i class="fas fa-exclamation-triangle text-2xl text-gray-800 dark:text-white"></i>
+                    <div class="rounded-full p-3 bg-gray-100 dark:bg-gray-700/40">
+                        <i class="fas fa-boxes text-xl text-gray-600 dark:text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -121,7 +121,7 @@
                 <!-- Desktop Table -->
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-gray-100 dark:bg-gray-800/80">
+                        <thead class="bg-gray-50 dark:bg-gray-800/80">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Produk</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No PO</th>
@@ -136,8 +136,8 @@
                                 <tr class="table-row-hover">
                                     <td class="px-4 py-4">
                                         <div class="flex items-center">
-                                            <div class="bg-green-100 dark:bg-green-900/30 rounded-lg p-2 mr-3">
-                                                <i class="fas fa-boxes text-green-600 dark:text-green-400"></i>
+                                            <div class="bg-gray-100 dark:bg-gray-700/40 rounded-lg p-2 mr-3">
+                                                <i class="fas fa-boxes text-gray-600 dark:text-gray-300"></i>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $item->nama_produk }}</div>
@@ -147,8 +147,8 @@
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="bg-blue-100 dark:bg-blue-900/30 rounded-lg p-2 mr-3">
-                                                <i class="fas fa-file-invoice text-blue-600 dark:text-blue-400"></i>
+                                            <div class="bg-gray-100 dark:bg-gray-700/40 rounded-lg p-2 mr-3">
+                                                <i class="fas fa-file-invoice text-gray-600 dark:text-gray-300"></i>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $item->no_po }}</div>
@@ -160,17 +160,17 @@
                                     </td>
                                     <td class="px-4 py-4 text-center">
                                         @if($item->tipe_harga == 'Berbayar')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700/40 dark:text-gray-200">
                                                 <i class="fas fa-money-bill mr-1"></i>Berbayar
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700/40 dark:text-gray-200">
                                                 <i class="fas fa-gift mr-1"></i>Gratis
                                             </span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4 text-center">
-                                        <span class="text-sm font-bold text-red-600 dark:text-red-400">{{ number_format($item->sisa_belum_terinput) }}</span>
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ number_format($item->sisa_belum_terinput) }}</span>
                                         <div class="text-xs text-gray-500 dark:text-gray-400">dari {{ number_format($item->total_qty_po) }}</div>
                                     </td>
                                     <td class="px-4 py-4 text-center">

@@ -456,7 +456,7 @@
   /* Atur ukuran halaman A4 portrait dengan margin minimal */
   @page { 
     size: A4 portrait; 
-    margin: 10mm 10mm 10mm 10mm; 
+    margin: 5mm 5mm 5mm 5mm; 
   }
   
   /* Reset body untuk print */
@@ -510,7 +510,7 @@
     max-width: 210mm !important;
     min-height: 297mm !important;
     margin: 0 auto !important;
-    padding: 10mm 15mm !important;
+    padding: 5mm 6mm !important;
     box-shadow: none !important;
     background: white !important;
     overflow: visible !important;
@@ -519,18 +519,18 @@
   /* Konten invoice memenuhi lebar kertas */
   #invoiceContent {
     width: 100% !important;
-    max-width: 180mm !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
     padding: 0 !important;
     background: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
   
   /* Perbesar font untuk tabel */
   #invoiceContent table {
-    font-size: 10px !important;
+    font-size: 11px !important;
   }
   
   #invoiceContent thead th {
@@ -586,7 +586,10 @@
                     #invoiceContent thead th { border: 1px solid #000; padding: 4px !important; text-align: center; font-size: 10px; font-weight: 600; line-height: 1.05; }
                     #invoiceContent tbody td { border: 1px solid #000; padding: 4px !important; font-size: 10px; line-height: 1.05; }
                     #invoiceContent tfoot td { border: 1px solid #000; padding: 4px 6px !important; font-size: 10px; line-height: 1.05; }
-                    #invoiceContent .info-row td { padding: 0 !important; border: 0; }
+                    /* Info row persis seperti PDF: border luar + garis pemisah vertikal */
+                    #invoiceContent .info-row { border: 1px solid #000; border-left-width: 1px; border-right-width: 1px; }
+                    #invoiceContent .info-row td { padding: 2px 6px !important; border: none; vertical-align: bottom; }
+                    #invoiceContent .info-row td + td { border-left: 1px solid #000; }
                     #invoiceContent .sign-box { width: 170px; margin: 36px auto 0 auto; text-align: center; }
                 </style>
                 <!-- Header -->
@@ -668,10 +671,10 @@
                             <strong>ATAS NAMA : PT. CAM JAYA ABADI</strong>
                         </p>
                     </div>
-                    <div style="width: 35%; margin-left:auto; display:flex; flex-direction:column; align-items:flex-end;">
+                    <div style="width: 35%; margin-left:auto; display:flex; flex-direction:column; align-items:center;">
                         <!-- Wadah tetap agar signature center terhadap teks tanggal -->
-                        <div style="width:170px; align-self:flex-end;">
-                            <p style="margin: 8px 0 0 0; text-align:right;"><strong>Bekasi, <span id="invoiceDateLocation"></span></strong></p>
+                        <div style="width:170px; align-self:center; margin-left: 80px;">
+                            <p style="margin: 8px 0 0 0; text-align:center;"><strong>Bekasi, <span id="invoiceDateLocation"></span></strong></p>
                             <!-- Spacer tetap untuk area tanda tangan agar simetris (diperbesar) -->
                             <div style="height: 80px;"></div>
                             <div class="signature-stamp" style="display:none; margin: 0 auto; width: 130px; margin-bottom: 20px;">

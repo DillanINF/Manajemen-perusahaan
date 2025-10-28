@@ -1,179 +1,109 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-8">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header dengan icon -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4 overflow-hidden">
-                <img src="{{ asset('image/LOGO.png') }}" alt="Logo" class="w-12 h-12 object-contain" />
+<div class="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Tambah User Baru</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Buat akun pengguna untuk mengakses sistem</p>
             </div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Tambah User Baru</h1>
-            <p class="text-gray-600 dark:text-gray-400">Buat akun pengguna untuk mengakses sistem</p>
+            <a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <i class="fas fa-arrow-left mr-2"></i>Kembali
+            </a>
         </div>
+    </div>
 
-        <!-- Alert Messages -->
-        @if (session('status') === 'user-created')
-            <div class="rounded-xl bg-green-50 border border-green-200 text-green-800 px-4 py-3 mb-6 flex items-center">
-                <svg class="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span class="font-medium">User berhasil dibuat!</span>
-            </div>
-        @endif
+    <!-- Alert Messages -->
+    @if (session('status') === 'user-created')
+        <div class="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 mb-6 flex items-center">
+            <i class="fas fa-check-circle mr-3"></i>
+            <span class="font-medium">User berhasil dibuat!</span>
+        </div>
+    @endif
 
-        @if (session('error'))
-            <div class="rounded-xl bg-red-50 border border-red-200 text-red-800 px-4 py-3 mb-6 flex items-center">
-                <svg class="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span class="font-medium">{{ session('error') }}</span>
-            </div>
-        @endif
+    @if (session('error'))
+        <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 mb-6 flex items-center">
+            <i class="fas fa-exclamation-circle mr-3"></i>
+            <span class="font-medium">{{ session('error') }}</span>
+        </div>
+    @endif
 
-        <!-- Form Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div class="px-8 py-6">
-                <form action="{{ route('users.store') }}" method="POST" class="space-y-8">
-                    @csrf
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
-                        <!-- Form Fields -->
-                        <div class="lg:col-span-1">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Form Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">Informasi User</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Masukkan data user baru dengan lengkap</p>
+        </div>
+        <div class="px-6 py-5">
+            <form action="{{ route('users.store') }}" method="POST" class="space-y-5">
+                @csrf
 
-                                <!-- Nama Field -->
-                                <div class="space-y-2">
-                                    <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                        <span class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                            </svg>
-                                            Nama Lengkap
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
-                                               class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                                               placeholder="Masukkan nama lengkap">
-                                    </div>
-                                    @error('name')
-                                        <p class="text-sm text-red-500 flex items-center mt-1">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            {{ $message }}
-                                        </p>
-                                    @enderror
-                                </div>
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nama Lengkap</label>
+                    <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
+                           class="block w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition"
+                           placeholder="Masukkan nama lengkap">
+                    @error('name')
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1.5">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
 
-                                <!-- Email Field -->
-                                <div class="space-y-2">
-                                    <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                        <span class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
-                                            </svg>
-                                            Email Address
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="email" id="email" name="email" value="{{ old('email') }}" required autocomplete="username"
-                                               class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                                               placeholder="nama@email.com">
-                                    </div>
-                                    @error('email')
-                                        <p class="text-sm text-red-500 flex items-center mt-1">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            {{ $message }}
-                                        </p>
-                                    @enderror
-                                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Alamat Email</label>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required autocomplete="username"
+                           class="block w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition"
+                           placeholder="nama@email.com">
+                    @error('email')
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1.5">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
 
-                                <!-- Password Field dengan tombol Batal -->
-                                <div class="space-y-2">
-                                    <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                        <span class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                            </svg>
-                                            Password
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="password" id="password" name="password" required autocomplete="new-password"
-                                               class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                                               placeholder="Minimal 8 karakter">
-                                    </div>
-                                    @error('password')
-                                        <p class="text-sm text-red-500 flex items-center mt-1">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            {{ $message }}
-                                        </p>
-                                    @enderror
-                                    
-                                    <!-- Tombol Batal di bawah Password -->
-                                    <div class="pt-3">
-                                        <a href="{{ url()->previous() }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 transition-all duration-200 whitespace-nowrap">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                            <span>Batal</span>
-                                        </a>
-                                    </div>
-                                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="new-password"
+                           class="block w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition"
+                           placeholder="Minimal 8 karakter">
+                    @error('password')
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1.5">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
 
-                                <!-- Password Confirmation Field dengan tombol Buat User -->
-                                <div class="space-y-2">
-                                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                        <span class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            Konfirmasi Password
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password"
-                                               class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                                               placeholder="Ulangi password yang sama">
-                                    </div>
-                                    
-                                    <!-- Tombol Buat User di bawah Konfirmasi Password -->
-                                    <div class="pt-3">
-                                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold hover:from-indigo-700 hover:to-blue-700 focus:ring-4 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                            <span>Buat User</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Role diset otomatis sebagai User Biasa -->
-                            <input type="hidden" name="is_admin" value="0">
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Konfirmasi Password</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password"
+                           class="block w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition"
+                           placeholder="Ulangi password yang sama">
+                </div>
+
+                <!-- Role diset otomatis sebagai User Biasa -->
+                <input type="hidden" name="is_admin" value="0">
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <a href="{{ url()->previous() }}" class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:ring-offset-gray-800 transition">
+                        <i class="fas fa-times mr-2"></i>Batal
+                    </a>
+                    <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:ring-offset-gray-800 transition">
+                        <i class="fas fa-user-plus mr-2"></i>Buat User
+                    </button>
+                </div>
             </form>
-            </div>
-            
-            <!-- Footer Info -->
-            <div class="px-8 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-100 dark:border-gray-600">
-                <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                    </svg>
-                    User baru akan mendapat akses sebagai user biasa
-                </p>
-            </div>
+        </div>
+        
+        <!-- Footer Info -->
+        <div class="px-6 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-xs text-gray-600 dark:text-gray-400 flex items-center">
+                <i class="fas fa-info-circle mr-2 text-gray-500 dark:text-gray-400"></i>
+                User baru akan mendapat akses sebagai user biasa
+            </p>
         </div>
     </div>
 </div>
-
-<script>
-// Role selalu diset ke user biasa, tidak ada interaksi tambahan yang diperlukan di sini.
-</script>
 @endsection
