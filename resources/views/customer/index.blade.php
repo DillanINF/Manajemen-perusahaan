@@ -153,8 +153,8 @@
                             <td class="px-3 md:px-6 py-3 md:py-4 text-gray-900 dark:text-slate-200 font-medium text-sm">{{ $index + 1 }}</td>
                             <td class="px-3 md:px-6 py-3 md:py-4">
                                 <div class="flex items-center space-x-2 md:space-x-3">
-                                    <div class="bg-blue-50 dark:bg-slate-700 p-1 md:p-2 rounded-full">
-                                        <svg class="w-3 h-3 md:w-4 md:h-4 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="bg-blue-50 dark:bg-slate-700 h-8 w-8 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
                                     </div>

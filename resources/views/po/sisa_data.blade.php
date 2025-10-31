@@ -28,7 +28,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-gray-100">
-                        <i class="fas fa-exclamation-triangle text-gray-500 dark:text-gray-400 mr-2"></i>PO Belum Terkirim
+                        <i class="fas fa-exclamation-triangle text-amber-500 dark:text-amber-400 mr-2"></i>PO Belum Terkirim
                     </h1>
                     <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
                         Monitoring barang yang belum terinput lengkap ke data PO
@@ -47,7 +47,7 @@
             <div class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white/95 dark:bg-white/5 backdrop-blur-sm shadow-sm p-3 sm:p-4">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                        <i class="fa-solid fa-circle-info text-gray-500 dark:text-gray-400"></i>
+                        <i class="fa-solid fa-circle-info text-blue-500 dark:text-blue-400"></i>
                         <span>Data menampilkan barang yang permintaan PO melebihi stok tersedia.</span>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                     <!-- Filter Customer (Autocomplete kustom, tanpa panah dropdown) -->
                     <div class="flex-1 relative">
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                            <i class="fas fa-user text-gray-500 dark:text-gray-400 mr-1"></i>Customer
+                            <i class="fas fa-user text-blue-500 dark:text-blue-400 mr-1"></i>Customer
                         </label>
                         <input type="text" name="customer" id="customerSearch" value="{{ $customer ?? '' }}" 
                                placeholder="Ketik nama customer..." 
@@ -77,7 +77,7 @@
                     <!-- Filter Produk -->
                     <div class="flex-1">
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                            <i class="fas fa-boxes text-gray-500 dark:text-gray-400 mr-1"></i>Produk
+                            <i class="fas fa-boxes text-indigo-500 dark:text-indigo-400 mr-1"></i>Produk
                         </label>
                         <select name="produk_id" class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
                             <option value="">-- Semua Produk --</option>
@@ -109,7 +109,7 @@
                         <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $sisaData->total() }}</p>
                     </div>
                     <div class="rounded-full p-3 bg-gray-100 dark:bg-gray-700/40">
-                        <i class="fas fa-boxes text-xl text-gray-600 dark:text-gray-300"></i>
+                        <i class="fas fa-boxes text-xl text-indigo-600 dark:text-indigo-400"></i>
                     </div>
                 </div>
             </div>
@@ -137,7 +137,7 @@
                                     <td class="px-4 py-4">
                                         <div class="flex items-center">
                                             <div class="bg-gray-100 dark:bg-gray-700/40 rounded-lg p-2 mr-3">
-                                                <i class="fas fa-boxes text-gray-600 dark:text-gray-300"></i>
+                                                <i class="fas fa-boxes text-indigo-600 dark:text-indigo-400"></i>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $item->nama_produk }}</div>
@@ -148,7 +148,7 @@
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="bg-gray-100 dark:bg-gray-700/40 rounded-lg p-2 mr-3">
-                                                <i class="fas fa-file-invoice text-gray-600 dark:text-gray-300"></i>
+                                                <i class="fas fa-file-invoice text-blue-600 dark:text-blue-400"></i>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $item->no_po }}</div>

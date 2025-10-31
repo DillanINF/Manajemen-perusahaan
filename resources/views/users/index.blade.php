@@ -114,16 +114,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex-shrink-0">
-                                        <div class="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                                            <span class="text-white font-semibold text-sm">{{ strtoupper(substr($user->name, 0, 2)) }}</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $user->name }}</div>
-                                    </div>
-                                </div>
+                                <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $user->name }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center space-x-2">
