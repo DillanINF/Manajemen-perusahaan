@@ -13,6 +13,10 @@ use App\Models\JatuhTempo; // Sinkronisasi Jatuh Tempo dari PO
 // Invoice model tidak digunakan - data invoice disimpan di tabel POS
 use App\Models\Setting;
 use App\Models\SisaPOItem;
+use App\Http\Requests\StorePORequest;
+use App\Http\Requests\UpdatePORequest;
+use App\Http\Requests\UpdateInvoiceRequest;
+use App\Services\POService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
@@ -22,19 +26,40 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class POController extends Controller
 {
+    protected POService $poService;
+    protected \App\Services\CacheService $cache;
+
+    public function __construct(POService $poService, \App\Services\CacheService $cache)
+    {
+        $this->poService = $poService;
+        $this->cache = $cache;
+    }
+    
     public function index()
     {
-        // Ambil semua PO beserta relasi items->produk (relasi kendaraan tidak dipakai lagi)
-        $pos        = PO::with(['items.produk'])->latest()->get();
-        $produks    = Produk::all();
-        $customers  = Customer::all();
+        // Gunakan cache untuk data yang jarang berubah
+        $produks = $this->cache->getProducts();
+        $customers = $this->cache->getCustomers();
         
-        // CHANGE: Ambil data pengirim dari tabel pengirim beserta kendaraan & no_polisi untuk autofill
-        $pengirims = Pengirim::select('nama','kendaraan','no_polisi')
-            ->whereNotNull('nama')
-            ->where('nama', '!=', '')
-            ->orderBy('nama', 'asc')
-            ->get();
+        // PO data di-cache dengan TTL pendek karena sering berubah
+        $pos = $this->cache->remember(
+            $this->cache->key('pos_index'),
+            \App\Services\CacheService::CACHE_SHORT,
+            fn() => PO::with(['items.produk'])->latest()->get(),
+            [\App\Services\CacheService::TAG_PO]
+        );
+        
+        // Pengirim di-cache
+        $pengirims = $this->cache->remember(
+            $this->cache->key('pengirims_list'),
+            \App\Services\CacheService::CACHE_MEDIUM,
+            fn() => Pengirim::select('nama','kendaraan','no_polisi')
+                ->whereNotNull('nama')
+                ->where('nama', '!=', '')
+                ->orderBy('nama', 'asc')
+                ->get(),
+            ['pengirims']
+        );
 
         return view('po.index', compact('pos', 'produks', 'customers', 'pengirims'));
     }
@@ -48,18 +73,30 @@ class POController extends Controller
             return redirect()->route('invoice.index')
                 ->with('error', 'Akses formulir PO hanya melalui Data Invoice (double click pada nomor urut).');
         }
-        $produks    = Produk::all();
-        $customers  = Customer::all();
         
-        // CHANGE: Ambil data pengirim beserta kendaraan & no_polisi
-        $pengirims = Pengirim::select('nama', 'kendaraan', 'no_polisi')
-            ->whereNotNull('nama')
-            ->where('nama', '!=', '')
-            ->orderBy('nama', 'asc')
-            ->get();
+        // Gunakan cache untuk data master
+        $produks = $this->cache->getProducts();
+        $customers = $this->cache->getCustomers();
+        
+        // Pengirim dari cache
+        $pengirims = $this->cache->remember(
+            $this->cache->key('pengirims_list'),
+            \App\Services\CacheService::CACHE_MEDIUM,
+            fn() => Pengirim::select('nama', 'kendaraan', 'no_polisi')
+                ->whereNotNull('nama')
+                ->where('nama', '!=', '')
+                ->orderBy('nama', 'asc')
+                ->get(),
+            ['pengirims']
+        );
 
-        // Optional: tampilkan juga daftar PO seperti di index agar view konsisten
-        $pos = PO::with(['items.produk'])->latest()->get();
+        // PO data dengan cache
+        $pos = $this->cache->remember(
+            $this->cache->key('pos_index'),
+            \App\Services\CacheService::CACHE_SHORT,
+            fn() => PO::with(['items.produk'])->latest()->get(),
+            [\App\Services\CacheService::TAG_PO]
+        );
 
         // Prefill tanggal dari draft POS (no urut terkait) atau fallback ke hari ini
         $prefillTanggal = null;
@@ -115,89 +152,25 @@ class POController extends Controller
         return view('po.index', compact('pos', 'produks', 'customers', 'pengirims', 'prefillTanggal', 'po', 'sjCodeParts', 'sjNomor', 'sjPt', 'sjTahun'));
     }
 
-    public function store(Request $request)
+    public function store(StorePORequest $request)
     {
-        $data = $request->validate([
-            'invoice_number'      => 'nullable|string|max:50',
-            'no_surat_jalan_nomor' => 'required|string',
-            'no_surat_jalan_pt'    => 'required|string',
-            'no_surat_jalan_tahun' => 'required|integer',
-            'no_po'                => 'required|string',
-            'no_invoice_nomor'     => 'nullable|string|max:255',
-            'no_invoice_pt'        => 'nullable|string|max:255',
-            'no_invoice_tanggal'   => 'nullable|integer|min:1|max:12',
-            'no_invoice_tahun'     => 'nullable|integer',
-            // customer_id was removed from pos schema; make it optional for backward-compatible forms
-            'customer_id'          => 'nullable|exists:customers,id',
-            'tanggal_po'           => 'nullable|date',
-            'kendaraan'            => 'nullable|string',
-            'no_polisi'            => 'nullable|string',
-            'address_1'            => 'required|string|max:255',
-            'address_2'            => 'nullable|string|max:255',
-            'pengirim'             => 'nullable|string|max:255',
-            'items'                => 'required|array|min:1',
-            'items.*.produk_id'    => 'required|exists:produks,id',
-            'items.*.qty'          => 'required|integer|min:1',
-            'items.*.qty_jenis'    => 'required|in:PCS,SET',
-            'items.*.harga'        => 'nullable|integer|min:0',
-            'items.*.total'        => 'nullable|integer|min:0',
-        ]);
+        $data = $request->validated();
 
         // Default tanggal_po ke hari ini jika tidak dikirim dari form
         if (empty($data['tanggal_po'])) {
             $data['tanggal_po'] = now()->format('Y-m-d');
         }
 
-        // Gabungkan nomor surat jalan
-        $noSuratJalan = "{$data['no_surat_jalan_nomor']}/{$data['no_surat_jalan_pt']}/{$data['no_surat_jalan_tahun']}";
-
-        // Ambil nama customer dari customer_id jika ada; fallback ke field 'customer' dari request
-        $customer = null;
-        if (!empty($data['customer_id'])) {
-            $customer = Customer::find($data['customer_id']);
-        }
-        $customerName = $customer?->name ?? (string) $request->input('customer', '');
-
-        // Perkuat resolusi customer: jika kosong, coba ambil dari PO sebelumnya dengan no_invoice yang sama
-        if (!is_string($customerName) || trim($customerName) === '') {
-            $invKey = (string) ($data['invoice_number'] ?? '');
-            if ($invKey !== '') {
-                $prev = PO::where('no_invoice', $invKey)
-                    ->whereNotNull('customer')
-                    ->whereRaw("TRIM(customer) != ''")
-                    ->orderByDesc('id')
-                    ->first();
-                if ($prev) {
-                    $customerName = (string) $prev->customer;
-                    if (empty($data['customer_id'])) {
-                        // Map nama customer ke master customers jika ada
-                        $matched = Customer::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($customerName))])->first();
-                        if ($matched) {
-                            $customer = $matched;
-                            $data['customer_id'] = $matched->id;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (empty($data['address_1']) || $data['address_1'] === '-') {
-            $data['address_1'] = $customer->address_1 ?? '';
-        }
-        if (empty($data['address_2']) || $data['address_2'] === '-') {
-            $data['address_2'] = $customer->address_2 ?? '';
-        }
-
-        // Bentuk no_invoice jika ada inputnya: NOMOR/PT/BULAN/TAHUN (bulan di kiri tahun)
-        $noInvoice = null;
-        if (!empty($data['no_invoice_nomor']) || !empty($data['no_invoice_pt']) || !empty($data['no_invoice_tanggal']) || !empty($data['no_invoice_tahun'])) {
-            $nom = $data['no_invoice_nomor'] ?? '';
-            $pt  = $data['no_invoice_pt'] ?? '';
-            $bln = $data['no_invoice_tanggal'] ?? '';
-            $thn = $data['no_invoice_tahun'] ?? '';
-            $parts = array_filter([trim($nom), trim($pt), trim((string)$bln), trim((string)$thn)], fn($v) => $v !== '');
-            $noInvoice = implode('/', $parts);
-        }
+        // Build nomor menggunakan service
+        $noSuratJalan = $this->poService->buildNoSuratJalan($data);
+        $noInvoice = $this->poService->buildNoInvoice($data);
+        
+        // Resolve customer
+        $customer = !empty($data['customer_id']) ? Customer::find($data['customer_id']) : null;
+        $customerName = $this->poService->resolveCustomerName($data, $request);
+        
+        // Resolve addresses
+        [$data['address_1'], $data['address_2']] = $this->poService->resolveAddresses($data, $customer);
 
         // Simpan ke database PO (header) + items dalam transaksi
         // Track auto-split agar bisa membentuk pesan sukses terpadu di luar transaksi
@@ -205,156 +178,27 @@ class POController extends Controller
         $sisaCount = 0;    // total qty sisa (pcs/set, sesuai input)
 
         $po = DB::transaction(function () use ($data, $customerName, $noSuratJalan, $noInvoice, $customer, &$hadSplit, &$sisaCount) {
-            $rawItems = collect($data['items'])
-                ->filter(fn ($it) => !empty($it['produk_id']) && !empty($it['qty']))
-                ->values();
+            // Process items menggunakan service
+            $items = $this->poService->processItems($data['items']);
 
-            // Recompute harga & total server-side for each item
-            $items = $rawItems->map(function ($it) {
-                $produk = Produk::find($it['produk_id']);
-                $qtyJenis = strtoupper($it['qty_jenis'] ?? 'PCS');
-                $harga = 0;
-                if ($produk) {
-                    $harga = $qtyJenis === 'SET' ? (int) ($produk->harga_set ?? 0) : (int) ($produk->harga_pcs ?? 0);
-                }
-                $qty = (int) ($it['qty'] ?? 0);
-                $total = $harga * $qty;
-                return [
-                    'produk_id' => (int) $it['produk_id'],
-                    'qty'       => $qty,
-                    'qty_jenis' => $qtyJenis,
-                    'harga'     => $harga,
-                    'total'     => $total,
-                ];
-            });
-
-            if ($items->isEmpty()) {
-                throw ValidationException::withMessages([
-                    'items' => 'Minimal 1 item dengan produk dan qty >= 1.',
-                ]);
-            }
-
-            // Auto-split PO: cek stok dan buat PO dengan qty tersedia, simpan sisa ke tabel khusus
-            $qtyByProduk = [];
-            foreach ($items as $it) {
-                $qtyByProduk[$it['produk_id']] = ($qtyByProduk[$it['produk_id']] ?? 0) + (int) $it['qty'];
-            }
-
-            $splitMessages = [];
-            $adjustedItems = collect();
-            $sisaItems = [];
-
-            if (!empty($qtyByProduk)) {
-                $produkMap = Produk::query()
-                    ->whereIn('id', array_keys($qtyByProduk))
-                    ->withSum('barangMasuks as qty_masuk', 'qty')
-                    ->withSum('barangKeluars as qty_keluar', 'qty')
-                    ->get()
-                    ->keyBy('id');
-
-                // Untuk stok 0: izinkan input tapi semua masuk ke Sisa Data PO
-                // Tidak ada validasi error untuk stok 0, langsung proses split
-
-                // Track stok yang sudah dialokasikan per produk dalam batch ini
-                $stokDialokasikan = [];
-
-                foreach ($items as $it) {
-                    $pid = $it['produk_id'];
-                    $qtyReq = (int) $it['qty'];
-                    $p = $produkMap->get($pid);
-                    $stokTotal = (int) (($p->qty_masuk ?? 0) - ($p->qty_keluar ?? 0));
-                    
-                    // Kurangi stok yang sudah dialokasikan untuk produk yang sama dalam batch ini
-                    $stokTersedia = $stokTotal - ($stokDialokasikan[$pid] ?? 0);
-                    $stokTersedia = max(0, $stokTersedia); // Pastikan tidak negatif
-
-                    // LOGIKA BARU: Cek stok tersedia dulu
-                    if ($stokTersedia <= 0) {
-                        // STOK 0: Seluruh qty masuk ke Sisa Data PO, TIDAK ADA yang ke Surat Jalan
-                        $sisaItems[] = [
-                            'no_po' => $data['no_po'],
-                            'produk_id' => $pid,
-                            'qty_diminta' => $qtyReq,
-                            'qty_tersedia' => 0,
-                            'qty_sisa' => $qtyReq, // Seluruh qty jadi sisa
-                            'qty_jenis' => $it['qty_jenis'],
-                            'harga' => (float) $it['harga'],
-                            'total_sisa' => $qtyReq * (float) $it['harga'],
-                            'customer' => $customerName,
-                            'tanggal_po' => $data['tanggal_po'],
-                            'status' => 'pending',
-                            'keterangan' => 'Stok habis - seluruh pesanan masuk ke Sisa Data PO'
-                        ];
-                        
-                        $splitMessages[] = 'Produk "' . ($p->nama_produk ?? ('ID '.$pid)) . '": Stok habis (0), seluruh pesanan ' . $qtyReq . ' pcs masuk ke Sisa Data PO.';
-                        
-                    } else if ($qtyReq > $stokTersedia) {
-                        // STOK TIDAK CUKUP: Sebagian ke Surat Jalan, sebagian ke Sisa Data PO
-                        // Yang tersedia masuk ke Surat Jalan
-                        $adjustedItem = $it;
-                        $adjustedItem['qty'] = $stokTersedia;
-                        $adjustedItem['total'] = $stokTersedia * (float) $it['harga'];
-                        $adjustedItems->push($adjustedItem);
-                        
-                        // Update stok yang sudah dialokasikan
-                        $stokDialokasikan[$pid] = ($stokDialokasikan[$pid] ?? 0) + $stokTersedia;
-
-                        // Sisa masuk ke Sisa Data PO
-                        $qtySisa = $qtyReq - $stokTersedia;
-                        $sisaItems[] = [
-                            'no_po' => $data['no_po'],
-                            'produk_id' => $pid,
-                            'qty_diminta' => $qtyReq,
-                            'qty_tersedia' => $stokTersedia,
-                            'qty_sisa' => $qtySisa,
-                            'qty_jenis' => $it['qty_jenis'],
-                            'harga' => (float) $it['harga'],
-                            'total_sisa' => $qtySisa * (float) $it['harga'],
-                            'customer' => $customerName,
-                            'tanggal_po' => $data['tanggal_po'],
-                            'status' => 'pending',
-                            'keterangan' => 'Auto-split dari PO karena stok tidak mencukupi'
-                        ];
-                        
-                        $splitMessages[] = 'Produk "' . ($p->nama_produk ?? ('ID '.$pid)) . '": Diminta ' . $qtyReq . ', tersedia ' . $stokTersedia . ', sisa ' . $qtySisa . ' pcs masuk ke Sisa Data PO.';
-                        // Flag dan akumulasi sisa
-                        $hadSplit = true;
-                        $sisaCount += (int) $qtySisa;
-                    } else {
-                        // Stok cukup, tambahkan item normal
-                        $adjustedItems->push($it);
-                        // Update stok yang sudah dialokasikan
-                        $stokDialokasikan[$pid] = ($stokDialokasikan[$pid] ?? 0) + $qtyReq;
-                    }
-                }
-
-                // Update items dengan yang sudah disesuaikan
-                $items = $adjustedItems;
-            }
+            // Validasi dan split stok menggunakan service
+            $splitResult = $this->poService->validateAndSplitStock($items, $data, $customerName);
+            $items = $splitResult['items'];
+            $sisaItems = $splitResult['sisa_items'];
+            $splitMessages = $splitResult['split_messages'];
+            $hadSplit = $splitResult['had_split'];
+            $sisaCount = $splitResult['sisa_count'];
 
             // Header mengambil item pertama untuk kolom legacy
             $first = $items->first();
             $sumTotal = (int) $items->sum(fn ($it) => (int) ($it['total'] ?? 0));
 
             // Jika tidak ada item yang masuk ke PO (semua stok 0), JANGAN buat PO record
-            // Hanya simpan ke Sisa Data PO saja
             if ($items->isEmpty()) {
-                // Simpan sisa items ke tabel sisa_po_items jika ada
-                if (!empty($sisaItems)) {
-                    foreach ($sisaItems as $sisaItem) {
-                        SisaPOItem::create($sisaItem);
-                    }
-                }
-
-                // Simpan pesan split ke session untuk ditampilkan sebagai notifikasi
+                $this->poService->saveSisaItems($sisaItems);
                 if (!empty($splitMessages)) {
                     session()->flash('split_messages', $splitMessages);
-                    // Flag dan akumulasi sisa untuk kasus semua stok 0
-                    $hadSplit = true;
-                    foreach (($sisaItems ?? []) as $si) { $sisaCount += (int) ($si['qty_sisa'] ?? 0); }
                 }
-
-                // Return dari dalam transaction
                 return null; // Akan dihandle di luar transaction
             }
 
@@ -391,36 +235,10 @@ class POController extends Controller
                     'pengirim'       => $data['pengirim'] ?? null,
                 ]);
 
-                // Replace items lama (seharusnya kosong; jaga-jaga)
-                $po->items()->delete();
-                foreach ($items as $it) {
-                    POItem::create([
-                        'po_id'     => $po->id,
-                        'produk_id' => $it['produk_id'],
-                        'qty'       => $it['qty'],
-                        'qty_jenis' => $it['qty_jenis'],
-                        'harga'     => $it['harga'],
-                        'total'     => $it['total'],
-                    ]);
-                }
-                // Catat Barang Keluar otomatis (hanya jika ada items yang masuk ke PO)
-                if (!$items->isEmpty()) {
-                    foreach ($items as $it) {
-                        // Hanya catat barang keluar jika qty > 0
-                        if ((int) $it['qty'] > 0) {
-                            $noPoStd = trim((string)($data['no_po'] ?? ''));
-                            BarangKeluar::create([
-                                'produk_id' => $it['produk_id'],
-                                'qty'       => (int) $it['qty'],
-                                'tanggal'   => $data['tanggal_po'],
-                                'keterangan'=> 'Auto Keluar dari PO ' . $noPoStd,
-                                'user_id'   => auth()->id(),
-                            ]);
-                        }
-                    }
-                    // Batasi total data Barang Keluar agar hanya menyimpan 50 terbaru
-                    $this->pruneBarangKeluarLimit(50);
-                }
+                // Sync items dan catat barang keluar
+                $this->poService->syncPOItems($po, $items);
+                $this->poService->recordBarangKeluar($items, $data['no_po'], $data['tanggal_po']);
+                $this->poService->pruneBarangKeluar(50);
             } else {
                 // CREATE baris baru meskipun no_invoice sama (mendukung input >1x untuk No Urut yang sama)
                 $po = PO::create([
@@ -441,41 +259,14 @@ class POController extends Controller
                     'pengirim'       => $data['pengirim'] ?? null,
                 ]);
 
-                foreach ($items as $it) {
-                    POItem::create([
-                        'po_id'     => $po->id,
-                        'produk_id' => $it['produk_id'],
-                        'qty'       => $it['qty'],
-                        'qty_jenis' => $it['qty_jenis'],
-                        'harga'     => $it['harga'],
-                        'total'     => $it['total'],
-                    ]);
-                }
-                // Catat Barang Keluar otomatis (hanya jika ada items yang masuk ke PO)
-                if (!$items->isEmpty()) {
-                    foreach ($items as $it) {
-                        // Hanya catat barang keluar jika qty > 0
-                        if ((int) $it['qty'] > 0) {
-                            BarangKeluar::create([
-                                'produk_id' => $it['produk_id'],
-                                'qty'       => (int) $it['qty'],
-                                'tanggal'   => $data['tanggal_po'],
-                                'keterangan'=> 'Auto Keluar dari PO ' . ($data['no_po'] ?? ''),
-                                'user_id'   => auth()->id(),
-                            ]);
-                        }
-                    }
-                    // Batasi total data Barang Keluar agar hanya menyimpan 50 terbaru
-                    $this->pruneBarangKeluarLimit(50);
-                }
+                // Sync items dan catat barang keluar
+                $this->poService->syncPOItems($po, $items);
+                $this->poService->recordBarangKeluar($items, $data['no_po'], $data['tanggal_po']);
+                $this->poService->pruneBarangKeluar(50);
             }
 
             // Simpan sisa items ke tabel sisa_po_items jika ada
-            if (!empty($sisaItems)) {
-                foreach ($sisaItems as $sisaItem) {
-                    SisaPOItem::create($sisaItem);
-                }
-            }
+            $this->poService->saveSisaItems($sisaItems);
 
             return $po;
         });
@@ -515,105 +306,11 @@ class POController extends Controller
         }
 
         // === Ekspor ke Excel ===
-        $templatePath = storage_path('app/template/SJ CAM & OUTSTANDING 2024.xlsm');
-        if (file_exists($templatePath)) {
-            $spreadsheet  = IOFactory::load($templatePath);
-            $sheet        = $spreadsheet->getActiveSheet();
-            $row = 10; // baris awal tulis data
-            foreach ($po->items()->with('produk')->get() as $item) {
-                $sheet->setCellValue("A{$row}", $noSuratJalan);
-                $sheet->setCellValue("B{$row}", $po->no_po);
-                $sheet->setCellValue("C{$row}", $po->customer);
-                $sheet->setCellValue("D{$row}", date('d/m/Y', strtotime($po->tanggal_po)));
-                $sheet->setCellValue("E{$row}", $item->produk->nama_produk ?? 'Produk Tidak Ditemukan');
-                $sheet->setCellValue("F{$row}", $item->qty . ' ' . $item->qty_jenis);
-                $sheet->setCellValue("G{$row}", $item->harga);
-                $sheet->setCellValue("H{$row}", $item->total);
-                $sheet->setCellValue("I{$row}", ($po->kendaraan ?? '-') . ' / ' . ($po->no_polisi ?? '-'));
-                $sheet->setCellValue("J{$row}", ($po->alamat_1 ?? '-') . ' ' . ($po->alamat_2 ?? ''));
-                $row++;
-            }
-
-            $filename   = 'PO_' . now()->format('Ymd_His') . '.xlsm';
-            $exportPath = storage_path('app/public/exports/');
-
-            if (!file_exists($exportPath)) {
-                mkdir($exportPath, 0777, true);
-            }
-
-            $savePath = $exportPath . $filename;
-            IOFactory::createWriter($spreadsheet, 'Xls')->save($savePath);
-        }
+        $this->poService->exportToExcel($po, $noSuratJalan);
 
         // === Sinkronisasi ke Jatuh Tempo ===
-        // HANYA buat Jatuh Tempo jika status_approval Data PO adalah 'Accept'
-        if (($po->status_approval ?? 'Pending') === 'Accept') {
-            try {
-                // Gunakan no_invoice (nomor urut invoice dari Data Invoice) sebagai no_invoice di Jatuh Tempo
-                $invoiceKey = $data['invoice_number'] ?? $po->no_invoice;
-                $tanggalInvoice = \Carbon\Carbon::parse($po->tanggal_po);
-                // Gunakan payment_terms_days dari customer jika tersedia, fallback +1 bulan
-                $termsDays = (int) (($customer->payment_terms_days ?? 0));
-                if ($termsDays > 0) {
-                    $tanggalJatuhTempo = (clone $tanggalInvoice)->addDays($termsDays);
-                } else {
-                    $tanggalJatuhTempo = (clone $tanggalInvoice)->addMonth();
-                }
-
-                // Ambil SEMUA PO dengan no_invoice yang sama dan status Accept untuk digabungkan
-                $allAcceptedPos = PO::where('no_invoice', $invoiceKey)
-                    ->where('status_approval', 'Accept')
-                    ->get();
-
-                if ($allAcceptedPos->isNotEmpty()) {
-                    // Gabungkan semua No PO dan total tagihan
-                    $allNoPo = $allAcceptedPos->pluck('no_po')->filter()->implode(', ');
-                    $totalTagihan = $allAcceptedPos->sum('total');
-                    
-                    // Cek apakah sudah ada entry jatuh tempo untuk invoice ini
-                    $existingJT = JatuhTempo::where('no_invoice', $invoiceKey)->first();
-                    $jumlahTerbayar = $existingJT ? (int)($existingJT->jumlah_terbayar ?? 0) : 0;
-
-                    $jtPayload = [
-                        'no_invoice' => $invoiceKey,
-                        'no_po' => $allNoPo, // Gabungan semua No PO
-                        'customer' => $po->customer,
-                        'tanggal_invoice' => $tanggalInvoice->format('Y-m-d'),
-                        'tanggal_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
-                        'jumlah_tagihan' => (int) $totalTagihan, // Total dari semua PO
-                        'jumlah_terbayar' => $jumlahTerbayar,
-                        'sisa_tagihan' => max(0, (int)$totalTagihan - $jumlahTerbayar),
-                        'status_pembayaran' => $jumlahTerbayar >= $totalTagihan ? 'Lunas' : ($jumlahTerbayar > 0 ? 'Sebagian' : 'Belum Bayar'),
-                        'status_approval' => 'Pending',
-                    ];
-
-                    if ($existingJT) {
-                        // UPDATE JATUH TEMPO YANG SUDAH ADA
-                        $existingJT->update($jtPayload);
-                        \Log::info('[JT] Updated existing JatuhTempo for Accept status', [
-                            'jt_id' => $existingJT->id,
-                            'po_id' => $po->id,
-                            'all_pos' => $allNoPo,
-                            'total_tagihan' => $totalTagihan
-                        ]);
-                    } else {
-                        // BUAT JATUH TEMPO BARU
-                        $jt = JatuhTempo::create($jtPayload);
-                        \Log::info('[JT] Created new JatuhTempo for Accept status', [
-                            'jt_id' => $jt->id,
-                            'po_id' => $po->id,
-                            'all_pos' => $allNoPo,
-                            'total_tagihan' => $totalTagihan
-                        ]);
-                    }
-                }
-            } catch (\Throwable $e) {
-                \Log::warning('[JT] Sync JatuhTempo gagal', [
-                    'error' => $e->getMessage(),
-                    'code' => method_exists($e, 'getCode') ? $e->getCode() : null,
-                ]);
-            }
-        }
+        $invoiceKey = $data['invoice_number'] ?? $po->no_invoice;
+        $this->poService->syncToJatuhTempo($po, $customer, $invoiceKey);
 
         // Selalu tetap berada di Form Input PO setelah simpan
         $from = $request->input('from', 'invoice');
@@ -646,8 +343,7 @@ class POController extends Controller
         $new = $current === 'Accept' ? 'Pending' : 'Accept';
 
         // CEK: Jika ada Jatuh Tempo dengan status Lunas (Accept), BLOKIR perubahan status
-        $jatuhTempo = \App\Models\JatuhTempo::where('no_invoice', $invoiceKey)->first();
-        if ($jatuhTempo && $jatuhTempo->status_pembayaran === 'Lunas') {
+        if ($this->poService->isInvoiceLunas($invoiceKey)) {
             return response()->json([
                 'success' => false,
                 'message' => '❌ Status tidak dapat diubah karena Jatuh Tempo sudah berstatus LUNAS (Accept).'
@@ -765,113 +461,28 @@ class POController extends Controller
         return view('po.index', compact('po', 'pos', 'produks', 'customers', 'pengirims'));
     }
 
-    public function update(Request $request, PO $po)
+    public function update(UpdatePORequest $request, PO $po)
     {
         // CEK: Jika ada Jatuh Tempo dengan status Lunas (Accept), BLOKIR edit
-        $jatuhTempo = \App\Models\JatuhTempo::where('no_invoice', $po->no_invoice)->first();
-        if ($jatuhTempo && $jatuhTempo->status_pembayaran === 'Lunas') {
+        if ($this->poService->isInvoiceLunas($po->no_invoice)) {
             return redirect()->back()->with('error', '❌ Data tidak dapat diubah karena Jatuh Tempo sudah berstatus LUNAS (Accept).');
         }
 
-        $data = $request->validate([
-            'invoice_number'      => 'nullable|string|max:50',
-            'no_surat_jalan_nomor' => 'required|string',
-            'no_surat_jalan_pt'    => 'required|string',
-            'no_surat_jalan_tahun' => 'required|integer',
-            'no_po'                => 'required|string',
-            'no_invoice_nomor'     => 'nullable|string|max:255',
-            'no_invoice_pt'        => 'nullable|string|max:255',
-            'no_invoice_tahun'     => 'nullable|integer',
-            'customer_id'          => 'required|exists:customers,id',
-            'tanggal_po'           => 'required|date',
-            'kendaraan'            => 'nullable|string',
-            'no_polisi'            => 'nullable|string',
-            'address_1'            => 'required|string|max:255',
-            'address_2'            => 'nullable|string|max:255',
-            'pengirim'             => 'nullable|string|max:255',
-            'items'                => 'required|array|min:1',
-            'items.*.produk_id'    => 'required|exists:produks,id',
-            'items.*.qty'          => 'required|integer|min:1',
-            'items.*.qty_jenis'    => 'required|in:PCS,SET',
-            'items.*.harga'        => 'nullable|integer|min:0',
-            'items.*.total'        => 'nullable|integer|min:0',
-        ]);
+        $data = $request->validated();
 
-        // Gabungkan nomor surat jalan
-        $noSuratJalan = "{$data['no_surat_jalan_nomor']}/{$data['no_surat_jalan_pt']}/{$data['no_surat_jalan_tahun']}";
+        // Build nomor menggunakan service
+        $noSuratJalan = $this->poService->buildNoSuratJalan($data);
+        $noInvoice = $this->poService->buildNoInvoice($data);
 
-        // Ambil nama customer dari customer_id
+        // Resolve customer dan addresses
         $customer = Customer::find($data['customer_id']);
-        $customerName = $customer ? $customer->name : '';
-
-        if (empty($data['address_1']) || $data['address_1'] === '-') {
-            $data['address_1'] = $customer->address_1 ?? '';
-        }
-        if (empty($data['address_2']) || $data['address_2'] === '-') {
-            $data['address_2'] = $customer->address_2 ?? '';
-        }
-
-        // Bentuk no_invoice jika ada inputnya
-        $noInvoice = null;
-        if (!empty($data['no_invoice_nomor']) || !empty($data['no_invoice_pt']) || !empty($data['no_invoice_tahun'])) {
-            $nom = $data['no_invoice_nomor'] ?? '';
-            $pt  = $data['no_invoice_pt'] ?? '';
-            $thn = $data['no_invoice_tahun'] ?? '';
-            $noInvoice = trim($nom) . '/' . trim($pt) . '/' . trim((string) $thn);
-        }
+        $customerName = $customer?->name ?? '';
+        [$data['address_1'], $data['address_2']] = $this->poService->resolveAddresses($data, $customer);
 
         DB::transaction(function () use ($po, $data, $customerName, $noSuratJalan, $noInvoice) {
-            $rawItems = collect($data['items'])
-                ->filter(fn ($it) => !empty($it['produk_id']) && !empty($it['qty']))
-                ->values();
-
-            // Recompute harga & total server-side
-            $items = $rawItems->map(function ($it) {
-                $produk = Produk::find($it['produk_id']);
-                $qtyJenis = strtoupper($it['qty_jenis'] ?? 'PCS');
-                $harga = 0;
-                if ($produk) {
-                    $harga = $qtyJenis === 'SET' ? (int) ($produk->harga_set ?? 0) : (int) ($produk->harga_pcs ?? 0);
-                }
-                $qty = (int) ($it['qty'] ?? 0);
-                $total = $harga * $qty;
-                return [
-                    'produk_id' => (int) $it['produk_id'],
-                    'qty'       => $qty,
-                    'qty_jenis' => $qtyJenis,
-                    'harga'     => $harga,
-                    'total'     => $total,
-                ];
-            });
-
-            // Validasi stok cukup per produk (gabungkan qty per produk dulu)
-            $qtyByProduk = [];
-            foreach ($items as $it) {
-                $qtyByProduk[$it['produk_id']] = ($qtyByProduk[$it['produk_id']] ?? 0) + (int) $it['qty'];
-            }
-            if (!empty($qtyByProduk)) {
-                $produkMap = Produk::query()
-                    ->whereIn('id', array_keys($qtyByProduk))
-                    ->withSum('barangMasuks as qty_masuk', 'qty')
-                    ->withSum('barangKeluars as qty_keluar', 'qty')
-                    ->get()
-                    ->keyBy('id');
-                $errors = [];
-                foreach ($qtyByProduk as $pid => $qtyReq) {
-                    $p = $produkMap->get($pid);
-                    $sisa = (int) (($p->qty_masuk ?? 0) - ($p->qty_keluar ?? 0));
-                    
-                    // Validasi stok 0 - tidak boleh input produk dengan stok habis
-                    if ($sisa <= 0) {
-                        $errors[] = 'Produk "' . ($p->nama_produk ?? ('ID '.$pid)) . '" memiliki stok 0. Tidak dapat diinput ke PO.';
-                    } elseif ($qtyReq > $sisa) {
-                        $errors[] = 'Stok untuk "' . ($p->nama_produk ?? ('ID '.$pid)) . '" kurang. Sisa: ' . $sisa . ', diminta: ' . $qtyReq . '.';
-                    }
-                }
-                if (!empty($errors)) {
-                    throw ValidationException::withMessages(['items' => implode(' ', $errors)]);
-                }
-            }
+            // Process dan validasi items
+            $items = $this->poService->processItems($data['items']);
+            $this->poService->validateStockForUpdate($items);
 
             $first = $items->first();
             $sumTotal = (int) $items->sum(fn ($it) => (int) ($it['total'] ?? 0));
@@ -901,41 +512,22 @@ class POController extends Controller
 
             $po->update($updatePayload);
 
-            // Replace all items
-            $po->items()->delete();
-            foreach ($items as $it) {
-                POItem::create([
-                    'po_id'     => $po->id,
-                    'produk_id' => $it['produk_id'],
-                    'qty'       => $it['qty'],
-                    'qty_jenis' => $it['qty_jenis'],
-                    'harga'     => $it['harga'],
-                    'total'     => $it['total'],
-                ]);
-            }
-
-            // Refresh Barang Keluar otomatis untuk PO ini (hapus yang lama berdasarkan keterangan standar)
+            // Sync items dan refresh barang keluar
+            $this->poService->syncPOItems($po, $items);
+            
+            // Hapus BarangKeluar lama untuk no_po ini
             try {
-                // Hapus berdasarkan no_po lama maupun no_po baru (jika user mengubah no_po)
                 $oldNoPo = $po->getOriginal('no_po') ?: $po->no_po;
                 $newNoPo = $data['no_po'] ?? $po->no_po;
-                \App\Models\BarangKeluar::whereIn('keterangan', [
+                BarangKeluar::whereIn('keterangan', [
                     'Auto Keluar dari PO ' . (string) $oldNoPo,
                     'Auto Keluar dari PO ' . (string) $newNoPo,
                 ])->delete();
             } catch (\Throwable $e) { /* ignore */ }
-            foreach ($items as $it) {
-                $noPoStd = trim((string)($data['no_po'] ?? $po->no_po));
-                BarangKeluar::create([
-                    'produk_id' => $it['produk_id'],
-                    'qty'       => (int) $it['qty'],
-                    'tanggal'   => $data['tanggal_po'],
-                    'keterangan'=> 'Auto Keluar dari PO ' . $noPoStd,
-                    'user_id'   => auth()->id(),
-                ]);
-            }
-            // Batasi total data Barang Keluar agar hanya menyimpan 50 terbaru
-            $this->pruneBarangKeluarLimit(50);
+            
+            // Record barang keluar baru
+            $this->poService->recordBarangKeluar($items, $data['no_po'], $data['tanggal_po']);
+            $this->poService->pruneBarangKeluar(50);
         });
 
         // Bersihkan reserved jika nomor ini ada di cache (nomor sudah resmi tersimpan)
@@ -995,8 +587,7 @@ class POController extends Controller
     public function destroy(PO $po)
     {
         // CEK: Jika ada Jatuh Tempo dengan status Lunas (Accept), BLOKIR hapus
-        $jatuhTempo = \App\Models\JatuhTempo::where('no_invoice', $po->no_invoice)->first();
-        if ($jatuhTempo && $jatuhTempo->status_pembayaran === 'Lunas') {
+        if ($this->poService->isInvoiceLunas($po->no_invoice)) {
             return redirect()->back()->with('error', '❌ Data tidak dapat dihapus karena Jatuh Tempo sudah berstatus LUNAS (Accept).');
         }
 
@@ -1019,28 +610,9 @@ class POController extends Controller
                 })->values();
 
                 foreach ($group as $gp) {
-                    // Rollback stok HANYA jika belum Accept
-                    try {
-                        $isAccept = (string)($gp->status_approval ?? 'Pending') === 'Accept';
-                        if (!$isAccept && !empty($gp->no_po)) {
-                            $noPoTrim = trim((string)$gp->no_po);
-                            $items = $gp->items()->get(['produk_id']);
-                            foreach ($items as $it) {
-                                \App\Models\BarangKeluar::where('produk_id', $it->produk_id)
-                                    ->where(function($q) use ($noPoTrim, $gp) {
-                                        $exact = 'Auto Keluar dari PO ' . (string) $gp->no_po;
-                                        $exactTrim = 'Auto Keluar dari PO ' . $noPoTrim;
-                                        $q->where('keterangan', $exact)
-                                          ->orWhere('keterangan', $exactTrim)
-                                          ->orWhereRaw('TRIM(keterangan) = ?', [trim($exact)])
-                                          ->orWhereRaw('TRIM(keterangan) = ?', [trim($exactTrim)])
-                                          ->orWhere('keterangan', 'LIKE', '%PO ' . $noPoTrim . '%');
-                                    })
-                                    ->delete();
-                            }
-                        }
-                    } catch (\Throwable $e) { /* ignore */ }
-
+                    // Rollback stok menggunakan service
+                    $this->poService->rollbackStock($gp);
+                    
                     // Hapus entitas PO
                     $gp->delete();
                 }
@@ -1076,31 +648,8 @@ class POController extends Controller
 
             return redirect()->route('invoice.index')->with('success', 'Seluruh baris untuk No Invoice ' . $num . ' berhasil dihapus.');
         }
-        // Rollback stok (hapus BarangKeluar) HANYA jika status belum Accept
-        try {
-            $isAccept = (string)($po->status_approval ?? 'Pending') === 'Accept';
-            if (!$isAccept && !empty($po->no_po)) {
-                DB::transaction(function() use ($po) {
-                    $noPoTrim = trim((string)$po->no_po);
-                    $items = $po->items()->get(['produk_id']);
-                    foreach ($items as $it) {
-                        // Hapus per-produk untuk memastikan rollback akurat
-                        \App\Models\BarangKeluar::where('produk_id', $it->produk_id)
-                            ->where(function($q) use ($noPoTrim, $po) {
-                                $exact = 'Auto Keluar dari PO ' . (string) $po->no_po;
-                                $exactTrim = 'Auto Keluar dari PO ' . $noPoTrim;
-                                $q->where('keterangan', $exact)
-                                  ->orWhere('keterangan', $exactTrim)
-                                  ->orWhereRaw('TRIM(keterangan) = ?', [trim($exact)])
-                                  ->orWhereRaw('TRIM(keterangan) = ?', [trim($exactTrim)])
-                                  ->orWhere('keterangan', 'LIKE', '%PO ' . $noPoTrim . '%');
-                            })
-                            ->delete();
-                    }
-                });
-                \Log::info('[Stock] Rollback BK by items', ['no_po' => $po->no_po, 'po_id' => $po->id, 'items' => $po->items()->count()]);
-            }
-        } catch (\Throwable $e) { /* ignore */ }
+        // Rollback stok menggunakan service
+        $this->poService->rollbackStock($po);
         // Cascade delete: hapus JatuhTempo terkait no_invoice dan no_po
         try {
             $noInvKey = $po->no_invoice;
@@ -1205,15 +754,18 @@ class POController extends Controller
      */
     public function invoiceIndex()
     {
-        // Ambil daftar PO DISTINCT berdasarkan no_invoice (1 baris per invoice)
-        // Kelompokkan dan ambil yang terbaru per no_invoice
-        $invoices = PO::query()
-            ->select('*')
-            ->whereNotNull('no_invoice')
-            ->where('no_invoice', '!=', '')
-            ->get()
-            ->groupBy('no_invoice')
-            ->map(function ($group) {
+        // Cache invoice list dengan TTL pendek karena sering berubah
+        $invoices = $this->cache->remember(
+            $this->cache->key('invoices_grouped'),
+            \App\Services\CacheService::CACHE_SHORT,
+            function() {
+                return PO::query()
+                    ->select('*')
+                    ->whereNotNull('no_invoice')
+                    ->where('no_invoice', '!=', '')
+                    ->get()
+                    ->groupBy('no_invoice')
+                    ->map(function ($group) {
                 // Gunakan baris terbaru berdasarkan id untuk konsistensi
                 $poLatest = $group->sortByDesc('id')->first();
 
@@ -1261,8 +813,12 @@ class POController extends Controller
                 return (int) $invoice->no_urut;
             })
             ->values(); // Reset keys dari sortBy
+            },
+            [\App\Services\CacheService::TAG_INVOICE, \App\Services\CacheService::TAG_PO]
+        );
 
-        $customers = Customer::all();
+        // Cache customers
+        $customers = $this->cache->getCustomers();
         return view('po.invoice_index', compact('invoices', 'customers'));
     }
 
@@ -1454,18 +1010,12 @@ class POController extends Controller
     /**
      * Update invoice info (customer, tanggal invoice) via modal
      */
-    public function updateInvoice(Request $request, PO $po)
+    public function updateInvoice(UpdateInvoiceRequest $request, PO $po)
     {
         // CEK: Jika ada Jatuh Tempo dengan status Lunas (Accept), BLOKIR update invoice
-        $jatuhTempo = \App\Models\JatuhTempo::where('no_invoice', $po->no_invoice)->first();
-        if ($jatuhTempo && $jatuhTempo->status_pembayaran === 'Lunas') {
+        if ($this->poService->isInvoiceLunas($po->no_invoice)) {
             return redirect()->back()->with('error', '❌ Invoice tidak dapat diubah karena Jatuh Tempo sudah berstatus LUNAS (Accept).');
         }
-
-        $request->validate([
-            'no_invoice' => 'required|integer|min:1',
-            'tanggal_invoice' => 'required|date',
-        ]);
 
         try {
             $oldInvoice = (string) $po->no_invoice;
@@ -1507,25 +1057,4 @@ class POController extends Controller
         }
     }
 
-    /**
-     * Pangkas tabel barang_keluars agar hanya menyimpan <limit> data terbaru.
-     */
-    private function pruneBarangKeluarLimit(int $limit = 50): void
-    {
-        try {
-            $total = \App\Models\BarangKeluar::count();
-            if ($total > $limit) {
-                $toDelete = $total - $limit;
-                // Ambil ID terlama lalu hapus
-                $ids = \App\Models\BarangKeluar::orderBy('id', 'asc')
-                    ->limit($toDelete)
-                    ->pluck('id');
-                if ($ids->isNotEmpty()) {
-                    \App\Models\BarangKeluar::whereIn('id', $ids)->delete();
-                }
-            }
-        } catch (\Throwable $e) {
-            \Log::warning('Prune BarangKeluar gagal: ' . $e->getMessage());
-        }
-    }
 }
