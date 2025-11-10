@@ -411,11 +411,10 @@
           </div>
       </div>
 
-      <aside id="sidebar" class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen flex flex-col transform transition-transform duration-300 fixed inset-y-0 left-0 z-40 -translate-x-full md:fixed md:inset-y-0 md:left-0 overflow-hidden"
+      <aside id="sidebar" class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen flex flex-col transform transition-transform duration-300 fixed inset-y-0 left-0 z-40 -translate-x-full md:translate-x-0 md:fixed md:inset-y-0 md:left-0 overflow-hidden"
            x-bind:class="{
                 '-translate-x-full': !mobileSidebarOpen,
                 'translate-x-0': mobileSidebarOpen,
-                'md:translate-x-0': desktopSidebarOpen,
                 'md:-translate-x-full': !desktopSidebarOpen
            }">
         <div class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4">
@@ -712,9 +711,8 @@
     
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col transition-all duration-300 overflow-x-hidden"
+    <div class="flex-1 flex flex-col transition-all duration-300 overflow-x-hidden md:ml-64"
          :class="{
-             'md:ml-64': desktopSidebarOpen,
              'md:ml-0': !desktopSidebarOpen
          }">
         <header class="sticky top-0 z-30 h-16 bg-white/90 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 md:px-6 flex items-center justify-between shadow-sm theme-instant">
