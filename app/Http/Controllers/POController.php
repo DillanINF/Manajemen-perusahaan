@@ -190,11 +190,11 @@ class POController extends Controller
             $sisaCount = $splitResult['sisa_count'];
 
             // Header mengambil item pertama untuk kolom legacy
-            $first = $items->first();
-            $sumTotal = (int) $items->sum(fn ($it) => (int) ($it['total'] ?? 0));
+            $first = !empty($items) ? $items[0] : null;
+            $sumTotal = (int) array_sum(array_column($items, 'total'));
 
             // Jika tidak ada item yang masuk ke PO (semua stok 0), JANGAN buat PO record
-            if ($items->isEmpty()) {
+            if (empty($items)) {
                 $this->poService->saveSisaItems($sisaItems);
                 if (!empty($splitMessages)) {
                     session()->flash('split_messages', $splitMessages);
