@@ -241,23 +241,6 @@
                         </td>
                         <td class="py-3 px-4 text-sm font-medium text-center border-b border-gray-200 dark:border-slate-700">
                             <x-table.action-buttons 
-                                onEdit="window.handleEditClick(this)"
-                                :editPayload="[
-                                    'id' => $pos->id,
-                                    'tanggal' => ($pos->tanggal_po ? \Carbon\Carbon::parse($pos->tanggal_po)->format('Y-m-d') : now()->format('Y-m-d')),
-                                    'customer' => $pos->customer,
-                                    'alamat1' => $pos->alamat_1,
-                                    'alamat2' => $pos->alamat_2,
-                                    'noSuratJalan' => $pos->no_surat_jalan,
-                                    'noPo' => $pos->no_po,
-                                    'kendaraan' => $pos->kendaraan,
-                                    'noPolisi' => $pos->no_polisi,
-                                    'qty' => $pos->qty,
-                                    'jenis' => $pos->qty_jenis,
-                                    'produkId' => $pos->produk_id,
-                                    'total' => $pos->total,
-                                    'pengirim' => $pos->pengirim
-                                ]"
                                 deleteAction="{{ route('suratjalan.destroy', $pos->id) }}"
                                 confirmText="Apakah Anda yakin ingin menghapus Data PO ini?"
                                 :useMenu="true"

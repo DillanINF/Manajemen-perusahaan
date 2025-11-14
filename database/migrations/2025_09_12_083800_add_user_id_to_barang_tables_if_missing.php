@@ -11,7 +11,10 @@ return new class extends Migration {
         if (Schema::hasTable('barang_masuks')) {
             Schema::table('barang_masuks', function (Blueprint $table) {
                 if (!Schema::hasColumn('barang_masuks', 'user_id')) {
-                    $table->foreignId('user_id')->nullable()->after('keterangan')->constrained('users')->nullOnDelete();
+                    $table->foreignId('user_id')
+                        ->nullable()
+                        ->constrained('users')
+                        ->nullOnDelete();
                 }
             });
         }
@@ -20,7 +23,10 @@ return new class extends Migration {
         if (Schema::hasTable('barang_keluars')) {
             Schema::table('barang_keluars', function (Blueprint $table) {
                 if (!Schema::hasColumn('barang_keluars', 'user_id')) {
-                    $table->foreignId('user_id')->nullable()->after('keterangan')->constrained('users')->nullOnDelete();
+                    $table->foreignId('user_id')
+                        ->nullable()
+                        ->constrained('users')
+                        ->nullOnDelete();
                 }
             });
         }

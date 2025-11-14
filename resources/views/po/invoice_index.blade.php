@@ -760,33 +760,11 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (e) { /* ignore */ }
 
     // URL endpoints
-    const editUrlTemplate = "{{ route('po.edit', 0) }}"; // tetap dipakai untuk tombol Edit di kolom Aksi
     const createUrl = "{{ route('po.create') }}";
     const quickCreateUrl = "{{ route('invoice.quick-create') }}";
     const setNextNumberUrl = "{{ route('invoice.set-next-number') }}";
     const deleteUrlTemplate = "{{ route('po.destroy', ['po' => 0, 'from' => 'invoice', 'group' => 1]) }}";
 
-    // Function untuk membuka form edit PO
-    function openEditForm(id, poNumber = null) {
-        // Tampilkan notifikasi singkat sebelum pindah halaman
-        showNotification('Membuka form input PO untuk melengkapi data invoice...', 'success');
-        setTimeout(() => {
-            // ARAHKAN KE FORM CREATE, bukan edit
-            // Bawa informasi sumber + nomor urut agar ter-prefill dan nomor urut terjaga
-            let poNum = poNumber || '';
-            if (!poNum) {
-                const row = document.querySelector(`tr[data-id="${id}"]`);
-                if (row) poNum = row.getAttribute('data-po-number') || '';
-            }
-            const params = new URLSearchParams();
-            params.set('from', 'invoice');
-            if (poNum) params.set('invoice_number', poNum);
-            params.set('reset_fields', '1'); // Reset field saat buka dari Data Invoice
-            const url = createUrl + (createUrl.includes('?') ? '&' : '?') + params.toString();
-            window.location.href = url;
-        }, 800);
-    }
-    window.openEditForm = openEditForm;
 
     // === Auto update counter (tanpa refresh) ===
     function recalcCounter() {
@@ -1088,14 +1066,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-4 py-3 pl-8 whitespace-nowrap text-center action-col" style="width: 100px;">
                 <div class="action-cell">
                     <div class="hidden sm:flex items-center justify-center gap-1.5">
-                        <button type="button" onclick="event.stopPropagation(); openEditForm(${data.id})"
-                                class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#2563EB] text-white shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#1D4ED8]"
-                                aria-label="Edit">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
-                                <path d="M12 20h9"/>
-                                <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-                            </svg>
-                        </button>
                         <form method="POST" action="${deleteUrlTemplate.replace('/0', '/' + data.id)}" class="inline-flex" onsubmit="event.stopPropagation(); return confirm('Yakin ingin menghapus data invoice ini?')">
                             <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''}">
                             <input type="hidden" name="_method" value="DELETE">
@@ -1113,14 +1083,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         </form>
                     </div>
                     <div class="flex sm:hidden items-stretch justify-center gap-2 w-full">
-                        <button type="button" onclick="event.stopPropagation(); openEditForm(${data.id})"
-                                class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#2563EB] text-white shadow-sm hover:shadow-md transition-all duration-200 active:scale-[.99]">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
-                                <path d="M12 20h9"/>
-                                <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-                            </svg>
-                            <span class="text-sm font-medium">Edit</span>
-                        </button>
                         <form method="POST" action="${deleteUrlTemplate.replace('/0', '/' + data.id)}" class="flex-1" onsubmit="event.stopPropagation(); return confirm('Yakin ingin menghapus data invoice ini?')">
                             <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''}">
                             <input type="hidden" name="_method" value="DELETE">
@@ -1130,7 +1092,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                                     <path d="M10 11v6"/>
                                     <path d="M14 11v6"/>
-                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0  0 1 1 1v2"/>
                                 </svg>
                                 <span class="text-sm font-medium">Hapus</span>
                             </button>
