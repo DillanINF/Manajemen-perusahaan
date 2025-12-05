@@ -66,10 +66,10 @@ class POController extends Controller
 
     public function create()
     {
-        // Guard: Form Create PO hanya boleh diakses dari Data Invoice (double click)
+        // Guard: Form Create PO hanya boleh diakses dari sumber terkontrol (double click)
         $from = request('from');
         $invoiceNumber = request('invoice_number');
-        if ($from !== 'invoice' || empty($invoiceNumber)) {
+        if (!in_array($from, ['invoice', 'sisa-data-po'], true) || empty($invoiceNumber)) {
             return redirect()->route('invoice.index')
                 ->with('error', 'Akses formulir PO hanya melalui Data Invoice (double click pada nomor urut).');
         }

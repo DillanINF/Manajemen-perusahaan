@@ -56,6 +56,7 @@ class SisaDataPOController extends Controller
             ->select(
                 'sisa_po_items.id as sisa_id',
                 'sisa_po_items.no_po',
+                'sisa_po_items.no_invoice',
                 'sisa_po_items.produk_id',
                 'produks.nama_produk',
                 'produks.satuan',

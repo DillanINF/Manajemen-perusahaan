@@ -92,6 +92,7 @@ class POService
                     // Stok habis: semua masuk ke Sisa PO
                     $sisaItems[] = [
                         'no_po' => $data['no_po'],
+                        'no_invoice' => $data['invoice_number'] ?? null,
                         'produk_id' => $pid,
                         'qty_diminta' => $qtyReq,
                         'qty_tersedia' => 0,
@@ -120,6 +121,7 @@ class POService
                     $qtySisa = $qtyReq - $stokTersedia;
                     $sisaItems[] = [
                         'no_po' => $data['no_po'],
+                        'no_invoice' => $data['invoice_number'] ?? null,
                         'produk_id' => $pid,
                         'qty_diminta' => $qtyReq,
                         'qty_tersedia' => $stokTersedia,

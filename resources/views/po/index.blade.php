@@ -203,7 +203,7 @@
                             <i class="fas fa-building text-blue-500 mr-1"></i>Customer
                         </label>
                         <div class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-gray-100 dark:bg-gray-800/70">
-                            {{ old('customer_name', $po->customer ?? '-') }}
+                            {{ old('customer_name', request('customer') ?? ($po->customer ?? '-')) }}
                         </div>
                         <input type="hidden" name="customer_id" id="customer"
                                value="{{ old('customer_id', $po->customer_id ?? '') }}"
@@ -223,7 +223,7 @@
                                name="no_po"
                                id="no_po"
                                placeholder="PO.123456789"
-                               value="{{ old('no_po', (isset($po) && ($po->no_po ?? '') === '-') ? '' : ($po->no_po ?? '')) }}"
+                               value="{{ old('no_po', request('no_po') ?? ((isset($po) && ($po->no_po ?? '') === '-') ? '' : ($po->no_po ?? ''))) }}"
                                class="w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 sm:py-3 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30 transition-all duration-200"
                                required>
                     </div>
@@ -339,7 +339,8 @@
                                                 data-harga-set="{{ $p->harga_set ?? 0 }}" 
                                                 data-harga="{{ $p->harga ?? 0 }}" 
                                                 data-satuan="PCS"
-                                                data-stok="{{ $stokTersedia }}">
+                                                data-stok="{{ $stokTersedia }}"
+                                                @selected((int) old('items.0.produk_id', request('produk_id')) === (int) $p->id)>
                                             {{ $p->nama_produk }} (Stok: {{ $stokTersedia }})
                                         </option>
                                     @endforeach
@@ -349,7 +350,7 @@
                             <div class="space-y-2 md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Quantity</label>
                                 <div class="flex w-full min-w-0">
-                                    <input type="number" name="items[0][qty]" class="item-qty border-2 border-gray-200 dark:border-gray-700 rounded-l-lg px-3 py-2 text-sm flex-auto min-w-0 bg-white dark:bg-gray-800/80 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-500/30" min="1" required>
+                                    <input type="number" name="items[0][qty]" class="item-qty border-2 border-gray-200 dark:border-gray-700 rounded-l-lg px-3 py-2 text-sm flex-auto min-w-0 bg-white dark:bg-gray-800/80 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 dark:focus:ring-green-500/30" min="1" value="{{ old('items.0.qty', request('qty_sisa')) }}" required>
                                     <input type="text" class="item-qty-jenis-display border-2 border-l-0 border-gray-200 dark:border-gray-700 rounded-r-lg px-2 py-2 text-[10px] w-[68px] shrink-0 bg-gray-50 dark:bg-gray-800/80 text-gray-800 dark:text-gray-100" value="PCS" readonly>
                                     <input type="hidden" name="items[0][qty_jenis]" class="item-qty-jenis-hidden" value="PCS">
                                 </div>
@@ -357,12 +358,17 @@
                             <!-- Harga -->
                             <div class="space-y-2 md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Harga</label>
-                                <input type="number" name="items[0][harga]" class="item-harga w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-500/30" min="0" step="0.01" required>
+                                <input type="number" name="items[0][harga]" class="item-harga w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-500/30" min="0" step="0.01" value="{{ old('items.0.harga', request('harga')) }}" required>
                             </div>
                             <!-- Total -->
                             <div class="space-y-2 md:col-span-3">
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Total</label>
-                                <input type="number" name="items[0][total]" class="item-total w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100" readonly>
+                                @php
+                                    $prefillQty = (float) (old('items.0.qty', request('qty_sisa')) ?? 0);
+                                    $prefillHarga = (float) (old('items.0.harga', request('harga')) ?? 0);
+                                    $prefillTotal = $prefillQty > 0 && $prefillHarga > 0 ? $prefillQty * $prefillHarga : null;
+                                @endphp
+                                <input type="number" name="items[0][total]" class="item-total w-full border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100" value="{{ $prefillTotal !== null ? $prefillTotal : '' }}" readonly>
                             </div>
                             <!-- Remove Button -->
                             <div class="md:col-span-1 flex md:justify-end pr-4">

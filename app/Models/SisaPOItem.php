@@ -13,6 +13,7 @@ class SisaPOItem extends Model
 
     protected $fillable = [
         'no_po',
+        'no_invoice',
         'produk_id',
         'qty_diminta',
         'qty_tersedia',

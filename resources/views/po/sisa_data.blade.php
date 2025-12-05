@@ -13,10 +13,11 @@
   .bump { animation: bump 260ms ease-out; }
   @keyframes bump { 0% { transform: scale(1); } 50% { transform: scale(1.025); } 100% { transform: scale(1); } }
   .font-inter { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji','Segoe UI Emoji'; }
-  .status-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
-  .status-warning { @apply bg-yellow-100 text-yellow-800 border border-yellow-200; }
-  .status-danger { @apply bg-red-100 text-red-800 border border-red-200; }
-  .table-row-hover { @apply hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-150; }
+  .status-badge { display:inline-flex; align-items:center; padding:0.125rem 0.625rem; border-radius:9999px; font-size:0.75rem; font-weight:500; }
+  .status-warning { background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; }
+  .status-danger { background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; }
+  .table-row-hover { transition:all 0.15s ease; cursor:pointer; }
+  .table-row-hover:hover { background-color:#EFF6FF; box-shadow:0 1px 3px rgba(15,23,42,0.12); transform:translateY(-1px); }
 </style>
 @endpush
 
@@ -125,15 +126,25 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Produk</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No PO</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No Invoice</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tipe Harga</th>
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sisa PO</th>
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">                                
                             @foreach($sisaData as $item)
-                                <tr class="table-row-hover">
+                                <tr class="table-row-hover cursor-pointer"
+                                    data-invoice="{{ $item->no_invoice }}"
+                                    data-no-po="{{ $item->no_po }}"
+                                    data-produk-id="{{ (int) $item->produk_id }}"
+                                    data-qty-sisa="{{ (int) $item->sisa_belum_terinput }}"
+                                    data-harga="{{ (int) $item->harga }}"
+                                    data-customer="{{ $item->customer }}"
+                                    data-nama-produk="{{ $item->nama_produk }}"
+                                    data-stok="{{ (int) $item->sisa_stok }}"
+                                    ondblclick="goToInputPO(this)">
                                     <td class="px-4 py-4">
                                         <div class="flex items-center">
                                             <div class="bg-gray-100 dark:bg-gray-700/40 rounded-lg p-2 mr-3">
@@ -152,6 +163,16 @@
                                             </div>
                                             <div>
                                                 <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $item->no_po }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="bg-gray-100 dark:bg-gray-700/40 rounded-lg p-2 mr-3">
+                                                <i class="fas fa-receipt text-purple-600 dark:text-purple-400"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $item->no_invoice ?? '-' }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -203,7 +224,16 @@
                 <!-- Mobile Cards -->
                 <div class="md:hidden space-y-4 p-4">
                     @foreach($sisaData as $item)
-                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm cursor-pointer"
+                             data-invoice="{{ $item->no_invoice }}"
+                             data-no-po="{{ $item->no_po }}"
+                             data-produk-id="{{ (int) $item->produk_id }}"
+                             data-qty-sisa="{{ (int) $item->sisa_belum_terinput }}"
+                             data-harga="{{ (int) $item->harga }}"
+                             data-customer="{{ $item->customer }}"
+                             data-nama-produk="{{ $item->nama_produk }}"
+                             data-stok="{{ (int) $item->sisa_stok }}"
+                             ondblclick="goToInputPO(this)">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex items-center">
                                     <div class="bg-green-100 dark:bg-green-900/30 rounded-lg p-2 mr-3">
@@ -229,6 +259,10 @@
                                 <div class="flex justify-between">
                                     <span class="text-sm text-gray-600 dark:text-gray-400">No PO:</span>
                                     <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $item->no_po }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">No Invoice:</span>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $item->no_invoice ?? '-' }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-sm text-gray-600 dark:text-gray-400">Customer:</span>
@@ -453,6 +487,62 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = document.getElementById('sisaEditOverlay');
         overlay.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
+    }
+    // Navigasi ke Form Input PO dari halaman PO Belum Terkirim
+    window.goToInputPO = function(sourceElOrInvoice) {
+        try {
+            let invoiceNumber = '';
+            let noPo = '';
+            let produkId = '';
+            let qtySisa = '';
+            let harga = '';
+            let customer = '';
+            let stok = '';
+            let namaProduk = '';
+
+            if (sourceElOrInvoice && sourceElOrInvoice.dataset) {
+                const ds = sourceElOrInvoice.dataset;
+                invoiceNumber = ds.invoice || '';
+                noPo = ds.noPo || '';
+                produkId = ds.produkId || '';
+                qtySisa = ds.qtySisa || '';
+                harga = ds.harga || '';
+                customer = ds.customer || '';
+                stok = ds.stok || '';
+                namaProduk = ds.namaProduk || ds["nama-produk"] || '';
+            } else {
+                invoiceNumber = String(sourceElOrInvoice || '');
+            }
+
+            if (!invoiceNumber) {
+                alert('Nomor invoice tidak valid atau belum tersedia untuk data ini.');
+                return;
+            }
+
+            // Jika stok masih 0, blokir navigasi ke form PO
+            const stokNum = parseInt(stok || '0', 10);
+            if (!isNaN(stokNum) && stokNum <= 0) {
+                const nama = (namaProduk || 'produk ini').toString();
+                alert('Stok untuk ' + nama + ' belum ada (sisa 0). Tidak bisa input PO.');
+                return;
+            }
+
+            const baseUrl = '{{ route("po.create") }}';
+            const params = new URLSearchParams();
+            params.set('from', 'sisa-data-po');
+            params.set('invoice_number', String(invoiceNumber));
+            if (noPo) params.set('no_po', String(noPo));
+            if (produkId) params.set('produk_id', String(produkId));
+            if (qtySisa) params.set('qty_sisa', String(qtySisa));
+            if (harga) params.set('harga', String(harga));
+            if (customer) params.set('customer', String(customer));
+
+            const url = baseUrl + '?' + params.toString();
+            window.location.href = url;
+        } catch (e) {
+            console.error('Gagal membuka form PO:', e);
+            alert('Tidak dapat membuka form PO. Silakan coba lagi.');
+        }
     }
 });
 </script>
