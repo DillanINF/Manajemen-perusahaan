@@ -27,6 +27,30 @@ class SisaDataPOController extends Controller
         
         // Ambil data dengan pagination
         $sisaData = $sisaDataQuery->paginate(15);
+
+        // Hitung stok produk aktual per item menggunakan model Produk (seperti di halaman Data Barang)
+        $produkIds = $sisaData->pluck('produk_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $stokPerProduk = collect();
+        if ($produkIds->isNotEmpty()) {
+            $stokPerProduk = Produk::query()
+                ->whereIn('id', $produkIds)
+                ->withSum('barangMasuks as qty_masuk', 'qty')
+                ->withSum('barangKeluars as qty_keluar', 'qty')
+                ->get()
+                ->mapWithKeys(function (Produk $produk) {
+                    return [
+                        $produk->id => (int) $produk->sisa_stok,
+                    ];
+                });
+        }
+
+        foreach ($sisaData as $row) {
+            $row->stok_produk = $stokPerProduk[$row->produk_id] ?? 0;
+        }
         
         // Ambil semua produk untuk filter
         $produks = Produk::orderBy('nama_produk')->get();

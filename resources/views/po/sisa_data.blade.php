@@ -143,7 +143,7 @@
                                     data-harga="{{ (int) $item->harga }}"
                                     data-customer="{{ $item->customer }}"
                                     data-nama-produk="{{ $item->nama_produk }}"
-                                    data-stok="{{ (int) $item->sisa_stok }}"
+                                    data-stok="{{ (int) ($item->stok_produk ?? 0) }}"
                                     ondblclick="goToInputPO(this)">
                                     <td class="px-4 py-4">
                                         <div class="flex items-center">
@@ -232,7 +232,7 @@
                              data-harga="{{ (int) $item->harga }}"
                              data-customer="{{ $item->customer }}"
                              data-nama-produk="{{ $item->nama_produk }}"
-                             data-stok="{{ (int) $item->sisa_stok }}"
+                             data-stok="{{ (int) ($item->stok_produk ?? 0) }}"
                              ondblclick="goToInputPO(this)">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex items-center">
